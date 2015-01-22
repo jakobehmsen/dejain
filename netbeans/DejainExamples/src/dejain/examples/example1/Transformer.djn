@@ -1,0 +1,137 @@
+
+@+dejain.Intercept
+class dejain.examples.example1.Person
+
+@+dejain.Intercept
+class dejain.examples.example1.Address
+
+
+/*
+@+dejain.Intercept
+class dejain.examples.example1.Person | dejain.examples.example1.Address
+*/
+
+@dejain.Intercept
+class {
+    +private String i;
+    +private int i2;
+
+    /*
+    +public java.lang.String toString() {
+        return "Hi from me";
+    }
+    */
+
+/*
+    public String toString() {
+        String result = ...;
+        return "Pre" + result + "Post";
+    }
+*/
+
+    public String toString() {
+        return "Pre" + ... + "Post";
+        //return "Something extra";
+    }
+
+/*
+    public !void:rt *:mn {
+        System.out.println("Invoking " + $mn + "...");
+        $rt result = ...;
+        System.out.println("Invoked " + $mn + ".");
+        return result;
+    }
+*/
+
+/*
+    * *:fieldNames;
+
+    default public String toString() {
+        StringBuilder sb = new StringBuilder();
+        $(; :>> ({sb.append($^);})*)
+
+        $(fieldNames :>> ({sb.append($^);})*)
+        return sb.toString();
+    }
+*/
+
+/*
+    +public int someMethod() {
+        return 5 + 7;
+    }
+*/
+
+/*
+    +public java.lang.String someMethod() {
+        return "5" + "7";
+    }
+*/
+
+/*
+    public !void {
+        $rt result;
+
+        if(someCondition) {
+            $rt result = ...;
+        } else {
+            result = $rtd;
+        }
+
+        return result;
+    }
+*/
+
+/*
+    public java.lang.String toString() {
+        return ... + "Something extra";
+    }
+*/
+
+/*
+    public () {
+        System.out.println("Before");
+        ...
+        System.out.println("After");
+
+        return thisResult + "NewValue";
+    }
+*/
+
+/*  
+    // Use visitor while changing CtMethod inside out
+    // What about wrapping ... into if's and other composite code constructs?
+    // - How about generating such constructs in an empty way using javassit? 
+    // - And then use this bytecode somehow?
+    public () {
+        try {
+            System.out.println( "Before " );
+            ...
+            System.out.println("After");
+
+            return thisResult + "NewValue";
+        } catch(java.lang.Exception e) {
+            System.out.println("An error has occurred" + e);
+
+            //return "Damnit...";
+            throw e;
+        }
+    }
+*/
+
+/*
+    public () {
+        if(false)
+            System.out.println("Bye");
+
+        return "";
+    }
+*/
+    /*
+        About local variables (http://java.dzone.com/articles/implementing-build-time):
+        "If you need to pass some data from a before advice to an after advice, 
+        you cannot create a new local variable in the code passed to Javassist 
+        (e.g. “int myVar = 5;”). Instead of that, you must declare it via 
+        CtMethod.addLocalVariable(String name, CtClass type) and then you can 
+        use is in the code, both in before and after advices of the method."
+    */
+}

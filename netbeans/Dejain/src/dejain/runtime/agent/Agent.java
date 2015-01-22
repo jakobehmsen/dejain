@@ -1,0 +1,35 @@
+package dejain.runtime.agent;
+
+import dejain.lang.ASMCompiler;
+import dejain.lang.ClassMap;
+import dejain.lang.ClassResolver;
+import dejain.runtime.asm.ClassTransformer;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.instrument.Instrumentation;
+import java.util.ArrayList;
+
+public class Agent {
+    public static void premain(String args, Instrumentation inst) throws IOException {
+        String sourceCodeFilePath = args;
+        System.out.println(sourceCodeFilePath);
+        InputStream sourceCode = new FileInputStream(sourceCodeFilePath);
+        ArrayList<ASMCompiler.Message> errorMessages = new ArrayList<ASMCompiler.Message>();
+        long start = System.currentTimeMillis();
+//        ClassResolver classResolver = new ClassResolver(new ClassMap());
+        ClassResolver classResolver = new ClassResolver(ClassMap.createDefault());
+        long end = System.currentTimeMillis();
+        System.out.println("Default class map loading: " + (end - start) + "ms");
+        classResolver.importPackage("java.lang");
+        ASMCompiler compiler = new ASMCompiler(classResolver);
+        ClassTransformer classTransformer = compiler.compile(sourceCode, errorMessages);
+        
+        if(errorMessages.size() == 0) {
+            inst.addTransformer(new ASMBasedClassFileTransformer(classTransformer));
+        } else {
+            System.out.println("The following errors were found for '" + sourceCodeFilePath + "':");
+            errorMessages.forEach(m -> System.out.println(m));
+        }
+    }
+}
