@@ -1,4 +1,4 @@
-// Generated from C:\Users\Jakob\Documents\NetBeansProjects\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
+// Generated from C:\github\dejain\netbeans\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
 package dejain.lang.antlr4;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

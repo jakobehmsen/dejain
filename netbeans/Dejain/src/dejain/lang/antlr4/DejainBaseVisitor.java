@@ -1,4 +1,4 @@
-// Generated from C:\Users\Jakob\Documents\NetBeansProjects\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
+// Generated from C:\github\dejain\netbeans\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
 package dejain.lang.antlr4;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
@@ -107,6 +107,14 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitAccessModifier(@NotNull DejainParser.AccessModifierContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitBinarySumOperator(@NotNull DejainParser.BinarySumOperatorContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}
@@ -226,6 +234,14 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitExpression3(@NotNull DejainParser.Expression3Context ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitCatchStatement(@NotNull DejainParser.CatchStatementContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -235,6 +251,14 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitExpression1(@NotNull DejainParser.Expression1Context ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitVariableDeclaration(@NotNull DejainParser.VariableDeclarationContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}
@@ -275,14 +299,6 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitStringLiteral(@NotNull DejainParser.StringLiteralContext ctx) { return visitChildren(ctx); }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.
-	 */
-	@Override public T visitBinaryOperator(@NotNull DejainParser.BinaryOperatorContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

@@ -27,8 +27,9 @@ methodDefinition:
 parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
 expression: expression1;
-expression1: expression2 (binarySumOperator expression2)*;
-expression2: invocation | literal | lookup | thisResult | proceedStatement;
+expression1: identifier ASSIGN_OP expression1 | expression2;
+expression2: expression3 (binarySumOperator expression3)*;
+expression3: invocation | literal | lookup | thisResult | proceedStatement;
 binarySumOperator: operator=(PLUS | MINUS);
 thisResult: KW_THIS_RESULT;
 invocation: typeQualifier OPEN_PAR arguments CLOSE_PAR;
@@ -51,15 +52,19 @@ ifElseStatement:
 ifTrueBlock:
     OPEN_BRA statement* CLOSE_BRA | statement;
 ifFalseBlock: KW_ELSE (OPEN_BRA statement* CLOSE_BRA | statement);
-delimitedStatement: returnStatement | throwStatement | expression;
+delimitedStatement: 
+    returnStatement | throwStatement | variableDeclaration | expression;
+variableDeclaration: typeQualifier id=identifier (ASSIGN_OP value=expression)?;
 returnStatement: KW_RETURN expression;
 throwStatement: KW_THROW expression;
 literal: stringLiteral | integerLiteral | booleanLiteral;
 stringLiteral: STRING;
 integerLiteral: INTEGER;
 booleanLiteral: KW_TRUE | KW_FALSE; 
+
 annotation: AT PLUS? typeQualifier;
 annotations: annotation*;
+
 typeQualifier: identifier (DOT identifier)*;
 modStatic: MOD_STATIC;
 accessModifier: ACC_MOD_PUBLIC | ACC_MOD_PRIVATE | ACC_MOD_PROTECTED;

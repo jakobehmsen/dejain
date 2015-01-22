@@ -1,4 +1,4 @@
-// Generated from C:\Users\Jakob\Documents\NetBeansProjects\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
+// Generated from C:\github\dejain\netbeans\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
 package dejain.lang.antlr4;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
@@ -94,6 +94,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAccessModifier(@NotNull DejainParser.AccessModifierContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#binarySumOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinarySumOperator(@NotNull DejainParser.BinarySumOperatorContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#thisResult}.
@@ -194,6 +201,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitExpression2(@NotNull DejainParser.Expression2Context ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link DejainParser#expression3}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpression3(@NotNull DejainParser.Expression3Context ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link DejainParser#catchStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -206,6 +220,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExpression1(@NotNull DejainParser.Expression1Context ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#variableDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariableDeclaration(@NotNull DejainParser.VariableDeclarationContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#finallyStatement}.
@@ -241,13 +262,6 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStringLiteral(@NotNull DejainParser.StringLiteralContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#binaryOperator}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBinaryOperator(@NotNull DejainParser.BinaryOperatorContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#modStatic}.
