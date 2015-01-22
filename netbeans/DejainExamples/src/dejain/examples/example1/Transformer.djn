@@ -13,9 +13,10 @@ class dejain.examples.example1.Person | dejain.examples.example1.Address
 
 @dejain.Intercept
 class {
+/*
     +private String i;
     +private int i2;
-
+*/
     /*
     +public java.lang.String toString() {
         return "Hi from me";
@@ -25,14 +26,21 @@ class {
 /*
     public String toString() {
         String result = ...;
+        String result;
         return "Pre" + result + "Post";
     }
 */
 
     public String toString() {
+        return "Hello";
+    }
+
+/*
+    public String toString() {
         return "Pre" + ... + "Post";
         //return "Something extra";
     }
+*/
 
 /*
     public !void:rt *:mn {

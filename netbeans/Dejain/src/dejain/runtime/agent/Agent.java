@@ -3,6 +3,7 @@ package dejain.runtime.agent;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassMap;
 import dejain.lang.ClassResolver;
+import dejain.lang.ast.ModuleContext;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,10 +24,15 @@ public class Agent {
         System.out.println("Default class map loading: " + (end - start) + "ms");
         classResolver.importPackage("java.lang");
         ASMCompiler compiler = new ASMCompiler(classResolver);
-        ClassTransformer classTransformer = compiler.compile(sourceCode, errorMessages);
+        ModuleContext module = compiler.compile(sourceCode);
+//        ClassTransformer classTransformer = compiler.compile(sourceCode, errorMessages);
+        // Parsing and ClassResolver creation can be performed in parallel
         
-        if(errorMessages.size() == 0) {
-            inst.addTransformer(new ASMBasedClassFileTransformer(classTransformer));
+        module.resolve(classResolver, errorMessages);
+        
+        if(errorMessages.isEmpty()) {
+//            ClassTransformer classTransformer = module.toClassTransformer();
+//            inst.addTransformer(new ASMBasedClassFileTransformer(classTransformer));
         } else {
             System.out.println("The following errors were found for '" + sourceCodeFilePath + "':");
             errorMessages.forEach(m -> System.out.println(m));

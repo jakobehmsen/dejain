@@ -4,11 +4,14 @@ program: classTransformer*;
 classTransformer:
     annotations accessModifier? KW_CLASS typeQualifier? 
     (OPEN_BRA members=classTransformerMembers CLOSE_BRA)?;
-classTransformerMembers: classTransformerMember*;
+classTransformerMembers: classTransformerMemberDefinition*;
+classTransformerMemberDefinition: PLUS? member = classTransformerMember;
 classTransformerMember: 
+    classTransformerMemberField | classTransformerMemberMethod;
+/*  
     classTransformerMemberField | classTransformerMemberFieldAdd |
     classTransformerMemberMethod | classTransformerMemberMethodAdd;
-
+*/
 classTransformerMemberField:
     annotations accessModifier? modStatic? typeQualifier? identifier? SEMI_COLON;
 classTransformerMemberFieldAdd:
@@ -26,15 +29,15 @@ methodDefinition:
 
 parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
-expression: expression1;
-expression1: identifier ASSIGN_OP expression1 | expression2;
-expression2: expression3 (binarySumOperator expression3)*;
-expression3: invocation | literal | lookup | thisResult | proceedStatement;
+expression: variableAssignment;
+variableAssignment: identifier ASSIGN_OP variableAssignment | binarySum;
+binarySum: first=leafExpression (binarySumOperator rest=leafExpression)*;
+leafExpression: invocation | literal | lookup | thisResult | proceedStatement;
 binarySumOperator: operator=(PLUS | MINUS);
 thisResult: KW_THIS_RESULT;
 invocation: typeQualifier OPEN_PAR arguments CLOSE_PAR;
 arguments: (expression (COMMA expression)*)?;
-lookup: typeQualifier;
+lookup: identifier;
 statements: statement*;
 statement: nonDelimitedStatement | delimitedStatement SEMI_COLON;
 nonDelimitedStatement: tryCatchStatement | ifElseStatement;

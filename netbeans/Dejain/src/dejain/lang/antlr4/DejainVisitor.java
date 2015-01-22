@@ -19,6 +19,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitTryStatement(@NotNull DejainParser.TryStatementContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link DejainParser#variableAssignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariableAssignment(@NotNull DejainParser.VariableAssignmentContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link DejainParser#nonDelimitedStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -45,6 +52,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMemberFieldAdd(@NotNull DejainParser.ClassTransformerMemberFieldAddContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#binarySum}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinarySum(@NotNull DejainParser.BinarySumContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#statements}.
@@ -138,6 +152,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitBooleanLiteral(@NotNull DejainParser.BooleanLiteralContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberDefinition}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassTransformerMemberDefinition(@NotNull DejainParser.ClassTransformerMemberDefinitionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link DejainParser#annotation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -194,18 +215,11 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitIfElseStatement(@NotNull DejainParser.IfElseStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#expression2}.
+	 * Visit a parse tree produced by {@link DejainParser#leafExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression2(@NotNull DejainParser.Expression2Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#expression3}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExpression3(@NotNull DejainParser.Expression3Context ctx);
+	T visitLeafExpression(@NotNull DejainParser.LeafExpressionContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#catchStatement}.
@@ -213,13 +227,6 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCatchStatement(@NotNull DejainParser.CatchStatementContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#expression1}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExpression1(@NotNull DejainParser.Expression1Context ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#variableDeclaration}.

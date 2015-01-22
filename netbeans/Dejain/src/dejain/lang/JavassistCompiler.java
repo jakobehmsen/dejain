@@ -97,183 +97,183 @@ public class JavassistCompiler {
                 }
                 
                 if(ctx.members != null) {
-                    for(ClassTransformerMemberContext memberCtx: ctx.members.classTransformerMember()) {
-                        memberCtx.accept(new DejainBaseVisitor<Object>() {
-                            @Override
-                            public Object visitClassTransformerMemberField(ClassTransformerMemberFieldContext ctx) {
-                                
-                                
-                                return null;
-                            }
-                            
-                            @Override
-                            public Object visitClassTransformerMemberFieldAdd(ClassTransformerMemberFieldAddContext ctx) {
-                                transformer.addAction(ctClass -> 
-                                {
-                                    String fieldSrc = "";
-                                    
-                                    if(ctx.accessModifier() != null)
-                                        fieldSrc += ctx.accessModifier().getText() + " ";
-                                    if(ctx.modStatic() != null)
-                                        fieldSrc += "static ";
-                                    
-                                    fieldSrc += ctx.typeQualifier().getText() + " ";
-                                    fieldSrc += ctx.identifier().getText() + ";";
-                                    
-                                    try {
-                                        if(ctx.expression() != null) {
-                                            String init = contextAdVerbatim(charStream, ctx.expression());
-                                            ctClass.addField(CtField.make(fieldSrc, ctClass), init);
-                                        } else
-                                            ctClass.addField(CtField.make(fieldSrc, ctClass));
-                                    } catch (CannotCompileException ex) {
-                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-                                });
-                                return null;
-                            }
-
-                            @Override
-                            public Object visitClassTransformerMemberMethod(ClassTransformerMemberMethodContext ctx) {
-                                Predicate<CtMethod> methodFilter = m -> {
-                                    if(ctx.accessModifier() != null) {
-                                        if(ctx.accessModifier().ACC_MOD_PRIVATE() != null && !Modifier.isPrivate(m.getModifiers()))
-                                            return false;
-                                        else if(ctx.accessModifier().ACC_MOD_PROTECTED() != null && !Modifier.isProtected(m.getModifiers()))
-                                            return false;
-                                        else if(ctx.accessModifier().ACC_MOD_PUBLIC() != null && !Modifier.isPublic(m.getModifiers()))
-                                            return false;
-                                    }
-
-                                    if(ctx.modStatic() != null && !Modifier.isStatic(m.getModifiers()))
-                                        return false;
-
-                                    try {
-                                        if(ctx.typeQualifier() != null && !m.getReturnType().getName().equals(ctx.typeQualifier().getText()))
-                                            return false;
-                                    } catch (NotFoundException ex) {
-                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-
-                                    if(ctx.identifier() != null && !m.getName().equals(ctx.identifier().getText()))
-                                        return false;
-
-                                    try {
-                                        // Compare parameters also
-                                        if(ctx.parameters().parameter().size() != m.getParameterTypes().length)
-                                            return false;
-                                    } catch (NotFoundException ex) {
-                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-
-                                    return true;
-                                };
-                                
-                                transformer.addPredicate(ctClass -> 
-                                    Arrays.asList(ctClass.getDeclaredMethods()).stream().anyMatch(methodFilter));
-                                
-                                transformer.addAction(ctClass -> 
-                                {
-                                    Arrays.asList(ctClass.getDeclaredMethods()).stream().filter(methodFilter).forEach(m -> {
-                                        String methodSelector = "";
-
-                                        if(Modifier.isPrivate(m.getModifiers()))
-                                            methodSelector += "private ";
-                                        else if(Modifier.isProtected(m.getModifiers()))
-                                            methodSelector += "protected ";
-                                        else if(Modifier.isPublic(m.getModifiers()))
-                                            methodSelector += "public ";
-
-                                        if(Modifier.isStatic(m.getModifiers()))
-                                            methodSelector += "static ";
-                                        
-                                        try {
-                                            methodSelector += m.getReturnType().getName() + " ";
-                                        } catch (NotFoundException ex) {
-                                            Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                                        }
-                                        
-                                        methodSelector += m.getName();
-                                        
-                                        // Generate from parameters also
-                                        methodSelector += "() ";
-                                        
-                                        String methodBodySrc = charStream.getText(new Interval(ctx.OPEN_BRA().getSymbol().getStopIndex() + 1, ctx.CLOSE_BRA().getSymbol().getStartIndex() - 1));
-//                                        methodBodySrc = methodBodySrc.replace("thisResult", "$_");
-                                        
-                                        if(methodBodySrc.contains("...")) {
-                                            bodyTransform(charStream, ctx.statements(), m);
-                                            
-//                                            String beforeSrc = methodBodySrc.substring(0, methodBodySrc.indexOf("..."));
-//                                            String afterSrc = methodBodySrc.substring(methodBodySrc.indexOf("...") + 3);
-//                                            try {
-//                                                m.insertBefore(beforeSrc);
-//                                                m.insertAfter(afterSrc);
-//                                            } catch (CannotCompileException ex) {
-//                                                Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, null, ex);
-//                                            }
-                                        } else {
-                                            try {
-                                                methodBodySrc = "{" + compileSource(methodBodySrc) + "}";
-                                                m.setBody(methodBodySrc);
-                                            } catch (CannotCompileException ex) {
-                                                Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                                            }
-                                        }
-                                        
-                                        try {
-                                            m.getMethodInfo().rebuildStackMap(ClassPool.getDefault());
-                                        } catch (BadBytecode ex) {
-                                            Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                                        }
-                                    });
-                                    
-//                                    for(CtMethod method: ctClass.getDeclaredMethods()) {
+//                    for(ClassTransformerMemberContext memberCtx: ctx.members.classTransformerMember()) {
+//                        memberCtx.accept(new DejainBaseVisitor<Object>() {
+//                            @Override
+//                            public Object visitClassTransformerMemberField(ClassTransformerMemberFieldContext ctx) {
+//                                
+//                                
+//                                return null;
+//                            }
+//                            
+//                            @Override
+//                            public Object visitClassTransformerMemberFieldAdd(ClassTransformerMemberFieldAddContext ctx) {
+//                                transformer.addAction(ctClass -> 
+//                                {
+//                                    String fieldSrc = "";
+//                                    
+//                                    if(ctx.accessModifier() != null)
+//                                        fieldSrc += ctx.accessModifier().getText() + " ";
+//                                    if(ctx.modStatic() != null)
+//                                        fieldSrc += "static ";
+//                                    
+//                                    fieldSrc += ctx.typeQualifier().getText() + " ";
+//                                    fieldSrc += ctx.identifier().getText() + ";";
+//                                    
+//                                    try {
+//                                        if(ctx.expression() != null) {
+//                                            String init = contextAdVerbatim(charStream, ctx.expression());
+//                                            ctClass.addField(CtField.make(fieldSrc, ctClass), init);
+//                                        } else
+//                                            ctClass.addField(CtField.make(fieldSrc, ctClass));
+//                                    } catch (CannotCompileException ex) {
+//                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
+//                                    }
+//                                });
+//                                return null;
+//                            }
+//
+//                            @Override
+//                            public Object visitClassTransformerMemberMethod(ClassTransformerMemberMethodContext ctx) {
+//                                Predicate<CtMethod> methodFilter = m -> {
+//                                    if(ctx.accessModifier() != null) {
+//                                        if(ctx.accessModifier().ACC_MOD_PRIVATE() != null && !Modifier.isPrivate(m.getModifiers()))
+//                                            return false;
+//                                        else if(ctx.accessModifier().ACC_MOD_PROTECTED() != null && !Modifier.isProtected(m.getModifiers()))
+//                                            return false;
+//                                        else if(ctx.accessModifier().ACC_MOD_PUBLIC() != null && !Modifier.isPublic(m.getModifiers()))
+//                                            return false;
+//                                    }
+//
+//                                    if(ctx.modStatic() != null && !Modifier.isStatic(m.getModifiers()))
+//                                        return false;
+//
+//                                    try {
+//                                        if(ctx.typeQualifier() != null && !m.getReturnType().getName().equals(ctx.typeQualifier().getText()))
+//                                            return false;
+//                                    } catch (NotFoundException ex) {
+//                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
+//                                    }
+//
+//                                    if(ctx.identifier() != null && !m.getName().equals(ctx.identifier().getText()))
+//                                        return false;
+//
+//                                    try {
+//                                        // Compare parameters also
+//                                        if(ctx.parameters().parameter().size() != m.getParameterTypes().length)
+//                                            return false;
+//                                    } catch (NotFoundException ex) {
+//                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
+//                                    }
+//
+//                                    return true;
+//                                };
+//                                
+//                                transformer.addPredicate(ctClass -> 
+//                                    Arrays.asList(ctClass.getDeclaredMethods()).stream().anyMatch(methodFilter));
+//                                
+//                                transformer.addAction(ctClass -> 
+//                                {
+//                                    Arrays.asList(ctClass.getDeclaredMethods()).stream().filter(methodFilter).forEach(m -> {
 //                                        String methodSelector = "";
 //
-//                                        if(ctx.accessModifier().ACC_MOD_PRIVATE() != null)
+//                                        if(Modifier.isPrivate(m.getModifiers()))
 //                                            methodSelector += "private ";
-//                                        else if(ctx.accessModifier().ACC_MOD_PROTECTED() != null)
+//                                        else if(Modifier.isProtected(m.getModifiers()))
 //                                            methodSelector += "protected ";
-//                                        else if(ctx.accessModifier().ACC_MOD_PUBLIC() != null)
+//                                        else if(Modifier.isPublic(m.getModifiers()))
 //                                            methodSelector += "public ";
 //
-//                                        if(ctx.modStatic() != null)
+//                                        if(Modifier.isStatic(m.getModifiers()))
 //                                            methodSelector += "static ";
-//                                        // Generate from parameters also
-//                                        methodSelector += "()";
-//
-//                                        String methodSrc = charStream.getText(new Interval(ctx.OPEN_BRA().getSymbol().getStartIndex(), ctx.CLOSE_BRA().getSymbol().getStopIndex()));
-//                                        methodSrc = methodSrc.replace("...", "$_= $proceed($$);");
-//
+//                                        
 //                                        try {
-//                                            ctClass.addMethod(CtMethod.make(methodSrc, ctClass));
-//                                        } catch (CannotCompileException ex) {
-//                                            Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, null, ex);
+//                                            methodSelector += m.getReturnType().getName() + " ";
+//                                        } catch (NotFoundException ex) {
+//                                            Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
 //                                        }
+//                                        
+//                                        methodSelector += m.getName();
+//                                        
+//                                        // Generate from parameters also
+//                                        methodSelector += "() ";
+//                                        
+//                                        String methodBodySrc = charStream.getText(new Interval(ctx.OPEN_BRA().getSymbol().getStopIndex() + 1, ctx.CLOSE_BRA().getSymbol().getStartIndex() - 1));
+////                                        methodBodySrc = methodBodySrc.replace("thisResult", "$_");
+//                                        
+//                                        if(methodBodySrc.contains("...")) {
+//                                            bodyTransform(charStream, ctx.statements(), m);
+//                                            
+////                                            String beforeSrc = methodBodySrc.substring(0, methodBodySrc.indexOf("..."));
+////                                            String afterSrc = methodBodySrc.substring(methodBodySrc.indexOf("...") + 3);
+////                                            try {
+////                                                m.insertBefore(beforeSrc);
+////                                                m.insertAfter(afterSrc);
+////                                            } catch (CannotCompileException ex) {
+////                                                Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, null, ex);
+////                                            }
+//                                        } else {
+//                                            try {
+//                                                methodBodySrc = "{" + compileSource(methodBodySrc) + "}";
+//                                                m.setBody(methodBodySrc);
+//                                            } catch (CannotCompileException ex) {
+//                                                Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
+//                                            }
+//                                        }
+//                                        
+//                                        try {
+//                                            m.getMethodInfo().rebuildStackMap(ClassPool.getDefault());
+//                                        } catch (BadBytecode ex) {
+//                                            Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
+//                                        }
+//                                    });
+//                                    
+////                                    for(CtMethod method: ctClass.getDeclaredMethods()) {
+////                                        String methodSelector = "";
+////
+////                                        if(ctx.accessModifier().ACC_MOD_PRIVATE() != null)
+////                                            methodSelector += "private ";
+////                                        else if(ctx.accessModifier().ACC_MOD_PROTECTED() != null)
+////                                            methodSelector += "protected ";
+////                                        else if(ctx.accessModifier().ACC_MOD_PUBLIC() != null)
+////                                            methodSelector += "public ";
+////
+////                                        if(ctx.modStatic() != null)
+////                                            methodSelector += "static ";
+////                                        // Generate from parameters also
+////                                        methodSelector += "()";
+////
+////                                        String methodSrc = charStream.getText(new Interval(ctx.OPEN_BRA().getSymbol().getStartIndex(), ctx.CLOSE_BRA().getSymbol().getStopIndex()));
+////                                        methodSrc = methodSrc.replace("...", "$_= $proceed($$);");
+////
+////                                        try {
+////                                            ctClass.addMethod(CtMethod.make(methodSrc, ctClass));
+////                                        } catch (CannotCompileException ex) {
+////                                            Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, null, ex);
+////                                        }
+////                                    }
+//                                });
+//                                
+//                                return super.visitClassTransformerMemberMethod(ctx); //To change body of generated methods, choose Tools | Templates.
+//                            }
+//
+//                            @Override
+//                            public Object visitClassTransformerMemberMethodAdd(ClassTransformerMemberMethodAddContext ctx) {
+//                                transformer.addAction(ctClass -> 
+//                                {
+//                                    String methodSrc = charStream.getText(new Interval(ctx.methodDefinition().getStart().getStartIndex(), ctx.methodDefinition().getStop().getStopIndex()));
+//                                    
+//                                    try {
+//                                        ctClass.addMethod(CtMethod.make(methodSrc, ctClass));
+//                                    } catch (CannotCompileException ex) {
+//                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
 //                                    }
-                                });
-                                
-                                return super.visitClassTransformerMemberMethod(ctx); //To change body of generated methods, choose Tools | Templates.
-                            }
-
-                            @Override
-                            public Object visitClassTransformerMemberMethodAdd(ClassTransformerMemberMethodAddContext ctx) {
-                                transformer.addAction(ctClass -> 
-                                {
-                                    String methodSrc = charStream.getText(new Interval(ctx.methodDefinition().getStart().getStartIndex(), ctx.methodDefinition().getStop().getStopIndex()));
-                                    
-                                    try {
-                                        ctClass.addMethod(CtMethod.make(methodSrc, ctClass));
-                                    } catch (CannotCompileException ex) {
-                                        Logger.getLogger(JavassistCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-                                });
-                                
-                                return null;
-                            }
-                        });
-                    }
+//                                });
+//                                
+//                                return null;
+//                            }
+//                        });
+//                    }
                 }
                 
                 transformer.addPredicate(ctClass -> {

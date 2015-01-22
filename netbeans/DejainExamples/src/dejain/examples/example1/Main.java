@@ -3,18 +3,17 @@ package dejain.examples.example1;
 import dejain.lang.ClassMap;
 import dejain.lang.ClassResolver;
 import dejain.lang.PackageInfo;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-//        ClassResolver classResolver = new ClassResolver(ClassMap.createDefault());
-//        classResolver.importPackage("java.lang");
-//        String objectClassName = classResolver.resolveClassName("Object");
-        
 //        PackageInfo pa = new PackageInfo();
 //        PackageInfo pa2 = PackageInfo.fromJar("C:\\Program Files\\Java\\jdk1.8.0_25\\jre/lib/rt.jar");
 //        

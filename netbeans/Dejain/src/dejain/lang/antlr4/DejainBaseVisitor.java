@@ -26,6 +26,14 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitVariableAssignment(@NotNull DejainParser.VariableAssignmentContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitNonDelimitedStatement(@NotNull DejainParser.NonDelimitedStatementContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -51,6 +59,14 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitClassTransformerMemberFieldAdd(@NotNull DejainParser.ClassTransformerMemberFieldAddContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitBinarySum(@NotNull DejainParser.BinarySumContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}
@@ -162,6 +178,14 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitClassTransformerMemberDefinition(@NotNull DejainParser.ClassTransformerMemberDefinitionContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitAnnotation(@NotNull DejainParser.AnnotationContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -226,15 +250,7 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
-	@Override public T visitExpression2(@NotNull DejainParser.Expression2Context ctx) { return visitChildren(ctx); }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.
-	 */
-	@Override public T visitExpression3(@NotNull DejainParser.Expression3Context ctx) { return visitChildren(ctx); }
+	@Override public T visitLeafExpression(@NotNull DejainParser.LeafExpressionContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}
@@ -243,14 +259,6 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitCatchStatement(@NotNull DejainParser.CatchStatementContext ctx) { return visitChildren(ctx); }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.
-	 */
-	@Override public T visitExpression1(@NotNull DejainParser.Expression1Context ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}
