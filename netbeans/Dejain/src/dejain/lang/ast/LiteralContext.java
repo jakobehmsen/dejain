@@ -1,7 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
-import dejain.lang.ClassResolver;
+import dejain.lang.CommonClassResolver;
 import java.util.List;
 
 public class LiteralContext implements ExpressionContext {
@@ -22,5 +22,5 @@ public class LiteralContext implements ExpressionContext {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) { }
+    public void resolve(CommonClassResolver resolver, List<ASMCompiler.Message> errorMessages) { }
 }

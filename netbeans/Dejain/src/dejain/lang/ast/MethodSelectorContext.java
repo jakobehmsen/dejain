@@ -1,7 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
-import dejain.lang.ClassResolver;
+import dejain.lang.CommonClassResolver;
 import java.util.List;
 
 public class MethodSelectorContext implements Context {
@@ -20,7 +20,7 @@ public class MethodSelectorContext implements Context {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(CommonClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         System.out.println("returnType=" + returnType);
         returnType.resolve(resolver, errorMessages);
         parameterTypes.forEach(pt -> pt.resolve(resolver, errorMessages));

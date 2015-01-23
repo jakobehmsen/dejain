@@ -1,7 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
-import dejain.lang.ClassResolver;
+import dejain.lang.CommonClassResolver;
 import java.util.List;
 
 public class ModuleContext implements Context {
@@ -12,7 +12,7 @@ public class ModuleContext implements Context {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(CommonClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         classes.forEach(c -> c.resolve(resolver, errorMessages));
     }
 }

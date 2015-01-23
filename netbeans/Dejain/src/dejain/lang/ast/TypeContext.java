@@ -2,7 +2,7 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
-import dejain.lang.ClassResolver;
+import dejain.lang.CommonClassResolver;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.RuleContext;
 
 public class TypeContext implements Context {
     private Region region;
-    private String name;
+    public String name;
     private Class<?> c;
     
     public Class<?> getType() {
@@ -23,7 +23,7 @@ public class TypeContext implements Context {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(CommonClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         try {
             c = resolver.resolveType(name);
         } catch (ClassNotFoundException ex) {

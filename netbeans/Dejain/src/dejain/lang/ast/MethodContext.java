@@ -19,7 +19,7 @@ public class MethodContext implements MemberContext {
     }
 
     @Override
-    public void resolve(dejain.lang.ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
+    public void resolve(dejain.lang.CommonClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
         selector.resolve(resolver, errorMessages);
         body.forEach(s -> s.resolve(resolver, errorMessages));
     }

@@ -2,7 +2,7 @@ package dejain.runtime.agent;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassMap;
-import dejain.lang.ClassResolver;
+import dejain.lang.CommonClassResolver;
 import dejain.lang.ast.ModuleContext;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.FileInputStream;
@@ -19,7 +19,7 @@ public class Agent {
         ArrayList<ASMCompiler.Message> errorMessages = new ArrayList<ASMCompiler.Message>();
         long start = System.currentTimeMillis();
 //        ClassResolver classResolver = new ClassResolver(new ClassMap());
-        ClassResolver classResolver = new ClassResolver(ClassMap.createDefault());
+        CommonClassResolver classResolver = new CommonClassResolver(ClassMap.createDefault());
         long end = System.currentTimeMillis();
         System.out.println("Default class map loading: " + (end - start) + "ms");
         classResolver.importPackage("java.lang");
