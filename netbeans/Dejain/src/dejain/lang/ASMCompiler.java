@@ -12,6 +12,8 @@ import dejain.lang.antlr4.DejainParser.AnnotationContext;
 import dejain.lang.antlr4.DejainParser.ProgramContext;
 import dejain.lang.ast.ClassContext;
 import dejain.lang.ast.ExpressionContext;
+import dejain.lang.ast.FieldContext;
+import dejain.lang.ast.FieldSelectorContext;
 import dejain.lang.ast.LiteralContext;
 import dejain.lang.ast.MemberContext;
 import dejain.lang.ast.MethodContext;
@@ -114,6 +116,20 @@ public class ASMCompiler {
                         boolean isAdd = memberCtx.PLUS() != null;
                         memberCtx.member.accept(new DejainBaseVisitor<Object>() {
                             @Override
+                            public Object visitClassTransformerMemberField(DejainParser.ClassTransformerMemberFieldContext ctx) {
+                                Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
+                                boolean isStatic = ctx.modStatic() != null;
+                                TypeContext fieldType = new TypeContext(new Region(ctx), ctx.typeQualifier().getText());
+                                String name = ctx.identifier().getText();
+                                
+                                FieldContext field = new FieldContext(isAdd, new FieldSelectorContext(accessModifier, isStatic, fieldType, name), null);
+                                
+                                members.add(field);
+                                
+                                return null;
+                            }
+                            
+                            @Override
                             public Object visitClassTransformerMemberMethod(DejainParser.ClassTransformerMemberMethodContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
@@ -127,7 +143,9 @@ public class ASMCompiler {
                                 body.forEach(s -> System.out.println(s));
                                 MethodContext method = new MethodContext(isAdd, new MethodSelectorContext(accessModifier, isStatic, returnType, name, parameterTypes), body);
                                 
-                                return members.add(method);
+                                members.add(method);
+                                
+                                return null;
                             }
                         });
                     }
@@ -378,10 +396,13 @@ public class ASMCompiler {
             switch(((TerminalNode)ctx.getChild(0)).getSymbol().getType()) {
                 case DejainLexer.ACC_MOD_PRIVATE:
                     mod = Opcodes.ACC_PRIVATE;
+                    break;
                 case DejainLexer.ACC_MOD_PROTECTED:
                     mod = Opcodes.ACC_PROTECTED;
+                    break;
                 case DejainLexer.ACC_MOD_PUBLIC:
                     mod = Opcodes.ACC_PUBLIC;
+                    break;
             }
         }
         
