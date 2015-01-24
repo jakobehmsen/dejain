@@ -2,6 +2,7 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
+import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,7 +24,7 @@ public class TypeContext implements Context {
     }
 
     @Override
-    public void resolve(CommonClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         try {
             c = resolver.resolveType(name);
         } catch (ClassNotFoundException ex) {

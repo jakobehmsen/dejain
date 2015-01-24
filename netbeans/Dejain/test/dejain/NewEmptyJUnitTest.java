@@ -11,32 +11,33 @@ import dejain.lang.ast.FieldContext;
 import dejain.lang.ast.ModuleContext;
 import dejain.lang.ast.TypeContext;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jdk.internal.org.objectweb.asm.Opcodes;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 /**
  *
  * @author Jakob
  */
-public class NewEmptyJUnitTest {   
+public class NewEmptyJUnitTest {
     private void testSourceToAST(String source, Predicate<ModuleContext> assertion) throws IOException {
         ASMCompiler compiler = new ASMCompiler(className -> className);
         ModuleContext module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
         assertTrue(assertion.test(module));
-    }
-    
-    private void testSourceToClasses(String source, Class<?>[] classes, Predicate<ModuleContext> assertion) throws IOException {
-        ASMCompiler compiler = new ASMCompiler(className -> className);
-        ModuleContext module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
-        
-        // Read all classes
-        // Replace interusages with derived classes
-        // Derived classes using module
-        // Assert derived classes
-//        assertTrue(modulePredicate.test(module));
     }
     
     @Test

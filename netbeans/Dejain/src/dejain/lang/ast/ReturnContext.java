@@ -1,6 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
+import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class ReturnContext implements StatementContext {
     }
 
     @Override
-    public void resolve(CommonClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         expression.resolve(resolver, errorMessages);
     }
 }
