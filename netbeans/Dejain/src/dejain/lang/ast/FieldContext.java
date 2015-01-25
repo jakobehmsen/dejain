@@ -52,19 +52,12 @@ public class FieldContext implements MemberContext {
         else {
             classTransformer.addTransformer(c -> {
                 return () -> {
-                    int fieldAccess = getAccessModifier(selector.accessModifier, selector.isStatic);
+                    int fieldAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String fieldName = selector.name;
                     String fieldDescriptor = Type.getDescriptor(selector.fieldType.getType());
                     c.fields.add(new FieldNode(fieldAccess, fieldName, fieldDescriptor, null, null));
                 };
             });
         }
-    }
-    
-    private static int getAccessModifier(int accessModifier, boolean isStatic) {
-        if(isStatic)
-            return accessModifier | Opcodes.ACC_STATIC;
-        
-        return accessModifier;
     }
 }

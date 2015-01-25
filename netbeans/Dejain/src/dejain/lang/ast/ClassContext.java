@@ -51,7 +51,7 @@ public class ClassContext implements Context {
         members.forEach(x -> x.accept(new MemberVisitor() {
             @Override
             public void visitMethod(MethodContext ctx) {
-                ctx.populate(methodTransformer);
+                ctx.populate(transformer, methodTransformer);
             }
 
             @Override

@@ -20,13 +20,18 @@ import static dejain.Assertion.*;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Message;
 import dejain.lang.ClassResolver;
+import dejain.lang.CommonClassMap;
+import dejain.lang.CommonClassResolver;
 import dejain.lang.ExhaustiveClassTransformer;
 import dejain.lang.ast.ModuleContext;
 import dejain.lang.ast.TypeContext;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
@@ -39,7 +44,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public class NewEmptyJUnitTest1 {
     @Test
-    public void testAllClassesAdd1PublicField() throws IOException {
+    public void testAllClassesAdd1PublicPrimitiveField() throws IOException {
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "class {+public float someField2;}", 
@@ -53,7 +58,7 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
-    public void testAllClassesAdd1ProtectedField() throws IOException {
+    public void testAllClassesAdd1ProtectedPrimitiveField() throws IOException {
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "class {+protected float someField2;}", 
@@ -67,7 +72,7 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
-    public void testAllClassesAdd1PrivateField() throws IOException {
+    public void testAllClassesAdd1PrivatePrimitiveField() throws IOException {
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "class {+private float someField2;}", 
@@ -81,7 +86,7 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
-    public void testAllClassesAdd1PublicStaticField() throws IOException {
+    public void testAllClassesAdd1PublicStaticPrimitiveField() throws IOException {
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "class {+public static float someField2;}", 
@@ -94,8 +99,53 @@ public class NewEmptyJUnitTest1 {
         );
     }
     
-    private static Function<byte[], byte[]> transformClass(String source) {
-        ClassResolver resolver = className -> className;
+    @Test
+    public void testAllClassesAdd1PublicObjectField() throws IOException {
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String someField2;}", 
+            forClass("dejain.TestClass1", chasFieldWhere(
+                fname(is("someField2"))
+                .and(ftype(is(String.class)))
+                .and(fmodifiers(isPublic()))
+                .and(fmodifiers(isStatic().negate()))
+            ))
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethod() throws IOException {
+        String expectedResult = "Hi";
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String toString() {return \"" + expectedResult + "\";}}", 
+            forClass("dejain.TestClass1", chasMethodWhere(
+                mname(is("toString"))
+                .and(rreturnType(is(String.class)))
+                .and(rmodifiers(isPublic()))
+                .and(rmodifiers(isStatic().negate()))
+                .and(m -> {
+                    try {
+                        Object o = m.getDeclaringClass().newInstance();
+                        Object result = m.invoke(o);
+                        // Verify result equals "Hi"
+                        result.toString();
+                    } catch (IllegalAccessException ex) {
+                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InstantiationException ex) {
+                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    return false;
+                })
+            ))
+        );
+    }
+    
+    private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {
             try {
@@ -119,7 +169,17 @@ public class NewEmptyJUnitTest1 {
     }
     
     private static void testSourceToClasses(String[] classNames, String source, Predicate<Class<?>[]> assertion) throws IOException {
-        ClassLoader cl = new ProxyClassLoader(ifIn(classNames), classBytesFromName().andThen(transformClass(source)));
+        CommonClassMap classMap = new CommonClassMap();
+        
+        for(String className: classNames)
+            classMap.addClassName(className);
+        
+        classMap.addClassName("java.lang.String");
+        classMap.addClassName("java.lang.Object");
+        CommonClassResolver resolver = new CommonClassResolver(classMap);
+        resolver.importPackage("java.lang");
+        
+        ClassLoader cl = new ProxyClassLoader(ifIn(classNames), classBytesFromName().andThen(transformClass(resolver, source)));
         
         Class<?>[] classes = Arrays.asList(classNames).stream()
             .map(className -> {
@@ -165,6 +225,10 @@ public class NewEmptyJUnitTest1 {
         return f -> predicate.test(f.getModifiers());
     }
     
+    private static Predicate<Class<?>> chasMethodWhere(Predicate<Method> predicate) {
+        return c -> Arrays.asList(c.getDeclaredMethods()).stream().anyMatch(predicate);
+    }
+    
     private static Predicate<Integer> isPublic() {
         return m -> Modifier.isPublic(m);
     }
@@ -199,5 +263,17 @@ public class NewEmptyJUnitTest1 {
                 return null;
             }
         };
+    }
+
+    private static Predicate<Method> mname(Predicate<String> predicate) {
+        return m -> predicate.test(m.getName());
+    }
+
+    private static Predicate<? super Method> rreturnType(Predicate<Class<?>> predicate) {
+        return m -> predicate.test(m.getReturnType());
+    }
+
+    private static Predicate<? super Method> rmodifiers(Predicate<Integer> predicate) {
+        return m -> predicate.test(m.getModifiers());
     }
 }

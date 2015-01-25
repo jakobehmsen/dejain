@@ -20,7 +20,8 @@ import dejain.lang.ast.MethodContext;
 import dejain.lang.ast.MethodSelectorContext;
 import dejain.lang.ast.ModuleContext;
 import dejain.lang.ast.ReturnContext;
-import dejain.lang.ast.StatementContext;
+import dejain.lang.ast.CodeContext;
+import dejain.lang.ast.LiteralDelegateContext;
 import dejain.lang.ast.TypeContext;
 import dejain.runtime.asm.ClassTransformer;
 import dejain.runtime.asm.ClassTransformerSequence;
@@ -138,7 +139,7 @@ public class ASMCompiler {
                                 List<TypeContext> parameterTypes = ctx.parameters().parameter().stream()
                                     .map(pCtx -> new TypeContext(new Region(ctx), pCtx.typeQualifier().getText()))
                                     .collect(Collectors.toList());
-                                List<dejain.lang.ast.StatementContext> body = getStatements(ctx.statements());
+                                List<dejain.lang.ast.CodeContext> body = getStatements(ctx.statements());
                                 System.out.println("Body:");
                                 body.forEach(s -> System.out.println(s));
                                 MethodContext method = new MethodContext(isAdd, new MethodSelectorContext(accessModifier, isStatic, returnType, name, parameterTypes), body);
@@ -160,23 +161,23 @@ public class ASMCompiler {
         return new ModuleContext(classes);
     }
 
-    private List<dejain.lang.ast.StatementContext> getStatements(DejainParser.StatementsContext ctx) {
+    private List<dejain.lang.ast.CodeContext> getStatements(DejainParser.StatementsContext ctx) {
         return ctx.statement().stream()
             .map(sCtx -> getStatement(sCtx))
             .collect(Collectors.toList());
     }
     
-    private dejain.lang.ast.StatementContext getStatement(DejainParser.StatementContext ctx) {
-        dejain.lang.ast.StatementContext r = ctx.accept(new DejainBaseVisitor<dejain.lang.ast.StatementContext>() {
+    private dejain.lang.ast.CodeContext getStatement(DejainParser.StatementContext ctx) {
+        dejain.lang.ast.CodeContext r = ctx.accept(new DejainBaseVisitor<dejain.lang.ast.CodeContext>() {
             @Override
-            public StatementContext visitStatement(DejainParser.StatementContext ctx) {
+            public CodeContext visitStatement(DejainParser.StatementContext ctx) {
                 return ctx.nonDelimitedStatement() != null
                     ? ctx.nonDelimitedStatement().accept(this)
                     : ctx.delimitedStatement().accept(this);
             }
             
             @Override
-            public StatementContext visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
+            public CodeContext visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
                 System.out.println("At return");
                 ExpressionContext expression = getExpression(ctx.expression());
                 
@@ -192,13 +193,13 @@ public class ASMCompiler {
             @Override
             public ExpressionContext visitStringLiteral(DejainParser.StringLiteralContext ctx) {
                 String value = ctx.getText().substring(1, ctx.getText().length() - 1);
-                return new LiteralContext(value);
+                return new LiteralContext(value, LiteralDelegateContext.String);
             }
 
             @Override
             public ExpressionContext visitIntegerLiteral(DejainParser.IntegerLiteralContext ctx) {
                 int value = Integer.parseInt(ctx.getText());
-                return new LiteralContext(value);
+                return new LiteralContext(value, LiteralDelegateContext.Integer);
             }
         });
     }

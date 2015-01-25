@@ -5,23 +5,25 @@ import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 
-public class LiteralContext implements ExpressionContext {
-    public Object value;
+public class LiteralContext<T> implements ExpressionContext {
+    public T value;
+    private LiteralDelegateContext<T> delegate;
 
-    public LiteralContext(Object value) {
+    public LiteralContext(T value, LiteralDelegateContext<T> delegate) {
         this.value = value;
-    }
-
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visitLiteral(this);
-    }
-
-    @Override
-    public Class<?> resultType() {
-        return value.getClass();
+        this.delegate = delegate;
     }
 
     @Override
     public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) { }
+
+    @Override
+    public Class<?> resultType() {
+        return delegate.resultType();
+    }
+
+    @Override
+    public void accept(CodeVisitor visitor) {
+        delegate.accept(visitor, this);
+    }
 }

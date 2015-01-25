@@ -65,7 +65,7 @@ public class PackageInfo implements Serializable {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(ClassMap.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CommonClassMap.class.getName()).log(Level.SEVERE, null, ex);
         }
         return p;
     }

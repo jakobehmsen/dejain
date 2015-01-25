@@ -5,7 +5,7 @@ import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 
-public class ReturnContext implements StatementContext {
+public class ReturnContext implements CodeContext {
     public ExpressionContext expression;
 
     public ReturnContext(ExpressionContext expression) {
@@ -13,7 +13,7 @@ public class ReturnContext implements StatementContext {
     }
 
     @Override
-    public void accept(StatementVisitor visitor) {
+    public void accept(CodeVisitor visitor) {
         visitor.visitReturn(this);
     }
 

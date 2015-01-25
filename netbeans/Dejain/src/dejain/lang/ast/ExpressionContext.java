@@ -1,6 +1,5 @@
 package dejain.lang.ast;
 
-public interface ExpressionContext extends Context {
+public interface ExpressionContext extends CodeContext {
     Class<?> resultType();
-    void accept(ExpressionVisitor visitor);
 }
