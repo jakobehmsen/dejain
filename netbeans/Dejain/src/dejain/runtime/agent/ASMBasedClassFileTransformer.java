@@ -1,5 +1,6 @@
 package dejain.runtime.agent;
 
+import dejain.lang.ExhaustiveClassTransformer;
 import dejain.runtime.asm.ClassAction;
 import dejain.runtime.asm.ClassTransformer;
 import java.lang.instrument.ClassFileTransformer;
@@ -10,31 +11,33 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
 public class ASMBasedClassFileTransformer implements ClassFileTransformer {
-    private ClassTransformer transformer;
+    private ExhaustiveClassTransformer eTransformer;
 
     public ASMBasedClassFileTransformer(ClassTransformer transformer) {
-        this.transformer = transformer;
+        this.eTransformer = new ExhaustiveClassTransformer(transformer);
     }
     
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        while(true) {
-            ClassReader classReader = new ClassReader(classfileBuffer);
-            ClassNode classNode = new ClassNode();
-            classReader.accept(classNode, 0);
-            ClassAction action = transformer.resolve(classNode);
-
-            if(action == null)
-                break;
-
-            action.perform(classNode);
-            
-            ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
-            classNode.accept(classWriter);
-
-            classfileBuffer = classWriter.toByteArray();
-        }
+//        while(true) {
+//            ClassReader classReader = new ClassReader(classfileBuffer);
+//            ClassNode classNode = new ClassNode();
+//            classReader.accept(classNode, 0);
+//            ClassAction action = transformer.resolve(classNode);
+//
+//            if(action == null)
+//                break;
+//
+//            action.perform(classNode);
+//            
+//            ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
+//            classNode.accept(classWriter);
+//
+//            classfileBuffer = classWriter.toByteArray();
+//        }
+//        
+//        return classfileBuffer;
         
-        return classfileBuffer;
+        return eTransformer.tranform(classfileBuffer);
     }
 }

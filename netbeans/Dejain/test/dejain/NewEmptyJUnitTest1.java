@@ -20,7 +20,9 @@ import static dejain.Assertion.*;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Message;
 import dejain.lang.ClassResolver;
+import dejain.lang.ExhaustiveClassTransformer;
 import dejain.lang.ast.ModuleContext;
+import dejain.runtime.asm.ClassTransformer;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -49,9 +51,14 @@ public class NewEmptyJUnitTest1 {
                 ModuleContext module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
                 ArrayList<Message> errorMessages = new ArrayList<>();
                 module.resolve(resolver, errorMessages);
+                
                 if(errorMessages.size() > 0) {
                     String msg = errorMessages.stream().map(m -> m.toString()).collect(Collectors.joining("\n"));
                     throw new RuntimeException(msg);
+                } else {
+                    ClassTransformer classTransformer = module.toClassTransformer();
+                    ExhaustiveClassTransformer eTransformer = new ExhaustiveClassTransformer(classTransformer);
+                    return eTransformer.tranform(bytes);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);

@@ -4,6 +4,7 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.ClassTransformer;
+import dejain.runtime.asm.CommonClassTransformer;
 import java.util.List;
 
 public class ClassContext implements Context {
@@ -25,5 +26,9 @@ public class ClassContext implements Context {
         if(type != null)
             type.resolve(resolver, errorMessages);
         members.forEach(m -> m.resolve(resolver, errorMessages));
+    }
+
+    public void populate(CommonClassTransformer transformer) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
