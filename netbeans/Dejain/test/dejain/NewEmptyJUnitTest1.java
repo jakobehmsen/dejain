@@ -22,12 +22,16 @@ import dejain.lang.ASMCompiler.Message;
 import dejain.lang.ClassResolver;
 import dejain.lang.ExhaustiveClassTransformer;
 import dejain.lang.ast.ModuleContext;
+import dejain.lang.ast.TypeContext;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
 
 /**
  *
@@ -35,15 +39,62 @@ import org.objectweb.asm.ClassWriter;
  */
 public class NewEmptyJUnitTest1 {
     @Test
-    public void testSourceToClasses() throws IOException {
+    public void testAllClassesAdd1PublicField() throws IOException {
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
-            "class {+public int someField;}", 
-            forClass("dejain.TestClass1", chasFieldWhere(fname(is("someField"))))
+            "class {+public float someField2;}", 
+            forClass("dejain.TestClass1", chasFieldWhere(
+                fname(is("someField2"))
+                .and(ftype(is(float.class)))
+                .and(fmodifiers(isPublic()))
+                .and(fmodifiers(isStatic().negate()))
+            ))
         );
     }
     
-    private Function<byte[], byte[]> transformClass(String source) {
+    @Test
+    public void testAllClassesAdd1ProtectedField() throws IOException {
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+protected float someField2;}", 
+            forClass("dejain.TestClass1", chasFieldWhere(
+                fname(is("someField2"))
+                .and(ftype(is(float.class)))
+                .and(fmodifiers(isProtected()))
+                .and(fmodifiers(isStatic().negate()))
+            ))
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PrivateField() throws IOException {
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+private float someField2;}", 
+            forClass("dejain.TestClass1", chasFieldWhere(
+                fname(is("someField2"))
+                .and(ftype(is(float.class)))
+                .and(fmodifiers(isPrivate()))
+                .and(fmodifiers(isStatic().negate()))
+            ))
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicStaticField() throws IOException {
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public static float someField2;}", 
+            forClass("dejain.TestClass1", chasFieldWhere(
+                fname(is("someField2"))
+                .and(ftype(is(float.class)))
+                .and(fmodifiers(isPublic()))
+                .and(fmodifiers(isStatic()))
+            ))
+        );
+    }
+    
+    private static Function<byte[], byte[]> transformClass(String source) {
         ClassResolver resolver = className -> className;
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {
@@ -56,9 +107,9 @@ public class NewEmptyJUnitTest1 {
                     String msg = errorMessages.stream().map(m -> m.toString()).collect(Collectors.joining("\n"));
                     throw new RuntimeException(msg);
                 } else {
-                    ClassTransformer classTransformer = module.toClassTransformer();
+                    Function<ClassNode, Runnable> classTransformer = module.toClassTransformer();
                     ExhaustiveClassTransformer eTransformer = new ExhaustiveClassTransformer(classTransformer);
-                    return eTransformer.tranform(bytes);
+                    return eTransformer.transform(bytes);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
@@ -67,8 +118,8 @@ public class NewEmptyJUnitTest1 {
         };
     }
     
-    private void testSourceToClasses(String[] classNames, String source, Predicate<Class<?>[]> assertion) throws IOException {
-        ClassLoader cl = new ProxyClassLoader(classBytesFromNames(classNames).andThen(transformClass(source)));
+    private static void testSourceToClasses(String[] classNames, String source, Predicate<Class<?>[]> assertion) throws IOException {
+        ClassLoader cl = new ProxyClassLoader(ifIn(classNames), classBytesFromName().andThen(transformClass(source)));
         
         Class<?>[] classes = Arrays.asList(classNames).stream()
             .map(className -> {
@@ -91,41 +142,62 @@ public class NewEmptyJUnitTest1 {
 //        assertTrue(modulePredicate.test(module));
     }
     
-    private Predicate<Class<?>[]> forClass(String name, Predicate<Class<?>> predicate) {
+    private static Predicate<Class<?>[]> forClass(String name, Predicate<Class<?>> predicate) {
         return classes -> {
             Class<?> c = Arrays.asList(classes).stream().filter(x -> x.getName().equals(name)).findFirst().get();
             return predicate.test(c);
         };
     }
     
-    private Predicate<Class<?>> chasFieldWhere(Predicate<Field> predicate) {
+    private static Predicate<Class<?>> chasFieldWhere(Predicate<Field> predicate) {
         return c -> Arrays.asList(c.getDeclaredFields()).stream().anyMatch(predicate);
     }
     
-    private Predicate<Field> fname(Predicate<String> predicate) {
+    private static Predicate<Field> fname(Predicate<String> predicate) {
         return f -> predicate.test(f.getName());
     }
     
-    private Function<String, byte[]> classBytesFromNames(String[] names) {
-        return name -> {
-            if(Arrays.asList(names).contains(name)) {
-//                URL classUrl = ClassLoader.getSystemClassLoader().getResource(name + ".java");
-                try {
-                    String s = new java.io.File("build\\test\\classes\\" + name.replace(".", "\\") + ".class").getCanonicalFile().toString();
-                    InputStream classStream = new FileInputStream("build\\test\\classes\\" + name.replace(".", "\\") + ".class"); //classUrl.openStream();
-                    ClassReader classReader = new ClassReader(classStream);
-                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                    classReader.accept(classWriter, 0);
-                    return classWriter.toByteArray();
-                } catch (IOException ex) {
-                    Logger.getLogger(NewEmptyJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
-                }/* catch (Exception ex) {
-                    Logger.getLogger(NewEmptyJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
-            }
-            
-            return null;
-        };
+    private static Predicate<Field> ftype(Predicate<Class<?>> predicate) {
+        return f -> predicate.test(f.getType());
     }
     
+    private static Predicate<Field> fmodifiers(Predicate<Integer> predicate) {
+        return f -> predicate.test(f.getModifiers());
+    }
+    
+    private static Predicate<Integer> isPublic() {
+        return m -> Modifier.isPublic(m);
+    }
+    
+    private static Predicate<Integer> isProtected() {
+        return m -> Modifier.isProtected(m);
+    }
+    
+    private static Predicate<Integer> isPrivate() {
+        return m -> Modifier.isPrivate(m);
+    }
+    
+    private static Predicate<Integer> isStatic() {
+        return m -> Modifier.isStatic(m);
+    }
+    
+    private static Predicate<String> ifIn(String[] names) {
+        return name -> Arrays.asList(names).contains(name);
+    }
+    
+    private static Function<String, byte[]> classBytesFromName() {
+        return name -> {
+            try {
+                String s = new java.io.File("build\\test\\classes\\" + name.replace(".", "\\") + ".class").getCanonicalFile().toString();
+                InputStream classStream = new FileInputStream("build\\test\\classes\\" + name.replace(".", "\\") + ".class"); //classUrl.openStream();
+                ClassReader classReader = new ClassReader(classStream);
+                ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+                classReader.accept(classWriter, 0);
+                return classWriter.toByteArray();
+            } catch (IOException ex) {
+                Logger.getLogger(NewEmptyJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        };
+    }
 }

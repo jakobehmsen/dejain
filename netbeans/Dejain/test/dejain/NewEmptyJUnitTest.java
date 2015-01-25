@@ -135,16 +135,16 @@ public class NewEmptyJUnitTest {
     }
     
     private static Predicate<FieldContext> fIsPrivate() {
-        return f -> f.selector.accessModifer == Opcodes.ACC_PRIVATE;
+        return f -> f.selector.accessModifier == Opcodes.ACC_PRIVATE;
     }
     
     private static Predicate<FieldContext> fIsPublic() {
-        return f -> f.selector.accessModifer == Opcodes.ACC_PUBLIC;
+        return f -> f.selector.accessModifier == Opcodes.ACC_PUBLIC;
     }
     
     private static Predicate<FieldContext> fIsProtected() {
         return f -> 
-            f.selector.accessModifer == Opcodes.ACC_PROTECTED;
+            f.selector.accessModifier == Opcodes.ACC_PROTECTED;
     }
     
     private static Predicate<FieldContext> fIsStatic() {

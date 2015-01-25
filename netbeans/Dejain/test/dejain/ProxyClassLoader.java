@@ -1,11 +1,14 @@
 package dejain;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ProxyClassLoader extends ClassLoader {
+    private Predicate<String> nameFilter;
     private Function<String, byte[]> bytesFunction;
     
-    public ProxyClassLoader(Function<String, byte[]> bytesFunction) {
+    public ProxyClassLoader(Predicate<String> nameFilter, Function<String, byte[]> bytesFunction) {
+        this.nameFilter = nameFilter;
         this.bytesFunction = bytesFunction;
     }
 
@@ -21,9 +24,11 @@ public class ProxyClassLoader extends ClassLoader {
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         System.out.println("Loading " + name);
-        byte[] bytes = bytesFunction.apply(name);
-        return bytes != null 
-            ? defineClass(name, bytes, 0, bytes.length)
-            : super.findClass(name);
+        if(nameFilter.test(name)) {
+            byte[] bytes = bytesFunction.apply(name);
+            return defineClass(name, bytes, 0, bytes.length);
+        } else {
+            return super.findClass(name);
+        }
     }
 }

@@ -3,7 +3,6 @@ package dejain.runtime.asm;
 import java.util.ArrayList;
 import java.util.function.Predicate;
 import java.util.function.Consumer;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
 public class CommonClassTransformer implements ClassTransformer {

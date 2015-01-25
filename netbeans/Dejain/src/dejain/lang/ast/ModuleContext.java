@@ -5,8 +5,13 @@ import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.ClassTransformer;
 import dejain.runtime.asm.CommonClassTransformer;
+import dejain.runtime.asm.CompositeTransformer;
+import dejain.runtime.asm.FirstByIndexTransformer;
+import dejain.runtime.asm.IfAllTransformer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import org.objectweb.asm.tree.ClassNode;
 
 public class ModuleContext implements Context {
     public List<ClassContext> classes;
@@ -20,11 +25,19 @@ public class ModuleContext implements Context {
         classes.forEach(c -> c.resolve(resolver, errorMessages));
     }
 
-    public ClassTransformer toClassTransformer() {
-        CommonClassTransformer transformer = new CommonClassTransformer();
+    public Function<ClassNode, Runnable> toClassTransformer() {
+        FirstByIndexTransformer<ClassNode, String> transformer = new FirstByIndexTransformer<>(c -> c.name);
         
-        classes.forEach(c -> c.populate(transformer));
+        populate(transformer);
         
         return transformer;
+    }
+    
+    public void populate(FirstByIndexTransformer<ClassNode, String> classesReformer) {
+        classes.forEach(c -> {
+            IfAllTransformer<ClassNode> classTransformer = new IfAllTransformer<>();
+            c.populate(classTransformer);
+            classesReformer.addTransformer(classTransformer);
+        });
     }
 }

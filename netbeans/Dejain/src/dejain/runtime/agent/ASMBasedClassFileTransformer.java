@@ -38,6 +38,6 @@ public class ASMBasedClassFileTransformer implements ClassFileTransformer {
 //        
 //        return classfileBuffer;
         
-        return eTransformer.tranform(classfileBuffer);
+        return eTransformer.transform(classfileBuffer);
     }
 }
