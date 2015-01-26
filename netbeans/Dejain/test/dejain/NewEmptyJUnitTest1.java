@@ -33,6 +33,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -114,34 +115,42 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
-    public void testAllClassesAdd1PublicMethod() throws IOException {
+    public void testAllClassesAdd1PublicMethod1() throws IOException {
         String expectedResult = "Hi";
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "class {+public String toString() {return \"" + expectedResult + "\";}}", 
-            forClass("dejain.TestClass1", chasMethodWhere(
-                mname(is("toString"))
-                .and(rreturnType(is(String.class)))
-                .and(rmodifiers(isPublic()))
-                .and(rmodifiers(isStatic().negate()))
-                .and(m -> {
-                    try {
-                        Object o = m.getDeclaringClass().newInstance();
-                        Object result = m.invoke(o);
-                        // Verify result equals "Hi"
-                        result.toString();
-                    } catch (IllegalAccessException ex) {
-                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IllegalArgumentException ex) {
-                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InvocationTargetException ex) {
-                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InstantiationException ex) {
-                        Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    return false;
-                })
-            ))
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toString"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethod2() throws IOException {
+        String str1 = "H";
+        String str2 = "i";
+        String expectedResult = str1 + str2;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String toString() {return \"" + str1 + "\" + \"" + str2 + "\";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toString"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
+                )
+            )
         );
     }
     
@@ -227,6 +236,45 @@ public class NewEmptyJUnitTest1 {
     
     private static Predicate<Class<?>> chasMethodWhere(Predicate<Method> predicate) {
         return c -> Arrays.asList(c.getDeclaredMethods()).stream().anyMatch(predicate);
+    }
+    
+    private static Predicate<Class<?>> forInstance(Predicate<Object> predicate) {
+        return c -> {
+            try {
+                Object instance = c.newInstance();
+                return predicate.test(instance);
+            } catch (InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            return false;
+        };
+    }
+    
+    private static Predicate<Object> imethod(String name, BiPredicate<Object, Method> predicate) {
+        return i -> {
+            try {
+                Method m = i.getClass().getMethod(name);
+                return predicate.test(i, m);
+            } catch (NoSuchMethodException | SecurityException ex) {
+                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            return false;
+        };
+    }
+    
+    private static BiPredicate<Object, Method> invocationResult(Predicate<Object> predicate) {
+        return (i, m) -> {
+            try {
+                Object result = m.invoke(i);
+                return predicate.test(result);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            return false;
+        };
     }
     
     private static Predicate<Integer> isPublic() {
