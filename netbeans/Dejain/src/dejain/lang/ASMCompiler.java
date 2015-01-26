@@ -201,6 +201,30 @@ public class ASMCompiler {
                 int value = Integer.parseInt(ctx.getText());
                 return new LiteralContext(value, LiteralDelegateContext.Integer);
             }
+
+            @Override
+            public ExpressionContext visitBinarySum(DejainParser.BinarySumContext ctx) {
+                String str = 1 + 5 + "7"; // => "67"
+                String str2 = 1 + "5" + 7; // => "157"
+                String str3 = "1" + 5 + 7; // => "157"
+                
+                if(ctx.rest.getChildCount() > 0) {
+                    for(int i = 0; i < ctx.rest.getChildCount(); i++) {
+                        // Start from inner most/right most? nopes
+                        // x + y + z => 
+                        // (x + y) + z
+                        // int + int + string =>
+                        // lhs as string + string
+                        // (Integer.parseString(int + int)) + string
+                        // int + string + int =>
+                        // Integer.parseString(int) + string + Integer.parseString(int)
+                    }
+                } else {
+                    return ctx.first.accept(this);
+                }
+                
+                return super.visitBinarySum(ctx); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
     
