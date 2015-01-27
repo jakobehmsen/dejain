@@ -13,7 +13,8 @@ classTransformerMember:
     classTransformerMemberMethod | classTransformerMemberMethodAdd;
 */
 classTransformerMemberField:
-    annotations accessModifier? modStatic? typeQualifier? identifier? SEMI_COLON;
+    annotations accessModifier? modStatic? typeQualifier? identifier? 
+    (ASSIGN_OP expression)? SEMI_COLON;
 classTransformerMemberFieldAdd:
     PLUS annotations accessModifier? modStatic? typeQualifier identifier 
     (ASSIGN_OP expression)?
