@@ -115,7 +115,7 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
-    public void testAllClassesAdd1PublicMethod1() throws IOException {
+    public void testAllClassesAdd1PublicMethodReturningStringLiteral() throws IOException {
         String expectedResult = "Hi";
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
@@ -134,13 +134,80 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
-    public void testAllClassesAdd1PublicMethod2() throws IOException {
+    public void testAllClassesAdd1PublicMethodReturningStringConcatenation() throws IOException {
         String str1 = "H";
         String str2 = "i";
         String expectedResult = str1 + str2;
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "class {+public String toString() {return \"" + str1 + "\" + \"" + str2 + "\";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toString"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningIntPlusString() throws IOException {
+        int i1 = 5;
+        String str2 = "i";
+        String expectedResult = i1 + str2;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String toString() {return " + i1 + " + \"" + str2 + "\";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toString"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningIntPlusIntPlusString() throws IOException {
+        int i1 = 1;
+        int i2 = 5;
+        String str3 = "i";
+        String expectedResult = i1 + i2 + str3;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String toString() {return " + i1 + " + " + i2 + " + \"" + str3 + "\";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toString"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningIntPlusIntPlusStringPlusIntPlusInt() throws IOException {
+        int i1 = 1;
+        int i2 = 4;
+        String str3 = "i";
+        int i4 = 5;
+        int i5 = 7;
+        String expectedResult = i1 + i2 + str3 + i4 + i5;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String toString() {return " + i1 + " + " + i2 + " + \"" + str3 + "\" + " + i4 + " + " + i5 + ";}}", 
             forClass("dejain.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
