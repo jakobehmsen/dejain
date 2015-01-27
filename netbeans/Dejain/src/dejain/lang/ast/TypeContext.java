@@ -22,6 +22,12 @@ public class TypeContext extends AbstractContext {
         this.name = name;
     }
 
+    public TypeContext(Region region, Class<?> c) {
+        super(region);
+        this.name = c.getName();
+        this.c = c;
+    }
+
     @Override
     public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         try {
