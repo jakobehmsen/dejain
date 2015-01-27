@@ -221,6 +221,27 @@ public class NewEmptyJUnitTest1 {
         );
     }
     
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningIntPlusInt() throws IOException {
+        int i1 = 1;
+        int i2 = 4;
+        int expectedResult = i1 + i2;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public int toInt() {return " + i1 + " + " + i2 + ";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toInt"))
+                    .and(rreturnType(is(int.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toInt", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
     private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {
