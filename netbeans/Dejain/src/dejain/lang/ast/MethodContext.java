@@ -151,6 +151,13 @@ public class MethodContext extends AbstractContext implements MemberContext {
                 else
                     generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getType()), method);
             }
+
+            @Override
+            public void visitFieldSet(FieldSetContext ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+            
+            
         });
     }
     

@@ -6,4 +6,5 @@ public interface CodeVisitor {
     void visitIntegerLiteral(LiteralContext<Integer> ctx);
     void visitBinaryExpression(BinaryExpressionContext ctx);
     void visitInvocation(InvocationContext ctx);
+    void visitFieldSet(FieldSetContext ctx);
 }
