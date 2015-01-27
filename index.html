@@ -33,7 +33,7 @@
 <p>Take a look below to see how easy it is to add an extra field and override the toString method of all classes being loaded:</p>
 
 <pre><code>class {
-    +public String extraField;
+    +private String extraField = "Hello World!";
 
     +public String toString() {
         return "extraField=" + extraField;
