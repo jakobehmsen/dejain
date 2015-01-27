@@ -14,23 +14,24 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
     public TypeContext declaringClass;
     public String methodName;
     public List<ExpressionContext> arguments;
-    public Method method;
+    public Class<?> resultType;
 
-    private InvocationContext(Region region, ExpressionContext target, TypeContext declaringClass, String methodName, List<ExpressionContext> arguments) {
+    public InvocationContext(Region region, ExpressionContext target, TypeContext declaringClass, String methodName, List<ExpressionContext> arguments, Class<?> resultType) {
         super(region);
         
         this.target = target;
         this.declaringClass = declaringClass;
         this.methodName = methodName;
         this.arguments = arguments;
+        this.resultType = resultType;
     }
 
     public static InvocationContext newStatic(Region region, TypeContext declaringClass, String methodName, List<ExpressionContext> arguments) {
-        return new InvocationContext(region, null, declaringClass, methodName, arguments);
+        return new InvocationContext(region, null, declaringClass, methodName, arguments, null);
     }
 
     public static InvocationContext newInstance(Region region, ExpressionContext target, String methodName, List<ExpressionContext> arguments) {
-        return new InvocationContext(region, target, null, methodName, arguments);
+        return new InvocationContext(region, target, null, methodName, arguments, null);
     }
 
     @Override
@@ -43,7 +44,9 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
         arguments.forEach(a -> a.resolve(resolver, errorMessages));
         
         Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
-            
+        
+        Method method;
+        
         if(target != null) {
             method = MethodUtils.getAccessibleMethod(target.resultType(), methodName, parameterTypes);
         } else {
@@ -52,16 +55,18 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
         
         if(method == null) {
             errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve method " + methodName + "."));
+        } else {
+            resultType = method.getReturnType();
         }
     }
 
     @Override
     public Class<?> resultType() {
-        return method.getReturnType();
+        return resultType;
     }
 
     @Override
     public void accept(CodeVisitor visitor) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        visitor.visitInvocation(this);
     }
 }

@@ -71,9 +71,9 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
     private ExpressionContext expressionAsString(ExpressionContext ctx) {
         switch(ctx.resultType().getSimpleName()) {
             case "int":
-                return InvocationContext.newStatic(ctx.getRegion(), new TypeContext(ctx.getRegion(), "java.lang.Integer"), "toString", Arrays.asList(ctx));
+                return new InvocationContext(ctx.getRegion(), null, new TypeContext(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), String.class);
             default:
-                return InvocationContext.newInstance(ctx.getRegion(), ctx, "toString", Collections.emptyList());
+                return new InvocationContext(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), String.class);
         }
     }
 }
