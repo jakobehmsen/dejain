@@ -208,34 +208,24 @@ public class ASMCompiler {
                 ExpressionContext result = ctx.first.accept(this);
                 // Derive 
                 
-                if(ctx.rest.getChildCount() > 0) {
-                    for(int i = 0; i < ctx.rest.getChildCount(); i++) {
-                        ExpressionContext lhs = result;
-                        ExpressionContext rhs = ctx.rest.getChild(i).accept(this);
-                        
-                        int operator;
-                        
-                        switch(ctx.binarySumOperator(i).operator.getType()) {
-                            case DejainLexer.PLUS:
-                                operator = BinaryExpressionContext.OPERATOR_ADD;
-                                break;
-                            case DejainLexer.MINUS:
-                                operator = BinaryExpressionContext.OPERATOR_SUB;
-                                break;
-                            default:
-                                operator = -1;
-                        }
-                        
-                        result = new BinaryExpressionContext(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
-                        // Start from inner most/right most? nopes
-                        // x + y + z => 
-                        // (x + y) + z
-                        // int + int + string =>
-                        // lhs as string + string
-                        // (Integer.parseString(int + int)) + string
-                        // int + string + int =>
-                        // Integer.parseString(int) + string + Integer.parseString(int)
+                for(int i = 1; i < ctx.leafExpression().size(); i++) {
+                    ExpressionContext lhs = result;
+                    ExpressionContext rhs = ctx.leafExpression(i).accept(this);
+
+                    int operator;
+
+                    switch(ctx.binarySumOperator(i - 1).operator.getType()) {
+                        case DejainLexer.PLUS:
+                            operator = BinaryExpressionContext.OPERATOR_ADD;
+                            break;
+                        case DejainLexer.MINUS:
+                            operator = BinaryExpressionContext.OPERATOR_SUB;
+                            break;
+                        default:
+                            operator = -1;
                     }
+
+                    result = new BinaryExpressionContext(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
                 }
                 
                 return result;
