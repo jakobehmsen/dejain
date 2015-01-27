@@ -65,7 +65,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
                     MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType.getType());
 
                     generator.start();
-                    toCode(generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
+                    toCode(body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
                     generator.end();
 
                     methodNode.visitEnd();
@@ -85,12 +85,16 @@ public class MethodContext extends AbstractContext implements MemberContext {
         }
     }
 
-    private void toCode(MethodCodeGenerator generator, InsnList originalIl) {
+    private static void toCode(List<CodeContext> body, MethodCodeGenerator generator, InsnList originalIl) {
         body.forEach(ctx -> toCode(ctx, generator, originalIl, false));
     }
 
-    private void toCode(CodeContext ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
-        body.forEach(x -> x.accept(new CodeVisitor() {
+    public static void toCode(CodeContext ctx, MethodCodeGenerator generator, boolean asExpression) {
+        toCode(ctx, generator, new InsnList(), asExpression);
+    }
+
+    private static void toCode(CodeContext ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
+        ctx.accept(new CodeVisitor() {
             @Override
             public void visitReturn(ReturnContext ctx) {
                 ctx.expression.accept(this);
@@ -147,7 +151,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
                 else
                     generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getType()), method);
             }
-        }));
+        });
     }
     
     public static class MethodCodeGenerator {

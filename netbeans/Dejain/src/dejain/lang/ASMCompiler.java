@@ -124,7 +124,12 @@ public class ASMCompiler {
                                 TypeContext fieldType = new TypeContext(new Region(ctx), ctx.typeQualifier().getText());
                                 String name = ctx.identifier().getText();
                                 
-                                FieldContext field = new FieldContext(new Region(ctx), isAdd, new FieldSelectorContext(accessModifier, isStatic, fieldType, name), null);
+                                ExpressionContext value = null;
+                                
+                                if(ctx.value != null)
+                                    value = getExpression(ctx.value);
+                                
+                                FieldContext field = new FieldContext(new Region(ctx), isAdd, new FieldSelectorContext(accessModifier, isStatic, fieldType, name), value);
                                 
                                 members.add(field);
                                 

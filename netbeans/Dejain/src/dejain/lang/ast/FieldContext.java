@@ -11,11 +11,18 @@ import dejain.runtime.asm.CompositeTransformer;
 import dejain.runtime.asm.FirstByIndexTransformer;
 import dejain.runtime.asm.IfAllTransformer;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.stream.IntStream;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.MethodNode;
 
 public class FieldContext extends AbstractContext implements MemberContext {
     public boolean isAdd;
@@ -57,6 +64,26 @@ public class FieldContext extends AbstractContext implements MemberContext {
                     int fieldAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String fieldName = selector.name;
                     String fieldDescriptor = Type.getDescriptor(selector.fieldType.getType());
+                    if(this.value != null) {
+                        ((List<MethodNode>)c.methods).stream().filter(m -> m.name.equals("<init>")).forEach(cons -> {
+                            InsnList originalInstructions = cons.instructions;
+                            cons.instructions = new InsnList();
+                            
+                            originalInstructions.accept(new MethodVisitor(Opcodes.ASM5, cons) {
+                                @Override
+                                public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                                    
+                                    if(name.equals("<init>")) {
+                                        GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
+                                        generatorAdapter.loadThis();
+                                        MethodContext.toCode(FieldContext.this.value, new MethodContext.MethodCodeGenerator(generatorAdapter, null), true);
+                                        generatorAdapter.putField(Type.getType(c.name), selector.name, Type.getType(selector.fieldType.getType()));
+                                    }
+                                }
+                            });
+                        });
+                    }
                     c.fields.add(new FieldNode(fieldAccess, fieldName, fieldDescriptor, null, null));
                 };
             });

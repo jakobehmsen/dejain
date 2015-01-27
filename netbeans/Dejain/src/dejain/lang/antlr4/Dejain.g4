@@ -14,7 +14,7 @@ classTransformerMember:
 */
 classTransformerMemberField:
     annotations accessModifier? modStatic? typeQualifier? identifier? 
-    (ASSIGN_OP expression)? SEMI_COLON;
+    (ASSIGN_OP value=expression)? SEMI_COLON;
 classTransformerMemberFieldAdd:
     PLUS annotations accessModifier? modStatic? typeQualifier identifier 
     (ASSIGN_OP expression)?
