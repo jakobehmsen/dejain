@@ -133,6 +133,20 @@ public class MethodContext extends AbstractContext implements MemberContext {
                         break;
                 }
             }
+
+            @Override
+            public void visitInvocation(InvocationContext ctx) {
+                ctx.arguments.forEach(a -> a.accept(this));
+                
+                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType())).toArray(size -> new Type[size]);
+                Type returnType = Type.getType(ctx.resultType());
+                Method method = new Method(ctx.methodName, returnType, argumentTypes);
+                
+                if(ctx.target != null)
+                    generator.methodNode.invokeVirtual(Type.getType(ctx.target.resultType()), method);
+                else
+                    generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getType()), method);
+            }
         }));
     }
     
