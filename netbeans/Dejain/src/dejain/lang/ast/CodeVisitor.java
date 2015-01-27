@@ -4,4 +4,5 @@ public interface CodeVisitor {
     void visitReturn(ReturnContext ctx);
     void visitStringLiteral(LiteralContext<String> ctx);
     void visitIntegerLiteral(LiteralContext<Integer> ctx);
+    void visitBinaryExpression(BinaryExpressionContext ctx);
 }

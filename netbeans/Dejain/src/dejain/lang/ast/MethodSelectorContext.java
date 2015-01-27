@@ -11,7 +11,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.ParameterNode;
 
-public class MethodSelectorContext implements Context {
+public class MethodSelectorContext {
     public Integer accessModifier;
     public Boolean isStatic;
     public TypeContext returnType;
@@ -26,7 +26,6 @@ public class MethodSelectorContext implements Context {
         this.parameterTypes = parameterTypes;
     }
 
-    @Override
     public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         System.out.println("returnType=" + returnType);
         returnType.resolve(resolver, errorMessages);

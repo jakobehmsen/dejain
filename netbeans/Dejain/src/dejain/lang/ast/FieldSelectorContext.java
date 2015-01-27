@@ -10,7 +10,7 @@ import jdk.internal.org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.FieldNode;
 
-public class FieldSelectorContext implements Context {
+public class FieldSelectorContext {
     public Integer accessModifier;
     public Boolean isStatic;
     public TypeContext fieldType;
@@ -23,7 +23,6 @@ public class FieldSelectorContext implements Context {
         this.name = name;
     }
 
-    @Override
     public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         fieldType.resolve(resolver, errorMessages);
     }

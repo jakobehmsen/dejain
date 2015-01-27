@@ -1,6 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import dejain.lang.antlr4.DejainLexer;
@@ -16,12 +17,13 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
-public class FieldContext implements MemberContext {
+public class FieldContext extends AbstractContext implements MemberContext {
     public boolean isAdd;
     public FieldSelectorContext selector;
     public ExpressionContext value;
 
-    public FieldContext(boolean isAdd, FieldSelectorContext selector, ExpressionContext value) {
+    public FieldContext(Region region, boolean isAdd, FieldSelectorContext selector, ExpressionContext value) {
+        super(region);
         this.isAdd = isAdd;
         this.selector = selector;
         this.value = value;

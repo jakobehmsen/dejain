@@ -27,18 +27,4 @@ public interface LiteralDelegateContext<T> {
     
     Class<?> resultType();
     void accept(CodeVisitor visitor, LiteralContext<T> ctx);
-    
-    public static class String implements LiteralDelegateContext<String> {
-
-        @Override
-        public Class<?> resultType() {
-            return String.class;
-        }
-
-        @Override
-        public void accept(CodeVisitor visitor, LiteralContext<String> ctx) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-        
-    }
 }

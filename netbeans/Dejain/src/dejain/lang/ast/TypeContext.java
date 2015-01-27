@@ -9,8 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.antlr.v4.runtime.RuleContext;
 
-public class TypeContext implements Context {
-    private Region region;
+public class TypeContext extends AbstractContext {
     public String name;
     private Class<?> c;
     
@@ -19,7 +18,7 @@ public class TypeContext implements Context {
     }
 
     public TypeContext(Region region, String name) {
-        this.region = region;
+        super(region);
         this.name = name;
     }
 
@@ -28,7 +27,7 @@ public class TypeContext implements Context {
         try {
             c = resolver.resolveType(name);
         } catch (ClassNotFoundException ex) {
-            errorMessages.add(new ASMCompiler.Message(region, "Could not resolve type " + name + "."));
+            errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve type " + name + "."));
         }
     }
 

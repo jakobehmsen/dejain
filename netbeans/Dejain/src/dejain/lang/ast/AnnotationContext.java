@@ -1,16 +1,18 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
 import java.util.List;
 
-public class AnnotationContext implements Context {
+public class AnnotationContext extends AbstractContext {
     public boolean isAdd;
     public TypeContext type;
 
-    public AnnotationContext(boolean isAdd, TypeContext type) {
+    public AnnotationContext(Region region, boolean isAdd, TypeContext type) {
+        super(region);
         this.isAdd = isAdd;
         this.type = type;
     }

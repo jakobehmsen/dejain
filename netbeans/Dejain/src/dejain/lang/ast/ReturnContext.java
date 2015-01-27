@@ -1,14 +1,16 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 
-public class ReturnContext implements CodeContext {
+public class ReturnContext extends AbstractContext implements CodeContext {
     public ExpressionContext expression;
 
-    public ReturnContext(ExpressionContext expression) {
+    public ReturnContext(Region region, ExpressionContext expression) {
+        super(region);
         this.expression = expression;
     }
 

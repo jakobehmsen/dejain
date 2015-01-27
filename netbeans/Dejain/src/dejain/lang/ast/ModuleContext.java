@@ -1,6 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.ClassTransformer;
@@ -13,10 +14,11 @@ import java.util.List;
 import java.util.function.Function;
 import org.objectweb.asm.tree.ClassNode;
 
-public class ModuleContext implements Context {
+public class ModuleContext extends AbstractContext {
     public List<ClassContext> classes;
 
-    public ModuleContext(List<ClassContext> classes) {
+    public ModuleContext(Region region, List<ClassContext> classes) {
+        super(region);
         this.classes = classes;
     }
 

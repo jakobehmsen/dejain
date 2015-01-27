@@ -1,12 +1,14 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler.Message;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
 
 public interface Context {
+    Region getRegion();
     void resolve(ClassResolver resolver, List<Message> errorMessages);
     
     public static class Util {

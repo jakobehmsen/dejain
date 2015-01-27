@@ -10,6 +10,7 @@ import dejain.lang.antlr4.DejainLexer;
 import dejain.lang.antlr4.DejainParser;
 import dejain.lang.antlr4.DejainParser.AnnotationContext;
 import dejain.lang.antlr4.DejainParser.ProgramContext;
+import dejain.lang.ast.BinaryExpressionContext;
 import dejain.lang.ast.ClassContext;
 import dejain.lang.ast.ExpressionContext;
 import dejain.lang.ast.FieldContext;
@@ -101,7 +102,7 @@ public class ASMCompiler {
             @Override
             public Object visitClassTransformer(DejainParser.ClassTransformerContext ctx) {
                 List<dejain.lang.ast.AnnotationContext> annotations = ctx.annotations().annotation().stream()
-                    .map(aCtx -> new dejain.lang.ast.AnnotationContext(aCtx.PLUS() != null, new TypeContext(new Region(ctx), aCtx.typeQualifier().getText())))
+                    .map(aCtx -> new dejain.lang.ast.AnnotationContext(new Region(aCtx), aCtx.PLUS() != null, new TypeContext(new Region(aCtx), aCtx.typeQualifier().getText())))
                     .collect(Collectors.toList());
                 
                 Integer accessModifer = null;
@@ -123,7 +124,7 @@ public class ASMCompiler {
                                 TypeContext fieldType = new TypeContext(new Region(ctx), ctx.typeQualifier().getText());
                                 String name = ctx.identifier().getText();
                                 
-                                FieldContext field = new FieldContext(isAdd, new FieldSelectorContext(accessModifier, isStatic, fieldType, name), null);
+                                FieldContext field = new FieldContext(new Region(ctx), isAdd, new FieldSelectorContext(accessModifier, isStatic, fieldType, name), null);
                                 
                                 members.add(field);
                                 
@@ -142,7 +143,7 @@ public class ASMCompiler {
                                 List<dejain.lang.ast.CodeContext> body = getStatements(ctx.statements());
                                 System.out.println("Body:");
                                 body.forEach(s -> System.out.println(s));
-                                MethodContext method = new MethodContext(isAdd, new MethodSelectorContext(accessModifier, isStatic, returnType, name, parameterTypes), body);
+                                MethodContext method = new MethodContext(new Region(ctx), isAdd, new MethodSelectorContext(accessModifier, isStatic, returnType, name, parameterTypes), body);
                                 
                                 members.add(method);
                                 
@@ -152,13 +153,13 @@ public class ASMCompiler {
                     }
                 }
                 
-                classes.add(new ClassContext(annotations, accessModifer, type, members));
+                classes.add(new ClassContext(new Region(ctx), annotations, accessModifer, type, members));
                 
                 return null;
             }
         });
         
-        return new ModuleContext(classes);
+        return new ModuleContext(new Region(program), classes);
     }
 
     private List<dejain.lang.ast.CodeContext> getStatements(DejainParser.StatementsContext ctx) {
@@ -181,7 +182,7 @@ public class ASMCompiler {
                 System.out.println("At return");
                 ExpressionContext expression = getExpression(ctx.expression());
                 
-                return new ReturnContext(expression);
+                return new ReturnContext(new Region(ctx), expression);
             }
         });
         System.out.println("r=" + r);
@@ -193,23 +194,39 @@ public class ASMCompiler {
             @Override
             public ExpressionContext visitStringLiteral(DejainParser.StringLiteralContext ctx) {
                 String value = ctx.getText().substring(1, ctx.getText().length() - 1);
-                return new LiteralContext(value, LiteralDelegateContext.String);
+                return new LiteralContext(new Region(ctx), value, LiteralDelegateContext.String);
             }
 
             @Override
             public ExpressionContext visitIntegerLiteral(DejainParser.IntegerLiteralContext ctx) {
                 int value = Integer.parseInt(ctx.getText());
-                return new LiteralContext(value, LiteralDelegateContext.Integer);
+                return new LiteralContext(new Region(ctx), value, LiteralDelegateContext.Integer);
             }
 
             @Override
             public ExpressionContext visitBinarySum(DejainParser.BinarySumContext ctx) {
-                String str = 1 + 5 + "7"; // => "67"
-                String str2 = 1 + "5" + 7; // => "157"
-                String str3 = "1" + 5 + 7; // => "157"
+                ExpressionContext result = ctx.first.accept(this);
+                // Derive 
                 
                 if(ctx.rest.getChildCount() > 0) {
                     for(int i = 0; i < ctx.rest.getChildCount(); i++) {
+                        ExpressionContext lhs = result;
+                        ExpressionContext rhs = ctx.rest.getChild(i).accept(this);
+                        
+                        int operator;
+                        
+                        switch(ctx.binarySumOperator(i).operator.getType()) {
+                            case DejainLexer.PLUS:
+                                operator = BinaryExpressionContext.OPERATOR_ADD;
+                                break;
+                            case DejainLexer.MINUS:
+                                operator = BinaryExpressionContext.OPERATOR_SUB;
+                                break;
+                            default:
+                                operator = -1;
+                        }
+                        
+                        result = new BinaryExpressionContext(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
                         // Start from inner most/right most? nopes
                         // x + y + z => 
                         // (x + y) + z
@@ -219,11 +236,9 @@ public class ASMCompiler {
                         // int + string + int =>
                         // Integer.parseString(int) + string + Integer.parseString(int)
                     }
-                } else {
-                    return ctx.first.accept(this);
                 }
                 
-                return super.visitBinarySum(ctx); //To change body of generated methods, choose Tools | Templates.
+                return result;
             }
         });
     }

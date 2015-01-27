@@ -1,6 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.ClassTransformer;
@@ -14,13 +15,14 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
-public class ClassContext implements Context {
+public class ClassContext extends AbstractContext {
     public List<AnnotationContext> annotations;
     public Integer accessModifier;
     public TypeContext type;
     public List<MemberContext> members;
 
-    public ClassContext(List<AnnotationContext> annotations, Integer accessModifier, TypeContext type, List<MemberContext> members) {
+    public ClassContext(Region region, List<AnnotationContext> annotations, Integer accessModifier, TypeContext type, List<MemberContext> members) {
+        super(region);
         this.annotations = annotations;
         this.accessModifier = accessModifier;
         this.type = type;

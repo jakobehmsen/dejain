@@ -1,6 +1,7 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
 import dejain.runtime.asm.CompositeTransformer;
@@ -11,20 +12,23 @@ import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
-public class MethodContext implements MemberContext {
+public class MethodContext extends AbstractContext implements MemberContext {
     public boolean isAdd;
     public MethodSelectorContext selector;
     public List<CodeContext> body;
 
-    public MethodContext(boolean isAdd, MethodSelectorContext selector, List<CodeContext> body) {
+    public MethodContext(Region region, boolean isAdd, MethodSelectorContext selector, List<CodeContext> body) {
+        super(region);
         this.isAdd = isAdd;
         this.selector = selector;
         this.body = body;
@@ -101,6 +105,33 @@ public class MethodContext implements MemberContext {
             @Override
             public void visitIntegerLiteral(LiteralContext<Integer> ctx) {
                 generator.methodNode.push(ctx.value);
+            }
+
+            @Override
+            public void visitBinaryExpression(BinaryExpressionContext ctx) {
+                ctx.lhs.accept(this);
+                ctx.rhs.accept(this);
+                
+                switch(ctx.resultType().getSimpleName()) {
+                    case "String":
+                        generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
+                        break;
+                    case "short":
+                        generator.methodNode.visitInsn(Opcodes.IADD);
+                        break;
+                    case "int":
+                        generator.methodNode.visitInsn(Opcodes.IADD);
+                        break;
+                    case "long":
+                        generator.methodNode.visitInsn(Opcodes.LADD);
+                        break;
+                    case "float":
+                        generator.methodNode.visitInsn(Opcodes.FADD);
+                        break;
+                    case "double":
+                        generator.methodNode.visitInsn(Opcodes.DADD);
+                        break;
+                }
             }
         }));
     }
