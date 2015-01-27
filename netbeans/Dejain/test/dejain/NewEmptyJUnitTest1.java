@@ -242,6 +242,27 @@ public class NewEmptyJUnitTest1 {
         );
     }
     
+    @Test
+    public void testAllClassesAdd1FieldWithValue() throws IOException {
+        String str = "myValue";
+        int i = 7;
+        String expectedResult = str + i;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+private String myField = \"" + str + "\" + " + i + ";}", 
+            forClass("dejain.TestClass1", 
+                chasFieldWhere(
+                    fname(is("myField"))
+                    .and(ftype(is(String.class)))
+                    .and(fmodifiers(isPrivate()))
+                    .and(fmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(ifield("myField", ifget(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
     private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {
@@ -342,9 +363,23 @@ public class NewEmptyJUnitTest1 {
     private static Predicate<Object> imethod(String name, BiPredicate<Object, Method> predicate) {
         return i -> {
             try {
-                Method m = i.getClass().getMethod(name);
+                Method m = i.getClass().getDeclaredMethod(name);
                 return predicate.test(i, m);
             } catch (NoSuchMethodException | SecurityException ex) {
+                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            return false;
+        };
+    }
+    
+    private static Predicate<Object> ifield(String name, BiPredicate<Object, Field> predicate) {
+        return i -> {
+            try {
+                Field m = i.getClass().getDeclaredField(name);
+                m.setAccessible(true);
+                return predicate.test(i, m);
+            } catch (NoSuchFieldException | SecurityException ex) {
                 Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
             }
             
@@ -358,6 +393,19 @@ public class NewEmptyJUnitTest1 {
                 Object result = m.invoke(i);
                 return predicate.test(result);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            return false;
+        };
+    }
+    
+    private static BiPredicate<Object, Field> ifget(Predicate<Object> predicate) {
+        return (i, f) -> {
+            try {
+                Object value = f.get(i);
+                return predicate.test(value);
+            } catch (IllegalArgumentException | IllegalAccessException ex) {
                 Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
             }
             
