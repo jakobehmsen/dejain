@@ -16,7 +16,7 @@ public interface LiteralDelegateContext<T> {
     public static LiteralDelegateContext<java.lang.Integer> Integer = new LiteralDelegateContext<java.lang.Integer>() {
         @Override
         public Class<?> resultType() {
-            return Integer.class;
+            return int.class;
         }
 
         @Override
