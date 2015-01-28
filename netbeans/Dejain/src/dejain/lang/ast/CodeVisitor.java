@@ -7,6 +7,6 @@ public interface CodeVisitor {
     void visitBinaryExpression(BinaryExpressionContext ctx);
     void visitInvocation(InvocationContext ctx);
     void visitFieldSet(FieldSetContext ctx);
-
-    public void visitLongLiteral(LiteralContext<Long> ctx);
+    void visitLongLiteral(LiteralContext<Long> ctx);
+    void visitMeta(MetaContext ctx);
 }

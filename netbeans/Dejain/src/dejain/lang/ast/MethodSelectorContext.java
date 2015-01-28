@@ -6,7 +6,7 @@ import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.IfAllTransformer;
 import dejain.runtime.asm.IfAllWithin;
 import java.util.List;
-import jdk.internal.org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.ParameterNode;

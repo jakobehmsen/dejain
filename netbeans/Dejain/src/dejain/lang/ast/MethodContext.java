@@ -161,8 +161,11 @@ public class MethodContext extends AbstractContext implements MemberContext {
             public void visitFieldSet(FieldSetContext ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
-            
-            
+
+            @Override
+            public void visitMeta(MetaContext ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
     

@@ -10,6 +10,7 @@ import dejain.lang.antlr4.DejainLexer;
 import dejain.lang.antlr4.DejainParser;
 import dejain.lang.antlr4.DejainParser.AnnotationContext;
 import dejain.lang.antlr4.DejainParser.ProgramContext;
+import dejain.lang.antlr4.DejainParser.StatementContext;
 import dejain.lang.ast.BinaryExpressionContext;
 import dejain.lang.ast.ClassContext;
 import dejain.lang.ast.ExpressionContext;
@@ -21,6 +22,7 @@ import dejain.lang.ast.MethodContext;
 import dejain.lang.ast.MethodSelectorContext;
 import dejain.lang.ast.ModuleContext;
 import dejain.lang.ast.ReturnContext;
+import dejain.lang.ast.MetaContext;
 import dejain.lang.ast.CodeContext;
 import dejain.lang.ast.LiteralDelegateContext;
 import dejain.lang.ast.TypeContext;
@@ -238,6 +240,20 @@ public class ASMCompiler {
                 }
                 
                 return result;
+            }
+            
+            @Override
+            public ExpressionContext visitMetaExpression(DejainParser.MetaExpressionContext ctx) {
+                ArrayList<CodeContext> body = new ArrayList<>();
+                
+                if(ctx.exception != null) {
+                    ExpressionContext exprCtx = getExpression(ctx.expression());
+                    body.add(new ReturnContext(new Region(ctx), exprCtx));
+                } else {
+                    body.addAll(getStatements(ctx.statements()));
+                }
+                
+                return new MetaContext(null, null);
             }
         });
     }
