@@ -206,6 +206,13 @@ public class ASMCompiler {
             }
 
             @Override
+            public ExpressionContext visitLongLiteral(DejainParser.LongLiteralContext ctx) {
+                String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
+                long value = Long.parseLong(valueStr);
+                return new LiteralContext(new Region(ctx), value, LiteralDelegateContext.Long);
+            }
+
+            @Override
             public ExpressionContext visitBinarySum(DejainParser.BinarySumContext ctx) {
                 ExpressionContext result = ctx.first.accept(this);
                 // Derive 
