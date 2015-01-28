@@ -23,7 +23,6 @@ public class ProxyClassLoader extends ClassLoader {
     
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        System.out.println("Loading " + name);
         if(nameFilter.test(name)) {
             byte[] bytes = bytesFunction.apply(name);
             return defineClass(name, bytes, 0, bytes.length);

@@ -27,7 +27,6 @@ public class MethodSelectorContext {
     }
 
     public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        System.out.println("returnType=" + returnType);
         returnType.resolve(resolver, errorMessages);
         parameterTypes.forEach(pt -> pt.resolve(resolver, errorMessages));
     }

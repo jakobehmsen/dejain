@@ -146,8 +146,6 @@ public class ASMCompiler {
                                     .map(pCtx -> new TypeContext(new Region(ctx), pCtx.typeQualifier().getText()))
                                     .collect(Collectors.toList());
                                 List<dejain.lang.ast.CodeContext> body = getStatements(ctx.statements());
-                                System.out.println("Body:");
-                                body.forEach(s -> System.out.println(s));
                                 MethodContext method = new MethodContext(new Region(ctx), isAdd, new MethodSelectorContext(accessModifier, isStatic, returnType, name, parameterTypes), body);
                                 
                                 members.add(method);
@@ -184,13 +182,12 @@ public class ASMCompiler {
             
             @Override
             public CodeContext visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
-                System.out.println("At return");
                 ExpressionContext expression = getExpression(ctx.expression());
                 
                 return new ReturnContext(new Region(ctx), expression);
             }
         });
-        System.out.println("r=" + r);
+        
         return r;
     }
 
@@ -568,7 +565,6 @@ public class ASMCompiler {
                         
                         if(ctx.expression() != null) {
                             Class<?> expressionType = validateExpression(ctx.expression(), errorMessages);
-                            System.out.println("expressionType=" + expressionType);
                             errorMessages.add(new Message(ctx, "Variable " + name + " is already declared in method " + methodName + "."));
                             if(!fieldType.isAssignableFrom(expressionType)) {
                                 errorMessages.add(new Message(ctx, "" + expressionType + " is not assignable to " + fieldType));
