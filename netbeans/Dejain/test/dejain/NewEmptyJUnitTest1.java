@@ -243,7 +243,7 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
-    public void testAllClassesAdd1FieldWithValue() throws IOException {
+    public void testAllClassesAdd1StringFieldWithValue() throws IOException {
         String str = "myValue";
         int i = 7;
         String expectedResult = str + i;
@@ -254,6 +254,63 @@ public class NewEmptyJUnitTest1 {
                 chasFieldWhere(
                     fname(is("myField"))
                     .and(ftype(is(String.class)))
+                    .and(fmodifiers(isPrivate()))
+                    .and(fmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(ifield("myField", ifget(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1IntFieldWithValue() throws IOException {
+        int expectedResult = 7;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+private int myField = " + expectedResult + ";}", 
+            forClass("dejain.TestClass1", 
+                chasFieldWhere(
+                    fname(is("myField"))
+                    .and(ftype(is(int.class)))
+                    .and(fmodifiers(isPrivate()))
+                    .and(fmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(ifield("myField", ifget(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1ShortFieldWithValue() throws IOException {
+        short expectedResult = 7;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+private short myField = " + expectedResult + ";}", 
+            forClass("dejain.TestClass1", 
+                chasFieldWhere(
+                    fname(is("myField"))
+                    .and(ftype(is(short.class)))
+                    .and(fmodifiers(isPrivate()))
+                    .and(fmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(ifield("myField", ifget(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1LongFieldWithValue() throws IOException {
+        long expectedResult = 3000000000L;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+private long myField = " + expectedResult + "L;}", 
+            forClass("dejain.TestClass1", 
+                chasFieldWhere(
+                    fname(is("myField"))
+                    .and(ftype(is(long.class)))
                     .and(fmodifiers(isPrivate()))
                     .and(fmodifiers(isStatic().negate()))
                 ).and(
