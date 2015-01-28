@@ -112,6 +112,11 @@ public class MethodContext extends AbstractContext implements MemberContext {
             }
 
             @Override
+            public void visitLongLiteral(LiteralContext<Long> ctx) {
+                generator.methodNode.push(ctx.value);
+            }
+
+            @Override
             public void visitBinaryExpression(BinaryExpressionContext ctx) {
                 ctx.lhs.accept(this);
                 ctx.rhs.accept(this);
