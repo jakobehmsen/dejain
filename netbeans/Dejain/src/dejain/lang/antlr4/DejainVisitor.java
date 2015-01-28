@@ -222,6 +222,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitLeafExpression(@NotNull DejainParser.LeafExpressionContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link DejainParser#metaExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMetaExpression(@NotNull DejainParser.MetaExpressionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link DejainParser#catchStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
