@@ -25,6 +25,18 @@ public interface LiteralDelegateContext<T> {
         }
     };
     
+    public static LiteralDelegateContext<java.lang.Long> Long = new LiteralDelegateContext<java.lang.Long>() {
+        @Override
+        public Class<?> resultType() {
+            return long.class;
+        }
+
+        @Override
+        public void accept(CodeVisitor visitor, LiteralContext<java.lang.Long> ctx) {
+            visitor.visitLongLiteral(ctx);
+        }
+    };
+    
     Class<?> resultType();
     void accept(CodeVisitor visitor, LiteralContext<T> ctx);
 }
