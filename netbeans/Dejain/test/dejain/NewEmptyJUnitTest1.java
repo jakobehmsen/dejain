@@ -433,15 +433,30 @@ public class NewEmptyJUnitTest1 {
         return name -> Arrays.asList(names).contains(name);
     }
     
+    private static ThreadLocal<Hashtable<String, byte[]>> classBytesCacheMap = new ThreadLocal<Hashtable<String, byte[]>>() {
+        @Override
+        protected Hashtable<String, byte[]> initialValue() {
+            return new Hashtable<String, byte[]>();
+        }   
+    };
+    
     private static Function<String, byte[]> classBytesFromName() {
         return name -> {
             try {
-                String s = new java.io.File("build\\test\\classes\\" + name.replace(".", "\\") + ".class").getCanonicalFile().toString();
-                InputStream classStream = new FileInputStream("build\\test\\classes\\" + name.replace(".", "\\") + ".class"); //classUrl.openStream();
-                ClassReader classReader = new ClassReader(classStream);
-                ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                classReader.accept(classWriter, 0);
-                return classWriter.toByteArray();
+                byte[] cacheBytesCache = classBytesCacheMap.get().get(name);
+                
+                if(cacheBytesCache == null) {
+                    String s = new java.io.File("build\\test\\classes\\" + name.replace(".", "\\") + ".class").getCanonicalFile().toString();
+                    InputStream classStream = new FileInputStream("build\\test\\classes\\" + name.replace(".", "\\") + ".class"); //classUrl.openStream();
+                    ClassReader classReader = new ClassReader(classStream);
+                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+                    classReader.accept(classWriter, 0);
+                    cacheBytesCache = classWriter.toByteArray();
+                    
+                    classBytesCacheMap.get().put(name, cacheBytesCache);
+                }
+                
+                return cacheBytesCache;
             } catch (IOException ex) {
                 Logger.getLogger(NewEmptyJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
