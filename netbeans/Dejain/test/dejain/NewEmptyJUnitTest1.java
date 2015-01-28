@@ -134,6 +134,25 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
+    public void testAllClassesAdd1PublicMethodReturningGeneratedStringLiteral() throws IOException {
+        String expectedResult = "Hi";
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String toString() {return $\"\\\"" + expectedResult + "\\\"\";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toString"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAdd1PublicMethodReturningStringConcatenation() throws IOException {
         String str1 = "H";
         String str2 = "i";
