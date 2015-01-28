@@ -61,9 +61,10 @@ delimitedStatement:
 variableDeclaration: typeQualifier id=identifier (ASSIGN_OP value=expression)?;
 returnStatement: KW_RETURN expression;
 throwStatement: KW_THROW expression;
-literal: stringLiteral | integerLiteral | booleanLiteral;
+literal: stringLiteral | integerLiteral | longLiteral | booleanLiteral;
 stringLiteral: STRING;
 integerLiteral: INTEGER;
+longLiteral: LONG;
 booleanLiteral: KW_TRUE | KW_FALSE; 
 
 annotation: AT PLUS? typeQualifier;
@@ -108,6 +109,7 @@ ID: (LETTER | '_') (LETTER | '_' | DIGIT)*;
 OPEN_BRA: '{';
 CLOSE_BRA: '}';
 INTEGER: DIGIT+;
+LONG: DIGIT+ 'L';
 STRING: '"' (EscapeSequence | ~[\\"])* '"';
 fragment HexDigit: [0-9a-fA-F];
 fragment EscapeSequence: '\\' [btnfr"'\\] | UnicodeEscape | OctalEscape;

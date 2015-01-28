@@ -332,4 +332,11 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitIfFalseBlock(@NotNull DejainParser.IfFalseBlockContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#longLiteral}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLongLiteral(@NotNull DejainParser.LongLiteralContext ctx);
 }

@@ -379,4 +379,12 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitIfFalseBlock(@NotNull DejainParser.IfFalseBlockContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitLongLiteral(@NotNull DejainParser.LongLiteralContext ctx) { return visitChildren(ctx); }
 }
