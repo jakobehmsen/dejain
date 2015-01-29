@@ -496,7 +496,7 @@ public class ASMCompiler {
         
         public Region(ParserRuleContext ctx) {
             start = new Position(ctx.getStart());
-            end = new Position(ctx.getStop());
+            end = new Position(ctx.getStop() != null ? ctx.getStop() : ctx.getStart());
         }
     }
     
