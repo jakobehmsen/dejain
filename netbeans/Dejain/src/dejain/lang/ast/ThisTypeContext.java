@@ -17,13 +17,14 @@ public class ThisTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
-    public String getName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String getDescriptor(String thisClassName) {
+        return thisClassName != null ? "L" + thisClassName + ";" : "this";
     }
 
     @Override
-    public String getSimpleName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String getSimpleName(String thisClassName) {
+        String name = getDescriptor(thisClassName);
+        return name.substring(name.lastIndexOf("."));
     }
 
     @Override

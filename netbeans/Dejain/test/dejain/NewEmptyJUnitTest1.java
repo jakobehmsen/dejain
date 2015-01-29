@@ -341,18 +341,20 @@ public class NewEmptyJUnitTest1 {
     
     @Test
     public void testAllClassesAddFieldReturnFieldInMethod() throws IOException {
-        String expectedResult = "Hi";
+        String myFieldName = "myField";
+        String myFieldValue = "Hi";
+        String expectedResult = myFieldName + "=" + myFieldValue;
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
-            "class {+private long myField = \"" + expectedResult + "\"; +public String toString() {return myField;} }", 
+            "class {+private String " + myFieldName + " = \"" + myFieldValue + "\"; +public String toString() {return \"" + myFieldName+ "=\" + " + myFieldName + ";} }", 
             forClass("dejain.TestClass1", 
                 chasFieldWhere(
                     fname(is("myField"))
-                    .and(ftype(is(long.class)))
+                    .and(ftype(is(String.class)))
                     .and(fmodifiers(isPrivate()))
                     .and(fmodifiers(isStatic().negate()))
                 ).and(
-                    forInstance(ifield("myField", ifget(is(expectedResult))))
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
                 )
             )
         );

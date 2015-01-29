@@ -37,7 +37,7 @@ public class MethodSelectorContext {
         if(isStatic != null)
             transformer.addPredicate(m -> (m.access & Opcodes.ACC_STATIC) != 0);
         if(returnType != null)
-            transformer.addPredicate(m -> Type.getType(m.desc).getClassName().equals(returnType.getName()));
+            transformer.addPredicate(m -> Type.getType(m.desc).getClassName().equals(returnType.getDescriptor()));
         if(name != null)
             transformer.addPredicate(m -> m.name.equals(name));
         
@@ -49,7 +49,7 @@ public class MethodSelectorContext {
                     return false;
                 
                 for(int i = 0; i < parameterTypes.size(); i++) {
-                    if(!argumentTypes[i].getClassName().equals(parameterTypes.get(0).getName()))
+                    if(!argumentTypes[i].getClassName().equals(parameterTypes.get(0).getDescriptor()))
                         return false;
                 }
                 

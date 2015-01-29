@@ -50,14 +50,16 @@ public class MethodContext extends AbstractContext implements MemberContext {
             selector.populate(transformer);
         } else {
             classTransformer.addTransformer(c -> {
-                return () -> {                    
+                return () -> {
+                    String thisClassName = c.name;
+                    
                     int methodAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String methodName = selector.name;
                     Type[] argumentTypes = selector.parameterTypes.stream()
-                        .map(x -> Type.getType(x.getName()))
+                        .map(x -> Type.getType(x.getDescriptor(c.name)))
                         .toArray(size -> new Type[size]);
                     String methodDescriptor = Type.getMethodDescriptor(
-                        Type.getType(selector.returnType.getName()), 
+                        Type.getType(selector.returnType.getDescriptor(c.name)), 
                         argumentTypes);
                     
                     MethodNode methodNode = new MethodNode(methodAccess, methodName, methodDescriptor, null, null);
@@ -65,7 +67,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
                     MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType);
 
                     generator.start();
-                    toCode(body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
+                    toCode(thisClassName, body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
                     generator.end();
 
                     methodNode.visitEnd();
@@ -85,15 +87,15 @@ public class MethodContext extends AbstractContext implements MemberContext {
         }
     }
 
-    private static void toCode(List<CodeContext> body, MethodCodeGenerator generator, InsnList originalIl) {
-        body.forEach(ctx -> toCode(ctx, generator, originalIl, false));
+    private static void toCode(String thisClassName, List<CodeContext> body, MethodCodeGenerator generator, InsnList originalIl) {
+        body.forEach(ctx -> toCode(thisClassName, ctx, generator, originalIl, false));
     }
 
-    public static void toCode(CodeContext ctx, MethodCodeGenerator generator, boolean asExpression) {
-        toCode(ctx, generator, new InsnList(), asExpression);
+    public static void toCode(String thisClassName, CodeContext ctx, MethodCodeGenerator generator, boolean asExpression) {
+        toCode(thisClassName, ctx, generator, new InsnList(), asExpression);
     }
 
-    private static void toCode(CodeContext ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
+    private static void toCode(String thisClassName, CodeContext ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
         ctx.accept(new CodeVisitor() {
             @Override
             public void visitReturn(ReturnContext ctx) {
@@ -121,7 +123,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
                 ctx.lhs.accept(this);
                 ctx.rhs.accept(this);
                 
-                switch(ctx.resultType().getSimpleName()) {
+                switch(ctx.resultType().getSimpleName(thisClassName)) {
                     case "String":
                         generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
                         break;
@@ -147,14 +149,14 @@ public class MethodContext extends AbstractContext implements MemberContext {
             public void visitInvocation(InvocationContext ctx) {
                 ctx.arguments.forEach(a -> a.accept(this));
                 
-                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getName())).toArray(size -> new Type[size]);
-                Type returnType = Type.getType(ctx.resultType().getName());
+                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor(thisClassName))).toArray(size -> new Type[size]);
+                Type returnType = Type.getType(ctx.resultType().getDescriptor(thisClassName));
                 Method method = new Method(ctx.methodName, returnType, argumentTypes);
                 
                 if(ctx.target != null)
-                    generator.methodNode.invokeVirtual(Type.getType(ctx.target.resultType().getName()), method);
+                    generator.methodNode.invokeVirtual(Type.getType(ctx.target.resultType().getDescriptor(thisClassName)), method);
                 else
-                    generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getName()), method);
+                    generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getDescriptor(thisClassName)), method);
             }
 
             @Override
@@ -175,7 +177,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
             @Override
             public void visitFieldGet(FieldGetContext ctx) {
                 ctx.target.accept(this);
-                generator.methodNode.getField(Type.getType(ctx.target.resultType().getName()), ctx.fieldName, Type.getType(ctx.resultType().getName()));
+                generator.methodNode.getField(Type.getType(ctx.target.resultType().getDescriptor(thisClassName)), ctx.fieldName, Type.getType(ctx.resultType().getDescriptor(thisClassName)));
             }
         });
     }

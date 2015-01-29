@@ -63,9 +63,11 @@ public class FieldContext extends AbstractContext implements MemberContext {
                 return () -> {
                     int fieldAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String fieldName = selector.name;
-                    String fieldDescriptor = Type.getType(selector.fieldType.getName()).getDescriptor();
+                    String fieldDescriptor = selector.fieldType.getDescriptor();
 //                    String fieldDescriptor = Type.getDescriptor( selector.fieldType.getName());
                     if(this.value != null) {
+                        String thisClassName = c.name;
+                    
                         ((List<MethodNode>)c.methods).stream().filter(m -> m.name.equals("<init>")).forEach(cons -> {
                             InsnList originalInstructions = cons.instructions;
                             cons.instructions = new InsnList();
@@ -78,8 +80,8 @@ public class FieldContext extends AbstractContext implements MemberContext {
                                     if(name.equals("<init>")) {
                                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
                                         generatorAdapter.loadThis();
-                                        MethodContext.toCode(FieldContext.this.value, new MethodContext.MethodCodeGenerator(generatorAdapter, null), true);
-                                        generatorAdapter.putField(Type.getType(c.name), selector.name, Type.getType(selector.fieldType.getName()));
+                                        MethodContext.toCode(thisClassName, FieldContext.this.value, new MethodContext.MethodCodeGenerator(generatorAdapter, null), true);
+                                        generatorAdapter.putField(Type.getType(c.name), selector.name, Type.getType(selector.fieldType.getDescriptor(thisClassName)));
                                     }
                                 }
                             });

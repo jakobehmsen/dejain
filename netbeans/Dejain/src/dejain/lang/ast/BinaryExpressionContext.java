@@ -41,12 +41,12 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
         lhs.resolve(thisClass, resolver, errorMessages);
         rhs.resolve(thisClass, resolver, errorMessages);
         
-        if(lhs.resultType().getName().equals("java.lang.String") || rhs.resultType().getName().equals("java.lang.String")) {
+        if(lhs.resultType().getDescriptor().equals("Ljava/lang/String;") || rhs.resultType().getDescriptor().equals("Ljava/lang/String;")) {
             switch(operator) {
                 case OPERATOR_ADD:
-                    if(!lhs.resultType().getName().equals("java.lang.String"))
+                    if(!lhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
                         lhs = expressionAsString(lhs);
-                    if(!rhs.resultType().getName().equals("java.lang.String"))
+                    if(!rhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
                         rhs = expressionAsString(rhs);
                     resultType = new NameTypeContext(getRegion(), String.class);
                     break;

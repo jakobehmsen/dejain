@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jdk.internal.org.objectweb.asm.Type;
 
 public class NameTypeContext extends AbstractContext implements TypeContext {
     public String name;
@@ -30,7 +31,9 @@ public class NameTypeContext extends AbstractContext implements TypeContext {
     @Override
     public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         try {
+//            name = resolver.resolveClassName(name);
             c = resolver.resolveType(name);
+            name = c.getName().replace(".", "/");
         } catch (ClassNotFoundException ex) {
             errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve type " + name + "."));
         }
@@ -47,12 +50,12 @@ public class NameTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getDescriptor(String thisClassName) {
+        return Type.getDescriptor(c);
     }
 
     @Override
-    public String getSimpleName() {
+    public String getSimpleName(String thisClassName) {
         return c.getSimpleName();
     }
 
