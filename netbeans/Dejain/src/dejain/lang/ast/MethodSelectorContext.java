@@ -26,9 +26,9 @@ public class MethodSelectorContext {
         this.parameterTypes = parameterTypes;
     }
 
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        returnType.resolve(resolver, errorMessages);
-        parameterTypes.forEach(pt -> pt.resolve(resolver, errorMessages));
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        returnType.resolve(thisClass, resolver, errorMessages);
+        parameterTypes.forEach(pt -> pt.resolve(thisClass, resolver, errorMessages));
     }
 
     public void populate(IfAllTransformer<MethodNode> transformer) {
@@ -37,7 +37,7 @@ public class MethodSelectorContext {
         if(isStatic != null)
             transformer.addPredicate(m -> (m.access & Opcodes.ACC_STATIC) != 0);
         if(returnType != null)
-            transformer.addPredicate(m -> Type.getType(m.desc).getClassName().equals(returnType.name));
+            transformer.addPredicate(m -> Type.getType(m.desc).getClassName().equals(returnType.getName()));
         if(name != null)
             transformer.addPredicate(m -> m.name.equals(name));
         
@@ -49,7 +49,7 @@ public class MethodSelectorContext {
                     return false;
                 
                 for(int i = 0; i < parameterTypes.size(); i++) {
-                    if(!argumentTypes[i].getClassName().equals(parameterTypes.get(0).name))
+                    if(!argumentTypes[i].getClassName().equals(parameterTypes.get(0).getName()))
                         return false;
                 }
                 

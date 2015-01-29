@@ -4,27 +4,26 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
 import java.util.List;
 
-public class MetaContext extends AbstractContext implements ExpressionContext {
-    public List<CodeContext> body;
+public class ThisContext extends AbstractContext implements ExpressionContext {
+    private ThisTypeContext resultType;
 
-    public MetaContext(ASMCompiler.Region region, List<CodeContext> body) {
+    public ThisContext(ASMCompiler.Region region) {
         super(region);
-        
-        this.body = body;
+        resultType = new ThisTypeContext(region);
     }
 
     @Override
     public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        body.forEach(s -> s.resolve(thisClass, resolver, errorMessages));
+        resultType.resolve(thisClass, resolver, errorMessages);
     }
 
     @Override
     public TypeContext resultType() {
-        return new NameTypeContext(getRegion(), String.class);
+        return resultType;
     }
 
     @Override
     public void accept(CodeVisitor visitor) {
-        visitor.visitMeta(this);
+        visitor.visitThis(this);
     }
 }

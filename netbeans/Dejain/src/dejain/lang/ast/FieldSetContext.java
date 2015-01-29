@@ -12,7 +12,7 @@ public class FieldSetContext extends AbstractContext implements ExpressionContex
     public ExpressionContext target;
     public TypeContext declaringClass;
     public String fieldName;
-    public Class<?> resultType;
+    public TypeContext resultType;
     public ExpressionContext value;
     
     public FieldSetContext(ASMCompiler.Region region, ExpressionContext target, TypeContext declaringClass, String fieldName, ExpressionContext value) {
@@ -24,31 +24,31 @@ public class FieldSetContext extends AbstractContext implements ExpressionContex
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        target.resolve(resolver, errorMessages);
-        declaringClass.resolve(resolver, errorMessages);
-        value.resolve(resolver, errorMessages);
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        target.resolve(thisClass, resolver, errorMessages);
+        declaringClass.resolve(thisClass, resolver, errorMessages);
+        value.resolve(thisClass, resolver, errorMessages);
         
-        Class<?> c;
-        
-        if(target != null)
-            c = target.resultType();
-        else
-            c = declaringClass.getType();
-        
-        try {
-            Field field = c.getField(fieldName);
-            resultType = field.getType();
-            
-            if(resultType != value.resultType())
-                errorMessages.add(new ASMCompiler.Message(getRegion(), "Incompatible types: " + value.resultType().getSimpleName() + " cannot be converted to " + resultType.getSimpleName() + "."));
-        } catch (NoSuchFieldException | SecurityException ex) {
-            errorMessages.add(new ASMCompiler.Message(getRegion(), "No such field '" + fieldName + "'."));
-        }
+//        Class<?> c;
+//        
+//        if(target != null)
+//            c = target.resultType();
+//        else
+//            c = declaringClass.getType();
+//        
+//        try {
+//            Field field = c.getField(fieldName);
+//            resultType = field.getType();
+//            
+//            if(resultType != value.resultType())
+//                errorMessages.add(new ASMCompiler.Message(getRegion(), "Incompatible types: " + value.resultType().getSimpleName() + " cannot be converted to " + resultType.getSimpleName() + "."));
+//        } catch (NoSuchFieldException | SecurityException ex) {
+//            errorMessages.add(new ASMCompiler.Message(getRegion(), "No such field '" + fieldName + "'."));
+//        }
     }
 
     @Override
-    public Class<?> resultType() {
+    public TypeContext resultType() {
         return resultType;
     }
 

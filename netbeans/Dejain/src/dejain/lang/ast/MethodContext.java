@@ -40,9 +40,9 @@ public class MethodContext extends AbstractContext implements MemberContext {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
-        selector.resolve(resolver, errorMessages);
-        body.forEach(s -> s.resolve(resolver, errorMessages));
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
+        selector.resolve(thisClass, resolver, errorMessages);
+        body.forEach(s -> s.resolve(thisClass, resolver, errorMessages));
     }
 
     public void populate(CompositeTransformer<ClassNode> classTransformer, IfAllTransformer<MethodNode> transformer) {
@@ -50,19 +50,19 @@ public class MethodContext extends AbstractContext implements MemberContext {
             selector.populate(transformer);
         } else {
             classTransformer.addTransformer(c -> {
-                return () -> {
+                return () -> {                    
                     int methodAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String methodName = selector.name;
                     Type[] argumentTypes = selector.parameterTypes.stream()
-                        .map(x -> Type.getType(x.getType()))
+                        .map(x -> Type.getType(x.getName()))
                         .toArray(size -> new Type[size]);
                     String methodDescriptor = Type.getMethodDescriptor(
-                        Type.getType(selector.returnType.getType()), 
+                        Type.getType(selector.returnType.getName()), 
                         argumentTypes);
                     
                     MethodNode methodNode = new MethodNode(methodAccess, methodName, methodDescriptor, null, null);
                     GeneratorAdapter generatorAdapter = new GeneratorAdapter(methodNode, methodAccess, methodName, methodDescriptor);
-                    MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType.getType());
+                    MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType);
 
                     generator.start();
                     toCode(body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
@@ -147,14 +147,14 @@ public class MethodContext extends AbstractContext implements MemberContext {
             public void visitInvocation(InvocationContext ctx) {
                 ctx.arguments.forEach(a -> a.accept(this));
                 
-                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType())).toArray(size -> new Type[size]);
-                Type returnType = Type.getType(ctx.resultType());
+                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getName())).toArray(size -> new Type[size]);
+                Type returnType = Type.getType(ctx.resultType().getName());
                 Method method = new Method(ctx.methodName, returnType, argumentTypes);
                 
                 if(ctx.target != null)
-                    generator.methodNode.invokeVirtual(Type.getType(ctx.target.resultType()), method);
+                    generator.methodNode.invokeVirtual(Type.getType(ctx.target.resultType().getName()), method);
                 else
-                    generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getType()), method);
+                    generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getName()), method);
             }
 
             @Override
@@ -166,27 +166,38 @@ public class MethodContext extends AbstractContext implements MemberContext {
             public void visitMeta(MetaContext ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public void visitThis(ThisContext ctx) {
+                generator.methodNode.loadThis();
+            }
+
+            @Override
+            public void visitFieldGet(FieldGetContext ctx) {
+                ctx.target.accept(this);
+                generator.methodNode.getField(Type.getType(ctx.target.resultType().getName()), ctx.fieldName, Type.getType(ctx.resultType().getName()));
+            }
         });
     }
     
     public static class MethodCodeGenerator {
         private static class VariableInfo {
             public int index;
-            public Class<?> type;
+            public TypeContext type;
 
-            public VariableInfo(int index, Class<?> type) {
+            public VariableInfo(int index, TypeContext type) {
                 this.index = index;
                 this.type = type;
             }
         }
         
         public GeneratorAdapter methodNode;
-        private Class<?> returnType;
+        private TypeContext returnType;
         private HashMap<String, VariableInfo> localNameToIndexMap = new HashMap<>();
         private Label start;
         private Label end;
 
-        public MethodCodeGenerator(GeneratorAdapter methodNode, Class<?> returnType) {
+        public MethodCodeGenerator(GeneratorAdapter methodNode, TypeContext returnType) {
             this.methodNode = methodNode;
             this.returnType = returnType;
             this.start = new Label();
@@ -201,7 +212,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
             methodNode.visitLabel(end);
         }
         
-        public int declareVariable(String name, String desc, Class<?> type) {
+        public int declareVariable(String name, String desc, TypeContext type) {
             int index = localNameToIndexMap.size();
             localNameToIndexMap.put(name, new VariableInfo(index, type));
             methodNode.visitLocalVariable(name, desc, null, start, end, index);
@@ -216,11 +227,11 @@ public class MethodContext extends AbstractContext implements MemberContext {
             return localNameToIndexMap.containsKey(name);
         }
 
-        private Class<?> getVariableType(String name) {
+        private TypeContext getVariableType(String name) {
             return localNameToIndexMap.get(name).type;
         }
 
-        private Class<?> getReturnType() {
+        private TypeContext getReturnType() {
             return returnType;
         }
     }

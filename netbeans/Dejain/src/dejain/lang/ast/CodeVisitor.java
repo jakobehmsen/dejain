@@ -9,4 +9,6 @@ public interface CodeVisitor {
     void visitFieldSet(FieldSetContext ctx);
     void visitLongLiteral(LiteralContext<Long> ctx);
     void visitMeta(MetaContext ctx);
+    void visitThis(ThisContext ctx);
+    void visitFieldGet(FieldGetContext ctx);
 }

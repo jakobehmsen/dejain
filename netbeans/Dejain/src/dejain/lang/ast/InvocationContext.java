@@ -14,9 +14,9 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
     public TypeContext declaringClass;
     public String methodName;
     public List<ExpressionContext> arguments;
-    public Class<?> resultType;
+    public TypeContext resultType;
 
-    public InvocationContext(Region region, ExpressionContext target, TypeContext declaringClass, String methodName, List<ExpressionContext> arguments, Class<?> resultType) {
+    public InvocationContext(Region region, ExpressionContext target, TypeContext declaringClass, String methodName, List<ExpressionContext> arguments, TypeContext resultType) {
         super(region);
         
         this.target = target;
@@ -35,33 +35,33 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         if(target != null)
-            target.resolve(resolver, errorMessages);
+            target.resolve(thisClass, resolver, errorMessages);
         else
-            declaringClass.resolve(resolver, errorMessages);
+            declaringClass.resolve(thisClass, resolver, errorMessages);
         
-        arguments.forEach(a -> a.resolve(resolver, errorMessages));
+        arguments.forEach(a -> a.resolve(thisClass, resolver, errorMessages));
         
-        Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
-        
-        Method method;
-        
-        if(target != null) {
-            method = MethodUtils.getAccessibleMethod(target.resultType(), methodName, parameterTypes);
-        } else {
-            method = MethodUtils.getAccessibleMethod(declaringClass.getType(), methodName, parameterTypes);
-        }
-        
-        if(method == null) {
-            errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve method " + methodName + "."));
-        } else {
-            resultType = method.getReturnType();
-        }
+//        Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
+//        
+//        Method method;
+//        
+//        if(target != null) {
+//            method = MethodUtils.getAccessibleMethod(target.resultType(), methodName, parameterTypes);
+//        } else {
+//            method = MethodUtils.getAccessibleMethod(declaringClass.getType(), methodName, parameterTypes);
+//        }
+//        
+//        if(method == null) {
+//            errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve method " + methodName + "."));
+//        } else {
+//            resultType = method.getReturnType();
+//        }
     }
 
     @Override
-    public Class<?> resultType() {
+    public TypeContext resultType() {
         return resultType;
     }
 

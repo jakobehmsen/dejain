@@ -17,11 +17,13 @@ public class LiteralContext<T> extends AbstractContext implements ExpressionCont
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) { }
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        
+    }
 
     @Override
-    public Class<?> resultType() {
-        return delegate.resultType();
+    public TypeContext resultType() {
+        return delegate.resultType(getRegion());
     }
 
     @Override

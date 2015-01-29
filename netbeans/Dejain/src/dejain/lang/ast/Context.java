@@ -9,7 +9,7 @@ import org.objectweb.asm.Opcodes;
 
 public interface Context {
     Region getRegion();
-    void resolve(ClassResolver resolver, List<Message> errorMessages);
+    void resolve(ClassContext thisClass, ClassResolver resolver, List<Message> errorMessages);
     
     public static class Util {
         public static int getAccessModifier(int accessModifier, boolean isStatic) {

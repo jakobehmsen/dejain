@@ -23,7 +23,7 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
     }
     
     @Override
-    public Class<?> resultType() {
+    public TypeContext resultType() {
         return resultType;
     }
 
@@ -32,30 +32,30 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
         visitor.visitBinaryExpression(this);
     }
     
-    private Class<?> resultType;
+    private TypeContext resultType;
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        resultType = Void.class;
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        resultType = new NameTypeContext(getRegion(), Void.class);
         
-        lhs.resolve(resolver, errorMessages);
-        rhs.resolve(resolver, errorMessages);
+        lhs.resolve(thisClass, resolver, errorMessages);
+        rhs.resolve(thisClass, resolver, errorMessages);
         
-        if(lhs.resultType() == String.class || rhs.resultType() == String.class) {
+        if(lhs.resultType().getName().equals("java.lang.String") || rhs.resultType().getName().equals("java.lang.String")) {
             switch(operator) {
                 case OPERATOR_ADD:
-                    if(lhs.resultType() != String.class)
+                    if(!lhs.resultType().getName().equals("java.lang.String"))
                         lhs = expressionAsString(lhs);
-                    if(rhs.resultType() != String.class)
+                    if(!rhs.resultType().getName().equals("java.lang.String"))
                         rhs = expressionAsString(rhs);
-                    resultType = String.class;
+                    resultType = new NameTypeContext(getRegion(), String.class);
                     break;
                 default:
                     errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
                     break;
             }
-        } else if(lhs.resultType() == int.class && rhs.resultType() == int.class) {
-            resultType = int.class;
+        } else if(lhs.resultType().getSimpleName().equals("int") && rhs.resultType().getSimpleName().equals("int")) {
+            resultType = new NameTypeContext(getRegion(), int.class);
         }
     }
     
@@ -71,9 +71,9 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
     private ExpressionContext expressionAsString(ExpressionContext ctx) {
         switch(ctx.resultType().getSimpleName()) {
             case "int":
-                return new InvocationContext(ctx.getRegion(), null, new TypeContext(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), String.class);
+                return new InvocationContext(ctx.getRegion(), null, new NameTypeContext(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), new NameTypeContext(ctx.getRegion(), String.class));
             default:
-                return new InvocationContext(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), String.class);
+                return new InvocationContext(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), new NameTypeContext(ctx.getRegion(), String.class));
         }
     }
 }

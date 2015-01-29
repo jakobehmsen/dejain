@@ -1,10 +1,12 @@
 package dejain.lang.ast;
 
+import dejain.lang.ASMCompiler.Region;
+
 public interface LiteralDelegateContext<T> {
     public static LiteralDelegateContext<java.lang.String> String = new LiteralDelegateContext<java.lang.String>() {
         @Override
-        public Class<?> resultType() {
-            return String.class;
+        public TypeContext resultType(Region region) {
+            return new NameTypeContext(region, String.class);
         }
 
         @Override
@@ -15,8 +17,8 @@ public interface LiteralDelegateContext<T> {
     
     public static LiteralDelegateContext<java.lang.Integer> Integer = new LiteralDelegateContext<java.lang.Integer>() {
         @Override
-        public Class<?> resultType() {
-            return int.class;
+        public TypeContext resultType(Region region) {
+            return new NameTypeContext(region, int.class);
         }
 
         @Override
@@ -27,8 +29,8 @@ public interface LiteralDelegateContext<T> {
     
     public static LiteralDelegateContext<java.lang.Long> Long = new LiteralDelegateContext<java.lang.Long>() {
         @Override
-        public Class<?> resultType() {
-            return long.class;
+        public TypeContext resultType(Region region) {
+            return new NameTypeContext(region, long.class);
         }
 
         @Override
@@ -37,6 +39,6 @@ public interface LiteralDelegateContext<T> {
         }
     };
     
-    Class<?> resultType();
+    TypeContext resultType(Region region);
     void accept(CodeVisitor visitor, LiteralContext<T> ctx);
 }

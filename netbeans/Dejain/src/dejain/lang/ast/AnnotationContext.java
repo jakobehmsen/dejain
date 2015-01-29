@@ -18,8 +18,8 @@ public class AnnotationContext extends AbstractContext {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        type.resolve(resolver, errorMessages);
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        type.resolve(thisClass, resolver, errorMessages);
     }
 
     void populate(CommonClassTransformer transformer) {

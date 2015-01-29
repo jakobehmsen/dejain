@@ -42,10 +42,10 @@ public class FieldContext extends AbstractContext implements MemberContext {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        selector.resolve(resolver, errorMessages);
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        selector.resolve(thisClass, resolver, errorMessages);
         if(value != null)
-            value.resolve(resolver, errorMessages);
+            value.resolve(thisClass, resolver, errorMessages);
     }
 
     @Override
@@ -63,7 +63,8 @@ public class FieldContext extends AbstractContext implements MemberContext {
                 return () -> {
                     int fieldAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String fieldName = selector.name;
-                    String fieldDescriptor = Type.getDescriptor(selector.fieldType.getType());
+                    String fieldDescriptor = Type.getType(selector.fieldType.getName()).getDescriptor();
+//                    String fieldDescriptor = Type.getDescriptor( selector.fieldType.getName());
                     if(this.value != null) {
                         ((List<MethodNode>)c.methods).stream().filter(m -> m.name.equals("<init>")).forEach(cons -> {
                             InsnList originalInstructions = cons.instructions;
@@ -78,7 +79,7 @@ public class FieldContext extends AbstractContext implements MemberContext {
                                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
                                         generatorAdapter.loadThis();
                                         MethodContext.toCode(FieldContext.this.value, new MethodContext.MethodCodeGenerator(generatorAdapter, null), true);
-                                        generatorAdapter.putField(Type.getType(c.name), selector.name, Type.getType(selector.fieldType.getType()));
+                                        generatorAdapter.putField(Type.getType(c.name), selector.name, Type.getType(selector.fieldType.getName()));
                                     }
                                 }
                             });

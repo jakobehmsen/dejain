@@ -11,6 +11,7 @@ import dejain.runtime.asm.IfAllTransformer;
 import dejain.runtime.asm.IfAnyTransformer;
 import dejain.runtime.asm.IfAnyWithin;
 import java.util.List;
+import java.util.Optional;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -18,10 +19,10 @@ import org.objectweb.asm.tree.MethodNode;
 public class ClassContext extends AbstractContext {
     public List<AnnotationContext> annotations;
     public Integer accessModifier;
-    public TypeContext type;
+    public NameTypeContext type;
     public List<MemberContext> members;
 
-    public ClassContext(Region region, List<AnnotationContext> annotations, Integer accessModifier, TypeContext type, List<MemberContext> members) {
+    public ClassContext(Region region, List<AnnotationContext> annotations, Integer accessModifier, NameTypeContext type, List<MemberContext> members) {
         super(region);
         this.annotations = annotations;
         this.accessModifier = accessModifier;
@@ -30,11 +31,11 @@ public class ClassContext extends AbstractContext {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        annotations.forEach(a -> a.resolve(resolver, errorMessages));
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        annotations.forEach(a -> a.resolve(this, resolver, errorMessages));
         if(type != null)
-            type.resolve(resolver, errorMessages);
-        members.forEach(m -> m.resolve(resolver, errorMessages));
+            type.resolve(this, resolver, errorMessages);
+        members.forEach(m -> m.resolve(this, resolver, errorMessages));
     }
 
     public void populate(CommonClassTransformer transformer) {
@@ -64,5 +65,14 @@ public class ClassContext extends AbstractContext {
         
         transformer.addTransformer(new IfAnyWithin<>(c -> c.fields, fieldTransformer));
         transformer.addTransformer(new IfAnyWithin<>(c -> c.methods, methodTransformer));
+    }
+
+    public TypeContext getFieldType(String fieldName) {
+        Optional<TypeContext> field = members.stream()
+            .filter(m -> m instanceof FieldContext)
+            .filter(f -> ((FieldContext)f).selector.name.equals(fieldName))
+            .map(f -> ((FieldContext)f).selector.fieldType).findFirst();
+        
+        return field.isPresent() ? field.get() : null;
     }
 }

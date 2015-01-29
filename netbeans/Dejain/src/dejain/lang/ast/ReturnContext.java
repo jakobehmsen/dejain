@@ -20,7 +20,7 @@ public class ReturnContext extends AbstractContext implements CodeContext {
     }
 
     @Override
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        expression.resolve(resolver, errorMessages);
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        expression.resolve(thisClass, resolver, errorMessages);
     }
 }

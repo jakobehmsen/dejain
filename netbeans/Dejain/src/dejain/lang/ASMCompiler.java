@@ -24,7 +24,10 @@ import dejain.lang.ast.ModuleContext;
 import dejain.lang.ast.ReturnContext;
 import dejain.lang.ast.MetaContext;
 import dejain.lang.ast.CodeContext;
+import dejain.lang.ast.FieldGetContext;
 import dejain.lang.ast.LiteralDelegateContext;
+import dejain.lang.ast.NameTypeContext;
+import dejain.lang.ast.ThisContext;
 import dejain.lang.ast.TypeContext;
 import dejain.runtime.asm.ClassTransformer;
 import dejain.runtime.asm.ClassTransformerSequence;
@@ -104,14 +107,14 @@ public class ASMCompiler {
             @Override
             public Object visitClassTransformer(DejainParser.ClassTransformerContext ctx) {
                 List<dejain.lang.ast.AnnotationContext> annotations = ctx.annotations().annotation().stream()
-                    .map(aCtx -> new dejain.lang.ast.AnnotationContext(new Region(aCtx), aCtx.PLUS() != null, new TypeContext(new Region(aCtx), aCtx.typeQualifier().getText())))
+                    .map(aCtx -> new dejain.lang.ast.AnnotationContext(new Region(aCtx), aCtx.PLUS() != null, new NameTypeContext(new Region(aCtx), aCtx.typeQualifier().getText())))
                     .collect(Collectors.toList());
                 
                 Integer accessModifer = null;
                 if(ctx.accessModifier() != null)
                     accessModifer = getAccessModifier(ctx.accessModifier(), null);
                 
-                TypeContext type = ctx.typeQualifier() != null ? new TypeContext(new Region(ctx), ctx.typeQualifier().getText()) : null;
+                NameTypeContext type = ctx.typeQualifier() != null ? new NameTypeContext(new Region(ctx), ctx.typeQualifier().getText()) : null;
                 
                 ArrayList<MemberContext> members = new ArrayList<>();
                 
@@ -123,7 +126,7 @@ public class ASMCompiler {
                             public Object visitClassTransformerMemberField(DejainParser.ClassTransformerMemberFieldContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
-                                TypeContext fieldType = new TypeContext(new Region(ctx), ctx.typeQualifier().getText());
+                                TypeContext fieldType = new NameTypeContext(new Region(ctx), ctx.typeQualifier().getText());
                                 String name = ctx.identifier().getText();
                                 
                                 ExpressionContext value = null;
@@ -142,10 +145,10 @@ public class ASMCompiler {
                             public Object visitClassTransformerMemberMethod(DejainParser.ClassTransformerMemberMethodContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
-                                TypeContext returnType = new TypeContext(new Region(ctx), ctx.typeQualifier().getText());
+                                TypeContext returnType = new NameTypeContext(new Region(ctx), ctx.typeQualifier().getText());
                                 String name = ctx.identifier().getText();
                                 List<TypeContext> parameterTypes = ctx.parameters().parameter().stream()
-                                    .map(pCtx -> new TypeContext(new Region(ctx), pCtx.typeQualifier().getText()))
+                                    .map(pCtx -> new NameTypeContext(new Region(ctx), pCtx.typeQualifier().getText()))
                                     .collect(Collectors.toList());
                                 List<dejain.lang.ast.CodeContext> body = getStatements(ctx.statements());
                                 MethodContext method = new MethodContext(new Region(ctx), isAdd, new MethodSelectorContext(accessModifier, isStatic, returnType, name, parameterTypes), body);
@@ -254,6 +257,21 @@ public class ASMCompiler {
                 }
                 
                 return new MetaContext(null, null);
+            }
+
+            @Override
+            public ExpressionContext visitLookup(DejainParser.LookupContext ctx) {
+                String name = ctx.getText();
+                
+                boolean isVariable = false;
+                
+                if(isVariable) {
+                    // What to do?...
+                } else {
+                    return new FieldGetContext(new Region(ctx), new ThisContext(new Region(ctx)), name);
+                }
+                
+                return super.visitLookup(ctx); //To change body of generated methods, choose Tools | Templates.
             }
         });
     }

@@ -23,8 +23,8 @@ public class FieldSelectorContext {
         this.name = name;
     }
 
-    public void resolve(ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        fieldType.resolve(resolver, errorMessages);
+    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        fieldType.resolve(thisClass, resolver, errorMessages);
     }
 
     public void populate(CommonClassTransformer transformer) {
@@ -40,7 +40,7 @@ public class FieldSelectorContext {
         if(isStatic != null)
             transformer.addPredicate(f -> (f.access & Opcodes.ACC_STATIC) != 0);
         if(fieldType != null)
-            transformer.addPredicate(f -> Type.getType(f.desc).getClassName().equals(fieldType.name));
+            transformer.addPredicate(f -> Type.getType(f.desc).getClassName().equals(fieldType.getName()));
         if(name != null)
             transformer.addPredicate(f -> f.name.equals(name));
     }

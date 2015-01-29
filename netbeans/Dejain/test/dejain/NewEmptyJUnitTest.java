@@ -166,7 +166,7 @@ public class NewEmptyJUnitTest {
     }
     
     private static Predicate<TypeContext> tname(Predicate<String> assertion) {
-        return x -> assertion.test(x.name);
+        return x -> assertion.test(x.getName());
     }
     
     private static <T> Predicate<T> is(T other) {
