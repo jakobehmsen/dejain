@@ -50,6 +50,11 @@ public class NameTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
+    public String getName(String thisClassName) {
+        return name;
+    }
+    
+    @Override
     public String getDescriptor(String thisClassName) {
         return Type.getDescriptor(c);
     }

@@ -22,8 +22,13 @@ public class ThisTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
+    public String getName(String thisClassName) {
+        return thisClassName.replace("/", ".");
+    }
+
+    @Override
     public String getSimpleName(String thisClassName) {
-        String name = getDescriptor(thisClassName);
+        String name = getName(thisClassName);
         return name.substring(name.lastIndexOf("."));
     }
 

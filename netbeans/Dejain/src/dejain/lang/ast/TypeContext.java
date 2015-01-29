@@ -10,12 +10,32 @@ import java.util.logging.Logger;
 import org.antlr.v4.runtime.RuleContext;
 
 public interface TypeContext extends Context {
+    /**
+     * 
+     * @param thisClassName Separated by '/'.
+     * @return 
+     */
     String getDescriptor(String thisClassName);
+    /**
+     * 
+     * @param thisClassName Separated by '/'.
+     * @return 
+     */
+    String getName(String thisClassName);
+    /**
+     * 
+     * @param thisClassName Separated by '/'.
+     * @return 
+     */
     String getSimpleName(String thisClassName);
     boolean isCompatibleWith(TypeContext other);
     
     default String getDescriptor() {
-        return TypeContext.this.getDescriptor(null);
+        return getDescriptor(null);
+    }
+    
+    default String getName() {
+        return getName(null);
     }
     
     default String getSimpleName() {
