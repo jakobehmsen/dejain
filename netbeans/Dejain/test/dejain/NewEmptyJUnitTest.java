@@ -107,7 +107,8 @@ public class NewEmptyJUnitTest {
     }
     
     private static Predicate<ModuleContext> classCountIs(int classCount) {
-        return m -> m.classes.size() == classCount;
+        return m -> 
+            m.classes.size() == classCount;
     }
     
     private static Predicate<ModuleContext> firstClass(Predicate<ClassContext> assertion) {
@@ -166,7 +167,8 @@ public class NewEmptyJUnitTest {
     }
     
     private static Predicate<TypeContext> tname(Predicate<String> assertion) {
-        return x -> assertion.test(x.getDescriptor());
+        return x -> 
+            assertion.test(x.getName());
     }
     
     private static <T> Predicate<T> is(T other) {
