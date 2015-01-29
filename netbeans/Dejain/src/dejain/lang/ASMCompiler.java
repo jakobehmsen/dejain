@@ -24,8 +24,12 @@ import dejain.lang.ast.ModuleContext;
 import dejain.lang.ast.ReturnContext;
 import dejain.lang.ast.MetaContext;
 import dejain.lang.ast.CodeContext;
+import dejain.lang.ast.CodeVisitor;
 import dejain.lang.ast.FieldGetContext;
+import dejain.lang.ast.FieldSetContext;
+import dejain.lang.ast.InvocationContext;
 import dejain.lang.ast.LiteralDelegateContext;
+import dejain.lang.ast.MemberVisitor;
 import dejain.lang.ast.NameTypeContext;
 import dejain.lang.ast.ThisContext;
 import dejain.lang.ast.TypeContext;
@@ -34,6 +38,8 @@ import dejain.runtime.asm.ClassTransformerSequence;
 import dejain.runtime.asm.CommonClassTransformer;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,8 +62,10 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.JumpInsnNode;
@@ -167,7 +175,119 @@ public class ASMCompiler {
             }
         });
         
-        return new ModuleContext(new Region(program), classes);
+        ModuleContext moduleCtx = new ModuleContext(new Region(program), classes);
+        
+        processMeta(moduleCtx);
+        
+        return moduleCtx;
+    }
+    
+    private class MetaProcessing {
+        public int generatorCount;
+    }
+    
+    private void processMeta(ModuleContext ctx) {
+        MetaProcessing mp = new MetaProcessing();
+        
+        ctx.classes.forEach(c -> {
+            c.members.forEach(m -> {
+                m.accept(new MemberVisitor() {
+                    @Override
+                    public void visitMethod(MethodContext ctx) {
+                        processMeta(ctx.body, mp);
+                    }
+
+                    @Override
+                    public void visitField(FieldContext ctx) {
+                        if(ctx.value != null)
+                            processMeta(ctx.value, mp);
+                    }
+                });
+            });
+        });
+    }
+    
+    private void processMeta(List<CodeContext> codeCtxs, MetaProcessing mp) {
+        codeCtxs.forEach(c -> processMeta(c, mp));
+    }
+    
+    private void processMeta(CodeContext ctx, MetaProcessing mp) {
+        ctx.accept(new CodeVisitor() {
+            @Override
+            public void visitReturn(ReturnContext ctx) {
+                ctx.expression.accept(this);
+            }
+
+            @Override
+            public void visitStringLiteral(LiteralContext<String> ctx) { }
+
+            @Override
+            public void visitIntegerLiteral(LiteralContext<Integer> ctx) { }
+
+            @Override
+            public void visitBinaryExpression(BinaryExpressionContext ctx) {
+                ctx.lhs.accept(this);
+                ctx.rhs.accept(this);
+            }
+
+            @Override
+            public void visitInvocation(InvocationContext ctx) {
+                ctx.target.accept(this);
+                ctx.arguments.forEach(a -> a.accept(this));
+            }
+
+            @Override
+            public void visitFieldSet(FieldSetContext ctx) {
+                ctx.target.accept(this);
+                ctx.value.accept(this);
+            }
+
+            @Override
+            public void visitLongLiteral(LiteralContext<Long> ctx) { }
+
+            @Override
+            public void visitMeta(MetaContext ctx) {
+                ArrayList<Message> metaErrorMessages = new ArrayList<>();
+                
+                ctx.body.forEach(s -> s.resolve(null, classResolver, metaErrorMessages));
+                
+                // 1) Generate code to generate code
+                ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
+                generatorClassNode.version = Opcodes.V1_8;
+                generatorClassNode.access = Opcodes.ACC_PUBLIC;
+                generatorClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
+                generatorClassNode.superName = "java/lang/Object";
+                MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, "generator", Type.getMethodDescriptor(Type.getType(String.class)), null, new String[]{});
+                generatorClassNode.methods.add(generatorMethod);
+                
+                GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
+                MethodContext.toCode("Generator", ctx.body, new MethodContext.MethodCodeGenerator(generatorAdapter, null));
+                
+                SingleClassLoader classLoader = new SingleClassLoader(generatorClassNode);
+                Class<?> generatorClass2 = classLoader.loadClass();
+                
+                try {
+                    Method m = generatorClass2.getMethod("generator", null);
+                    String str = (String)m.invoke(null, null);
+                    str.toString();
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    Logger.getLogger(ASMCompiler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                mp.generatorCount++;
+                
+                // 2) Evaluate the generated code which result in a String
+                // 3) Parse that String into an expression which the MetaContext now is proxy of.
+            }
+
+            @Override
+            public void visitThis(ThisContext ctx) { }
+
+            @Override
+            public void visitFieldGet(FieldGetContext ctx) {
+                ctx.target.accept(this);
+            }
+        });
     }
 
     private List<dejain.lang.ast.CodeContext> getStatements(DejainParser.StatementsContext ctx) {
@@ -249,14 +369,14 @@ public class ASMCompiler {
             public ExpressionContext visitMetaExpression(DejainParser.MetaExpressionContext ctx) {
                 ArrayList<CodeContext> body = new ArrayList<>();
                 
-                if(ctx.exception != null) {
+                if(ctx.expression() != null) {
                     ExpressionContext exprCtx = getExpression(ctx.expression());
                     body.add(new ReturnContext(new Region(ctx), exprCtx));
                 } else {
                     body.addAll(getStatements(ctx.statements()));
                 }
                 
-                return new MetaContext(null, null);
+                return new MetaContext(new Region(ctx), body);
             }
 
             @Override

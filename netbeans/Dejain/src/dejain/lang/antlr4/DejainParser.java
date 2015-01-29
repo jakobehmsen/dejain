@@ -1243,7 +1243,7 @@ public class DejainParser extends Parser {
 			{
 			setState(261);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << OPEN_BRA) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
 				{
 				setState(253); expression();
 				setState(258);
@@ -1339,7 +1339,7 @@ public class DejainParser extends Parser {
 			setState(268);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRY) | (1L << KW_IF) | (1L << KW_RETURN) | (1L << KW_THROW) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << OPEN_BRA) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRY) | (1L << KW_IF) | (1L << KW_RETURN) | (1L << KW_THROW) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
 				{
 				{
 				setState(265); statement();
@@ -1402,7 +1402,6 @@ public class DejainParser extends Parser {
 			case KW_TRUE:
 			case KW_FALSE:
 			case ID:
-			case OPEN_BRA:
 			case INTEGER:
 			case LONG:
 			case STRING:
@@ -1536,17 +1535,25 @@ public class DejainParser extends Parser {
 		MetaExpressionContext _localctx = new MetaExpressionContext(_ctx, getState());
 		enterRule(_localctx, 50, RULE_metaExpression);
 		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(283); match(DOLLAR);
 			setState(289);
 			switch (_input.LA(1)) {
+			case ELLIPSES:
 			case DOLLAR:
-				enterOuterAlt(_localctx, 1);
+			case KW_THIS_RESULT:
+			case KW_TRUE:
+			case KW_FALSE:
+			case ID:
+			case INTEGER:
+			case LONG:
+			case STRING:
 				{
-				setState(283); match(DOLLAR);
 				setState(284); expression();
 				}
 				break;
 			case OPEN_BRA:
-				enterOuterAlt(_localctx, 2);
 				{
 				setState(285); match(OPEN_BRA);
 				setState(286); statements();
@@ -1555,6 +1562,7 @@ public class DejainParser extends Parser {
 				break;
 			default:
 				throw new NoViableAltException(this);
+			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -1849,15 +1857,15 @@ public class DejainParser extends Parser {
 		int _la;
 		try {
 			setState(334);
-			switch ( getInterpreter().adaptivePredict(_input,36,_ctx) ) {
-			case 1:
+			switch (_input.LA(1)) {
+			case OPEN_BRA:
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(325); match(OPEN_BRA);
 				setState(329);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRY) | (1L << KW_IF) | (1L << KW_RETURN) | (1L << KW_THROW) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << OPEN_BRA) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRY) | (1L << KW_IF) | (1L << KW_RETURN) | (1L << KW_THROW) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
 					{
 					{
 					setState(326); statement();
@@ -1870,13 +1878,26 @@ public class DejainParser extends Parser {
 				setState(332); match(CLOSE_BRA);
 				}
 				break;
-
-			case 2:
+			case ELLIPSES:
+			case DOLLAR:
+			case KW_THIS_RESULT:
+			case KW_TRY:
+			case KW_IF:
+			case KW_RETURN:
+			case KW_THROW:
+			case KW_TRUE:
+			case KW_FALSE:
+			case ID:
+			case INTEGER:
+			case LONG:
+			case STRING:
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(333); statement();
 				}
 				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -1917,14 +1938,14 @@ public class DejainParser extends Parser {
 			{
 			setState(336); match(KW_ELSE);
 			setState(346);
-			switch ( getInterpreter().adaptivePredict(_input,38,_ctx) ) {
-			case 1:
+			switch (_input.LA(1)) {
+			case OPEN_BRA:
 				{
 				setState(337); match(OPEN_BRA);
 				setState(341);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRY) | (1L << KW_IF) | (1L << KW_RETURN) | (1L << KW_THROW) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << OPEN_BRA) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ELLIPSES) | (1L << DOLLAR) | (1L << KW_THIS_RESULT) | (1L << KW_TRY) | (1L << KW_IF) | (1L << KW_RETURN) | (1L << KW_THROW) | (1L << KW_TRUE) | (1L << KW_FALSE) | (1L << ID) | (1L << INTEGER) | (1L << LONG) | (1L << STRING))) != 0)) {
 					{
 					{
 					setState(338); statement();
@@ -1937,12 +1958,25 @@ public class DejainParser extends Parser {
 				setState(344); match(CLOSE_BRA);
 				}
 				break;
-
-			case 2:
+			case ELLIPSES:
+			case DOLLAR:
+			case KW_THIS_RESULT:
+			case KW_TRY:
+			case KW_IF:
+			case KW_RETURN:
+			case KW_THROW:
+			case KW_TRUE:
+			case KW_FALSE:
+			case ID:
+			case INTEGER:
+			case LONG:
+			case STRING:
 				{
 				setState(345); statement();
 				}
 				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 			}
 		}
@@ -2664,7 +2698,7 @@ public class DejainParser extends Parser {
 		"\2\2\24\u00bf\3\2\2\2\26\u00d7\3\2\2\2\30\u00d9\3\2\2\2\32\u00dc\3\2\2"+
 		"\2\34\u00e3\3\2\2\2\36\u00e5\3\2\2\2 \u00f4\3\2\2\2\"\u00f6\3\2\2\2$\u00f8"+
 		"\3\2\2\2&\u00fa\3\2\2\2(\u0107\3\2\2\2*\u0109\3\2\2\2,\u010e\3\2\2\2."+
-		"\u0115\3\2\2\2\60\u0119\3\2\2\2\62\u011b\3\2\2\2\64\u0123\3\2\2\2\66\u0125"+
+		"\u0115\3\2\2\2\60\u0119\3\2\2\2\62\u011b\3\2\2\2\64\u011d\3\2\2\2\66\u0125"+
 		"\3\2\2\28\u012d\3\2\2\2:\u0132\3\2\2\2<\u013a\3\2\2\2>\u013f\3\2\2\2@"+
 		"\u0150\3\2\2\2B\u0152\3\2\2\2D\u0162\3\2\2\2F\u0164\3\2\2\2H\u016a\3\2"+
 		"\2\2J\u016d\3\2\2\2L\u0174\3\2\2\2N\u0176\3\2\2\2P\u0178\3\2\2\2R\u017a"+
@@ -2726,9 +2760,9 @@ public class DejainParser extends Parser {
 		"\u0113\u0114\7\31\2\2\u0114\u0116\3\2\2\2\u0115\u0111\3\2\2\2\u0115\u0112"+
 		"\3\2\2\2\u0116/\3\2\2\2\u0117\u011a\5\66\34\2\u0118\u011a\5> \2\u0119"+
 		"\u0117\3\2\2\2\u0119\u0118\3\2\2\2\u011a\61\3\2\2\2\u011b\u011c\7\3\2"+
-		"\2\u011c\63\3\2\2\2\u011d\u011e\7\b\2\2\u011e\u0124\5\32\16\2\u011f\u0120"+
+		"\2\u011c\63\3\2\2\2\u011d\u0123\7\b\2\2\u011e\u0124\5\32\16\2\u011f\u0120"+
 		"\7!\2\2\u0120\u0121\5,\27\2\u0121\u0122\7\"\2\2\u0122\u0124\3\2\2\2\u0123"+
-		"\u011d\3\2\2\2\u0123\u011f\3\2\2\2\u0124\65\3\2\2\2\u0125\u012b\58\35"+
+		"\u011e\3\2\2\2\u0123\u011f\3\2\2\2\u0124\65\3\2\2\2\u0125\u012b\58\35"+
 		"\2\u0126\u0128\5:\36\2\u0127\u0129\5<\37\2\u0128\u0127\3\2\2\2\u0128\u0129"+
 		"\3\2\2\2\u0129\u012c\3\2\2\2\u012a\u012c\5<\37\2\u012b\u0126\3\2\2\2\u012b"+
 		"\u012a\3\2\2\2\u012c\67\3\2\2\2\u012d\u012e\7\16\2\2\u012e\u012f\7!\2"+

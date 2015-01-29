@@ -87,6 +87,10 @@ public class MethodContext extends AbstractContext implements MemberContext {
         }
     }
 
+    public static void toCode(String thisClassName, List<CodeContext> body, MethodCodeGenerator generator) {
+        toCode(thisClassName, body, generator, new InsnList());
+    }
+
     private static void toCode(String thisClassName, List<CodeContext> body, MethodCodeGenerator generator, InsnList originalIl) {
         body.forEach(ctx -> toCode(thisClassName, ctx, generator, originalIl, false));
     }

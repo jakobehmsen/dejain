@@ -43,7 +43,7 @@ statements: statement*;
 statement: nonDelimitedStatement | delimitedStatement SEMI_COLON;
 nonDelimitedStatement: tryCatchStatement | ifElseStatement;
 proceedStatement: ELLIPSES;
-metaExpression: DOLLAR expression | OPEN_BRA statements CLOSE_BRA;
+metaExpression: DOLLAR (expression | OPEN_BRA statements CLOSE_BRA);
 tryCatchStatement: 
     tryStatement ((catchStatement finallyStatement?) | finallyStatement);
 tryStatement: KW_TRY OPEN_BRA statements CLOSE_BRA;
