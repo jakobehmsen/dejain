@@ -2,15 +2,18 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class MetaContext extends AbstractContext implements ExpressionContext {
     public List<CodeContext> body;
+    public Method bodyAsMethod;
 
-    public MetaContext(ASMCompiler.Region region, List<CodeContext> body) {
+    public MetaContext(ASMCompiler.Region region, List<CodeContext> body, Method bodyAsMethod) {
         super(region);
         
         this.body = body;
+        this.bodyAsMethod = bodyAsMethod;
     }
 
     @Override
