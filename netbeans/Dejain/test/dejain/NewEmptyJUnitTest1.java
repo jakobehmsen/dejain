@@ -153,6 +153,29 @@ public class NewEmptyJUnitTest1 {
     }
     
     @Test
+    public void testAllClassesAdd1PublicMethodReturningGeneratedStringConcatenation() throws IOException {
+        String str1 = "H";
+        String str2 = "i";
+        String expectedResult = str1 + str2;
+        
+        String strConcSrc = "\"\\\"" + str1 + "\\\" + \\\"" + str2 + "\\\"\"";
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public String toString() {return $" + strConcSrc + ";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toString"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toString", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAdd1PublicMethodReturningStringConcatenation() throws IOException {
         String str1 = "H";
         String str2 = "i";
