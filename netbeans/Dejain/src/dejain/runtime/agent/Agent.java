@@ -28,7 +28,7 @@ public class Agent {
 //        ClassTransformer classTransformer = compiler.compile(sourceCode, errorMessages);
         // Parsing and ClassResolver creation can be performed in parallel
         
-        module.resolve(null, classResolver, errorMessages);
+        module.resolve(null, null, classResolver, errorMessages);
         
         if(errorMessages.isEmpty()) {
 //            ClassTransformer classTransformer = module.toClassTransformer();

@@ -12,7 +12,7 @@ public class ThisTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         classInfo = thisClass;
     }
 

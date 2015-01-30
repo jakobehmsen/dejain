@@ -24,10 +24,10 @@ public class FieldSetContext extends AbstractContext implements ExpressionContex
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        target.resolve(thisClass, resolver, errorMessages);
-        declaringClass.resolve(thisClass, resolver, errorMessages);
-        value.resolve(thisClass, resolver, errorMessages);
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        target.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        value.resolve(thisClass, expectedResultType, resolver, errorMessages);
         
 //        Class<?> c;
 //        

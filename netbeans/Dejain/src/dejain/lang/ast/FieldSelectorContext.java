@@ -23,8 +23,8 @@ public class FieldSelectorContext {
         this.name = name;
     }
 
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        fieldType.resolve(thisClass, resolver, errorMessages);
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        fieldType.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
     public void populate(CommonClassTransformer transformer) {

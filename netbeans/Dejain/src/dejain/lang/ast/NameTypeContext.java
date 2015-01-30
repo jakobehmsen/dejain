@@ -29,7 +29,7 @@ public class NameTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         try {
 //            name = resolver.resolveClassName(name);
             c = resolver.resolveType(name);

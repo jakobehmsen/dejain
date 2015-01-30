@@ -101,13 +101,26 @@ public class ASMCompiler {
         this.classResolver = classResolver;
     }
     
-    public ModuleContext compile(InputStream sourceCode) throws IOException {
-        ArrayList<ClassContext> classes = new ArrayList<>();
-        
+    private DejainParser createParser(InputStream sourceCode) throws IOException {
         CharStream charStream = new ANTLRInputStream(sourceCode);
         DejainLexer lexer = new DejainLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        DejainParser parser = new DejainParser(tokenStream);
+        return new DejainParser(tokenStream);
+    }
+    
+    public ExpressionContext compileExpression(InputStream sourceCode) throws IOException {
+        DejainParser parser = createParser(sourceCode);
+        
+        DejainParser.ExpressionContext expression = parser.expression();
+        
+        MetaProcessing mp = new MetaProcessing();
+        return getExpression(expression, mp);
+    }
+    
+    public ModuleContext compile(InputStream sourceCode) throws IOException {
+        ArrayList<ClassContext> classes = new ArrayList<>();
+        
+        DejainParser parser = createParser(sourceCode);
         
         DejainParser.ProgramContext program = parser.program();
         
@@ -324,6 +337,7 @@ public class ASMCompiler {
             @Override
             public ExpressionContext visitStringLiteral(DejainParser.StringLiteralContext ctx) {
                 String value = ctx.getText().substring(1, ctx.getText().length() - 1);
+                value = value.replace("\\\\", "\\").replace("\\\"", "\"");
                 return new LiteralContext(new Region(ctx), value, LiteralDelegateContext.String);
             }
 
@@ -381,7 +395,7 @@ public class ASMCompiler {
                 
                 ArrayList<Message> metaErrorMessages = new ArrayList<>();
                 
-                body.forEach(s -> s.resolve(null, classResolver, metaErrorMessages));
+                body.forEach(s -> s.resolve(null, new NameTypeContext(new Region(ctx), String.class), classResolver, metaErrorMessages));
                 
                 // 1) Generate code to generate code
                 ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
@@ -409,7 +423,7 @@ public class ASMCompiler {
                 
                 mp.generatorCount++;
                 
-                return new MetaContext(new Region(ctx), body, m);
+                return new MetaContext(new Region(ctx), ASMCompiler.this, body, m);
             }
 
             @Override
@@ -685,6 +699,14 @@ public class ASMCompiler {
         public Message(Region region, String text) {
             this.region = region;
             this.text = text;
+        }
+        
+        public Region getRegion() {
+            return region;
+        }
+        
+        public String getText() {
+            return text;
         }
 
         @Override

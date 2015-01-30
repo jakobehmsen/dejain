@@ -42,10 +42,10 @@ public class FieldContext extends AbstractContext implements MemberContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        selector.resolve(thisClass, resolver, errorMessages);
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        selector.resolve(thisClass, expectedResultType, resolver, errorMessages);
         if(value != null)
-            value.resolve(thisClass, resolver, errorMessages);
+            value.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
     @Override

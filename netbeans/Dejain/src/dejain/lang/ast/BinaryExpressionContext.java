@@ -35,11 +35,11 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
     private TypeContext resultType;
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         resultType = new NameTypeContext(getRegion(), Void.class);
         
-        lhs.resolve(thisClass, resolver, errorMessages);
-        rhs.resolve(thisClass, resolver, errorMessages);
+        lhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        rhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
         
         if(lhs.resultType().getDescriptor().equals("Ljava/lang/String;") || rhs.resultType().getDescriptor().equals("Ljava/lang/String;")) {
             switch(operator) {

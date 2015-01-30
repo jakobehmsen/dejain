@@ -40,9 +40,9 @@ public class MethodContext extends AbstractContext implements MemberContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
-        selector.resolve(thisClass, resolver, errorMessages);
-        body.forEach(s -> s.resolve(thisClass, resolver, errorMessages));
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
+        selector.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        body.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
     public void populate(CompositeTransformer<ClassNode> classTransformer, IfAllTransformer<MethodNode> transformer) {
@@ -170,7 +170,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
 
             @Override
             public void visitMeta(MetaContext ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                ctx.generatedExpression.accept(this);
             }
 
             @Override

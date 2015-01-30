@@ -17,7 +17,7 @@ public class LiteralContext<T> extends AbstractContext implements ExpressionCont
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         
     }
 

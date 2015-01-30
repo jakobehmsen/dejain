@@ -26,9 +26,9 @@ public class MethodSelectorContext {
         this.parameterTypes = parameterTypes;
     }
 
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        returnType.resolve(thisClass, resolver, errorMessages);
-        parameterTypes.forEach(pt -> pt.resolve(thisClass, resolver, errorMessages));
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        returnType.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        parameterTypes.forEach(pt -> pt.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
     public void populate(IfAllTransformer<MethodNode> transformer) {

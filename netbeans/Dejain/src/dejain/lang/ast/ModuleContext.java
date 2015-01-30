@@ -23,8 +23,8 @@ public class ModuleContext extends AbstractContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        classes.forEach(c -> c.resolve(thisClass, resolver, errorMessages));
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        classes.forEach(c -> c.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
     public Function<ClassNode, Runnable> toClassTransformer() {

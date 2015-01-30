@@ -366,7 +366,7 @@ public class NewEmptyJUnitTest1 {
             try {
                 ModuleContext module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
                 ArrayList<Message> errorMessages = new ArrayList<>();
-                module.resolve(null, resolver, errorMessages);
+                module.resolve(null, null, resolver, errorMessages);
                 
                 if(errorMessages.size() > 0) {
                     String msg = errorMessages.stream().map(m -> m.toString()).collect(Collectors.joining("\n"));

@@ -16,8 +16,8 @@ public class FieldGetContext extends AbstractContext implements ExpressionContex
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        target.resolve(thisClass, resolver, errorMessages);
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        target.resolve(thisClass, expectedResultType, resolver, errorMessages);
         fieldType = target.resultType().getFieldType(fieldName);
     }
 

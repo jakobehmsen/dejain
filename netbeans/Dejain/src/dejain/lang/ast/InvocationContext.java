@@ -35,13 +35,13 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         if(target != null)
-            target.resolve(thisClass, resolver, errorMessages);
+            target.resolve(thisClass, expectedResultType, resolver, errorMessages);
         else
-            declaringClass.resolve(thisClass, resolver, errorMessages);
+            declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
         
-        arguments.forEach(a -> a.resolve(thisClass, resolver, errorMessages));
+        arguments.forEach(a -> a.resolve(thisClass, expectedResultType, resolver, errorMessages));
         
 //        Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
 //        

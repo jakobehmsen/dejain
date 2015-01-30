@@ -31,11 +31,11 @@ public class ClassContext extends AbstractContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        annotations.forEach(a -> a.resolve(this, resolver, errorMessages));
+    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        annotations.forEach(a -> a.resolve(this, expectedResultType, resolver, errorMessages));
         if(type != null)
-            type.resolve(this, resolver, errorMessages);
-        members.forEach(m -> m.resolve(this, resolver, errorMessages));
+            type.resolve(this, expectedResultType, resolver, errorMessages);
+        members.forEach(m -> m.resolve(this, expectedResultType, resolver, errorMessages));
     }
 
     public void populate(CommonClassTransformer transformer) {
