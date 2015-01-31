@@ -355,6 +355,15 @@ public class ASMCompiler {
             }
 
             @Override
+            public ExpressionAST visitLeafExpression(DejainParser.LeafExpressionContext ctx) {
+                ExpressionAST result = ctx.getChild(0).accept(this);
+                
+                // Visit chain
+                
+                return result;
+            }
+
+            @Override
             public ExpressionAST visitBinarySum(DejainParser.BinarySumContext ctx) {
                 ExpressionAST result = ctx.first.accept(this);
                 // Derive 
