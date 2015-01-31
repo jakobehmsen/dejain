@@ -40,6 +40,38 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
         this.bodyAsMethod = bodyAsMethod;
         this.mp = mp;
     }
+    
+    private static int getOpcodesVersion() {
+        String javaVersion = System.getProperty("java.version");
+        String[] javaVersionNumbers = javaVersion.split("\\.|_");
+        int major = Integer.parseInt(javaVersionNumbers[0]);
+        int minor = Integer.parseInt(javaVersionNumbers[1]);
+        
+        switch(major) {
+            case 1:
+                switch(minor) {
+                    case 1:
+                        return Opcodes.V1_1;
+                    case 2:
+                        return Opcodes.V1_2;
+                    case 3:
+                        return Opcodes.V1_3;
+                    case 4:
+                        return Opcodes.V1_4;
+                    case 5:
+                        return Opcodes.V1_5;
+                    case 6:
+                        return Opcodes.V1_6;
+                    case 7:
+                        return Opcodes.V1_7;
+                    case 8:
+                        return Opcodes.V1_8;
+                }
+            break;
+        }
+        
+        return -1;
+    }
 
     @Override
     public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
@@ -51,7 +83,7 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
 
         // 1) Generate code to generate code
         ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
-        generatorClassNode.version = Opcodes.V1_8;
+        generatorClassNode.version = getOpcodesVersion();
         generatorClassNode.access = Opcodes.ACC_PUBLIC;
         generatorClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
         generatorClassNode.superName = "java/lang/Object";
