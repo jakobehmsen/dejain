@@ -24,6 +24,7 @@ import dejain.lang.CommonClassMap;
 import dejain.lang.CommonClassResolver;
 import dejain.lang.ExhaustiveClassTransformer;
 import dejain.lang.ast.ModuleContext;
+import dejain.lang.ast.Transformation;
 import dejain.lang.ast.TypeContext;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.ByteArrayInputStream;
@@ -43,7 +44,7 @@ import org.objectweb.asm.tree.ClassNode;
  *
  * @author Jakob
  */
-public class NewEmptyJUnitTest1 {
+public class SourceToClassTest {
     @Test
     public void testAllClassesAdd1PublicPrimitiveField() throws IOException {
         testSourceToClasses(
@@ -395,12 +396,12 @@ public class NewEmptyJUnitTest1 {
                     String msg = errorMessages.stream().map(m -> m.toString()).collect(Collectors.joining("\n"));
                     throw new RuntimeException(msg);
                 } else {
-                    Function<ClassNode, Runnable> classTransformer = module.toClassTransformer();
+                    Function<Transformation<ClassNode>, Runnable> classTransformer = module.toClassTransformer();
                     ExhaustiveClassTransformer eTransformer = new ExhaustiveClassTransformer(classTransformer);
                     return eTransformer.transform(bytes);
                 }
             } catch (IOException ex) {
-                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             return bytes;
         };
@@ -425,7 +426,7 @@ public class NewEmptyJUnitTest1 {
                     return cl.loadClass(className);
 //                    return Class.forName(source, true, cl);
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(NewEmptyJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SourceToAstTest.class.getName()).log(Level.SEVERE, null, ex);
                     return null;
                 }
             })
@@ -473,7 +474,7 @@ public class NewEmptyJUnitTest1 {
                 Object instance = c.newInstance();
                 return predicate.test(instance);
             } catch (InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             return false;
@@ -486,7 +487,7 @@ public class NewEmptyJUnitTest1 {
                 Method m = i.getClass().getDeclaredMethod(name);
                 return predicate.test(i, m);
             } catch (NoSuchMethodException | SecurityException ex) {
-                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             return false;
@@ -500,7 +501,7 @@ public class NewEmptyJUnitTest1 {
                 m.setAccessible(true);
                 return predicate.test(i, m);
             } catch (NoSuchFieldException | SecurityException ex) {
-                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             return false;
@@ -513,7 +514,7 @@ public class NewEmptyJUnitTest1 {
                 Object result = m.invoke(i);
                 return predicate.test(result);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             return false;
@@ -526,7 +527,7 @@ public class NewEmptyJUnitTest1 {
                 Object value = f.get(i);
                 return predicate.test(value);
             } catch (IllegalArgumentException | IllegalAccessException ex) {
-                Logger.getLogger(NewEmptyJUnitTest1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             return false;
@@ -578,7 +579,7 @@ public class NewEmptyJUnitTest1 {
                 
                 return cacheBytesCache;
             } catch (IOException ex) {
-                Logger.getLogger(NewEmptyJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SourceToAstTest.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
             }
         };
