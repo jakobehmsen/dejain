@@ -1,7 +1,9 @@
 package dejain.lang;
 
+import dejain.lang.ast.Transformation;
 import dejain.runtime.asm.ClassAction;
 import dejain.runtime.asm.ClassTransformer;
+import java.util.Hashtable;
 import java.util.function.Function;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -10,9 +12,10 @@ import org.objectweb.asm.tree.ClassNode;
 public class ExhaustiveClassTransformer {
     private ClassTransformer transformer;
 
-    public ExhaustiveClassTransformer(Function<ClassNode, Runnable> transformer) {
+    public ExhaustiveClassTransformer(Function<Transformation<ClassNode>, Runnable> transformer) {
         this((ClassTransformer)(c -> {
-            Runnable t = transformer.apply(c);
+            Transformation<ClassNode> transformation = new Transformation<>(c, new Hashtable<String, String>());
+            Runnable t = transformer.apply(transformation);
             return t != null ? c1 -> t.run() : null;
         }));
     }

@@ -27,19 +27,19 @@ public class ModuleContext extends AbstractContext {
         classes.forEach(c -> c.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
-    public Function<ClassNode, Runnable> toClassTransformer() {
-        FirstByIndexTransformer<ClassNode, String> transformer = new FirstByIndexTransformer<>(c -> c.name);
+    public Function<Transformation<ClassNode>, Runnable> toClassTransformer() {
+        FirstByIndexTransformer<Transformation<ClassNode>, String> transformer = new FirstByIndexTransformer<>(c -> c.getTarget().name);
         
         populate(transformer);
         
         return transformer;
     }
     
-    public void populate(FirstByIndexTransformer<ClassNode, String> classesReformer) {
+    public void populate(FirstByIndexTransformer<Transformation<ClassNode>, String> classesTransformer) {
         classes.forEach(c -> {
-            IfAllTransformer<ClassNode> classTransformer = new IfAllTransformer<>();
+            IfAllTransformer<Transformation<ClassNode>> classTransformer = new IfAllTransformer<>();
             c.populate(classTransformer);
-            classesReformer.addTransformer(classTransformer);
+            classesTransformer.addTransformer(classTransformer);
         });
     }
 }

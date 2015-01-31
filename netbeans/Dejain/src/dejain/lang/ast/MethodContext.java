@@ -45,21 +45,21 @@ public class MethodContext extends AbstractContext implements MemberContext {
         body.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
-    public void populate(CompositeTransformer<ClassNode> classTransformer, IfAllTransformer<MethodNode> transformer) {
+    public void populate(CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<MethodNode>> transformer) {
         if(!isAdd) {
             selector.populate(transformer);
         } else {
             classTransformer.addTransformer(c -> {
                 return () -> {
-                    String thisClassName = c.name;
+                    String thisClassName = c.getTarget().name;
                     
                     int methodAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String methodName = selector.name;
                     Type[] argumentTypes = selector.parameterTypes.stream()
-                        .map(x -> Type.getType(x.getDescriptor(c.name)))
+                        .map(x -> Type.getType(x.getDescriptor(c.getTarget().name)))
                         .toArray(size -> new Type[size]);
                     String methodDescriptor = Type.getMethodDescriptor(
-                        Type.getType(selector.returnType.getDescriptor(c.name)), 
+                        Type.getType(selector.returnType.getDescriptor(c.getTarget().name)), 
                         argumentTypes);
                     
                     MethodNode methodNode = new MethodNode(methodAccess, methodName, methodDescriptor, null, null);
@@ -73,15 +73,15 @@ public class MethodContext extends AbstractContext implements MemberContext {
                     methodNode.visitEnd();
 
                     OptionalInt existingMethodIndex =
-                        IntStream.range(0, c.methods.size())
+                        IntStream.range(0, c.getTarget().methods.size())
                         .filter(i -> 
-                            ((MethodNode)c.methods.get(i)).name.equals(methodName) && 
-                            ((MethodNode)c.methods.get(i)).desc.equals(methodDescriptor))
+                            ((MethodNode)c.getTarget().methods.get(i)).name.equals(methodName) && 
+                            ((MethodNode)c.getTarget().methods.get(i)).desc.equals(methodDescriptor))
                         .findFirst();
                     if(existingMethodIndex.isPresent())
-                        c.methods.remove(existingMethodIndex.getAsInt());
+                        c.getTarget().methods.remove(existingMethodIndex.getAsInt());
 
-                    c.methods.add(methodNode);
+                    c.getTarget().methods.add(methodNode);
                 };
             });
         }

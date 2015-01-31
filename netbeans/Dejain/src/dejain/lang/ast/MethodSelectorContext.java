@@ -31,19 +31,19 @@ public class MethodSelectorContext {
         parameterTypes.forEach(pt -> pt.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
-    public void populate(IfAllTransformer<MethodNode> transformer) {
+    public void populate(IfAllTransformer<Transformation<MethodNode>> transformer) {
         if(accessModifier != null)
-            transformer.addPredicate(m -> (m.access & accessModifier) != 0);
+            transformer.addPredicate(m -> (m.getTarget().access & accessModifier) != 0);
         if(isStatic != null)
-            transformer.addPredicate(m -> (m.access & Opcodes.ACC_STATIC) != 0);
+            transformer.addPredicate(m -> (m.getTarget().access & Opcodes.ACC_STATIC) != 0);
         if(returnType != null)
-            transformer.addPredicate(m -> Type.getType(m.desc).getClassName().equals(returnType.getDescriptor()));
+            transformer.addPredicate(m -> Type.getType(m.getTarget().desc).getClassName().equals(returnType.getDescriptor()));
         if(name != null)
-            transformer.addPredicate(m -> m.name.equals(name));
+            transformer.addPredicate(m -> m.getTarget().name.equals(name));
         
         if(parameterTypes != null) {
             transformer.addPredicate(m -> {
-                Type[] argumentTypes = Type.getArgumentTypes(m.desc);
+                Type[] argumentTypes = Type.getArgumentTypes(m.getTarget().desc);
                 
                 if(argumentTypes.length != parameterTypes.size())
                     return false;

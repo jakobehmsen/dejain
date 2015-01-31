@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jdk.internal.org.objectweb.asm.Type;
+import org.objectweb.asm.Type;
 
 public class NameTypeContext extends AbstractContext implements TypeContext {
     public String name;

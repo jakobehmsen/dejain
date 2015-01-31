@@ -12,6 +12,7 @@ import dejain.runtime.asm.IfAnyTransformer;
 import dejain.runtime.asm.IfAnyWithin;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -47,9 +48,9 @@ public class ClassContext extends AbstractContext {
         members.forEach(x -> x.populate(transformer));
     }
 
-    public void populate(IfAllTransformer<ClassNode> transformer) {
-        IfAllTransformer<FieldNode> fieldTransformer = new IfAllTransformer<>();
-        IfAllTransformer<MethodNode> methodTransformer = new IfAllTransformer<>();
+    public void populate(IfAllTransformer<Transformation<ClassNode>> transformer) {
+        IfAllTransformer<Transformation<FieldNode>> fieldTransformer = new IfAllTransformer<>();
+        IfAllTransformer<Transformation<MethodNode>> methodTransformer = new IfAllTransformer<>();
         
         members.forEach(x -> x.accept(new MemberVisitor() {
             @Override
@@ -63,8 +64,9 @@ public class ClassContext extends AbstractContext {
             }
         }));
         
-        transformer.addTransformer(new IfAnyWithin<>(c -> c.fields, fieldTransformer));
-        transformer.addTransformer(new IfAnyWithin<>(c -> c.methods, methodTransformer));
+        transformer.addTransformer(new IfAnyWithin<>(c -> (List<Transformation<FieldNode>>)c.getTarget().fields.stream().map(f -> c.inner(f)).collect(Collectors.toList()), fieldTransformer));
+        transformer.addTransformer(new IfAnyWithin<>(c -> (List<Transformation<MethodNode>>)c.getTarget().methods.stream().map(f -> c.inner(f)).collect(Collectors.toList()), methodTransformer));
+//        transformer.addTransformer(new IfAnyWithin<>(c -> c.getTarget().methods, methodTransformer));
     }
 
     public TypeContext getFieldType(String fieldName) {

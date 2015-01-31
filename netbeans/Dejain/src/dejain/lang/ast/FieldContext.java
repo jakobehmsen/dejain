@@ -55,7 +55,7 @@ public class FieldContext extends AbstractContext implements MemberContext {
         }
     }
 
-    public void populate(CompositeTransformer<ClassNode> classTransformer, IfAllTransformer<FieldNode> transformer) {
+    public void populate(CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<FieldNode>> transformer) {
         if(!isAdd)
             selector.populate(transformer);
         else {
@@ -66,9 +66,9 @@ public class FieldContext extends AbstractContext implements MemberContext {
                     String fieldDescriptor = selector.fieldType.getDescriptor();
 //                    String fieldDescriptor = Type.getDescriptor( selector.fieldType.getName());
                     if(this.value != null) {
-                        String thisClassName = c.name;
+                        String thisClassName = c.getTarget().name;
                     
-                        ((List<MethodNode>)c.methods).stream().filter(m -> m.name.equals("<init>")).forEach(cons -> {
+                        ((List<MethodNode>)c.getTarget().methods).stream().filter(m -> m.name.equals("<init>")).forEach(cons -> {
                             InsnList originalInstructions = cons.instructions;
                             cons.instructions = new InsnList();
                             
@@ -81,13 +81,13 @@ public class FieldContext extends AbstractContext implements MemberContext {
                                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
                                         generatorAdapter.loadThis();
                                         MethodContext.toCode(thisClassName, FieldContext.this.value, new MethodContext.MethodCodeGenerator(generatorAdapter, null), true);
-                                        generatorAdapter.putField(Type.getType(c.name), selector.name, Type.getType(selector.fieldType.getDescriptor(thisClassName)));
+                                        generatorAdapter.putField(Type.getType(c.getTarget().name), selector.name, Type.getType(selector.fieldType.getDescriptor(thisClassName)));
                                     }
                                 }
                             });
                         });
                     }
-                    c.fields.add(new FieldNode(fieldAccess, fieldName, fieldDescriptor, null, null));
+                    c.getTarget().fields.add(new FieldNode(fieldAccess, fieldName, fieldDescriptor, null, null));
                 };
             });
         }

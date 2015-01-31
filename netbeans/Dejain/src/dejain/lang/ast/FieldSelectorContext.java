@@ -34,14 +34,14 @@ public class FieldSelectorContext {
 //        );
     }
 
-    public void populate(IfAllTransformer<FieldNode> transformer) {
+    public void populate(IfAllTransformer<Transformation<FieldNode>> transformer) {
         if(accessModifier != null)
-            transformer.addPredicate(f -> (f.access & accessModifier) != 0);
+            transformer.addPredicate(f -> (f.getTarget().access & accessModifier) != 0);
         if(isStatic != null)
-            transformer.addPredicate(f -> (f.access & Opcodes.ACC_STATIC) != 0);
+            transformer.addPredicate(f -> (f.getTarget().access & Opcodes.ACC_STATIC) != 0);
         if(fieldType != null)
-            transformer.addPredicate(f -> Type.getType(f.desc).getClassName().equals(fieldType.getDescriptor()));
+            transformer.addPredicate(f -> Type.getType(f.getTarget().desc).getClassName().equals(fieldType.getDescriptor()));
         if(name != null)
-            transformer.addPredicate(f -> f.name.equals(name));
+            transformer.addPredicate(f -> f.getTarget().name.equals(name));
     }
 }
