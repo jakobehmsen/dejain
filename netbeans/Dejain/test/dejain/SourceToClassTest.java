@@ -177,6 +177,27 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAdd1PublicMethodReturningIntPlusInterpolatedInt() throws IOException {
+        int i1 = 5;
+        int i2 = 7;
+        int expectedResult = i1 + i2;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "class {+public int toInt() {return " + i1 + " + $" + i2 + ";}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("toInt"))
+                    .and(rreturnType(is(int.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("toInt", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAdd1PublicMethodReturningStringConcatenation() throws IOException {
         String str1 = "H";
         String str2 = "i";
