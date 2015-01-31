@@ -9,14 +9,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.beanutils.MethodUtils;
 
-public class InvocationContext extends AbstractContext implements ExpressionContext {
-    public ExpressionContext target;
-    public TypeContext declaringClass;
+public class InvocationAST extends AbstractAST implements ExpressionAST {
+    public ExpressionAST target;
+    public TypeAST declaringClass;
     public String methodName;
-    public List<ExpressionContext> arguments;
-    public TypeContext resultType;
+    public List<ExpressionAST> arguments;
+    public TypeAST resultType;
 
-    public InvocationContext(Region region, ExpressionContext target, TypeContext declaringClass, String methodName, List<ExpressionContext> arguments, TypeContext resultType) {
+    public InvocationAST(Region region, ExpressionAST target, TypeAST declaringClass, String methodName, List<ExpressionAST> arguments, TypeAST resultType) {
         super(region);
         
         this.target = target;
@@ -26,16 +26,16 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
         this.resultType = resultType;
     }
 
-    public static InvocationContext newStatic(Region region, TypeContext declaringClass, String methodName, List<ExpressionContext> arguments) {
-        return new InvocationContext(region, null, declaringClass, methodName, arguments, null);
+    public static InvocationAST newStatic(Region region, TypeAST declaringClass, String methodName, List<ExpressionAST> arguments) {
+        return new InvocationAST(region, null, declaringClass, methodName, arguments, null);
     }
 
-    public static InvocationContext newInstance(Region region, ExpressionContext target, String methodName, List<ExpressionContext> arguments) {
-        return new InvocationContext(region, target, null, methodName, arguments, null);
+    public static InvocationAST newInstance(Region region, ExpressionAST target, String methodName, List<ExpressionAST> arguments) {
+        return new InvocationAST(region, target, null, methodName, arguments, null);
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         if(target != null)
             target.resolve(thisClass, expectedResultType, resolver, errorMessages);
         else
@@ -61,7 +61,7 @@ public class InvocationContext extends AbstractContext implements ExpressionCont
     }
 
     @Override
-    public TypeContext resultType() {
+    public TypeAST resultType() {
         return resultType;
     }
 

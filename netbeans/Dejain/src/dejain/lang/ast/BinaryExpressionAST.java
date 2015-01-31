@@ -7,15 +7,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class BinaryExpressionContext extends AbstractContext implements ExpressionContext {
+public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     public static final int OPERATOR_ADD = 0;
     public static final int OPERATOR_SUB = 1;
     
     public int operator;
-    public ExpressionContext lhs;
-    public ExpressionContext rhs;
+    public ExpressionAST lhs;
+    public ExpressionAST rhs;
 
-    public BinaryExpressionContext(Region region, int operator, ExpressionContext lhs, ExpressionContext rhs) {
+    public BinaryExpressionAST(Region region, int operator, ExpressionAST lhs, ExpressionAST rhs) {
         super(region);
         this.operator = operator;
         this.lhs = lhs;
@@ -23,7 +23,7 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
     }
     
     @Override
-    public TypeContext resultType() {
+    public TypeAST resultType() {
         return resultType;
     }
 
@@ -32,11 +32,11 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
         visitor.visitBinaryExpression(this);
     }
     
-    private TypeContext resultType;
+    private TypeAST resultType;
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        resultType = new NameTypeContext(getRegion(), Void.class);
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        resultType = new NameTypeAST(getRegion(), Void.class);
         
         lhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
         rhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
@@ -48,14 +48,14 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
                         lhs = expressionAsString(lhs);
                     if(!rhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
                         rhs = expressionAsString(rhs);
-                    resultType = new NameTypeContext(getRegion(), String.class);
+                    resultType = new NameTypeAST(getRegion(), String.class);
                     break;
                 default:
                     errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
                     break;
             }
         } else if(lhs.resultType().getSimpleName().equals("int") && rhs.resultType().getSimpleName().equals("int")) {
-            resultType = new NameTypeContext(getRegion(), int.class);
+            resultType = new NameTypeAST(getRegion(), int.class);
         }
     }
     
@@ -68,12 +68,12 @@ public class BinaryExpressionContext extends AbstractContext implements Expressi
         return null;
     }
     
-    private ExpressionContext expressionAsString(ExpressionContext ctx) {
+    private ExpressionAST expressionAsString(ExpressionAST ctx) {
         switch(ctx.resultType().getSimpleName()) {
             case "int":
-                return new InvocationContext(ctx.getRegion(), null, new NameTypeContext(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), new NameTypeContext(ctx.getRegion(), String.class));
+                return new InvocationAST(ctx.getRegion(), null, new NameTypeAST(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), new NameTypeAST(ctx.getRegion(), String.class));
             default:
-                return new InvocationContext(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), new NameTypeContext(ctx.getRegion(), String.class));
+                return new InvocationAST(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), new NameTypeAST(ctx.getRegion(), String.class));
         }
     }
 }

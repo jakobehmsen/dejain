@@ -22,12 +22,12 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
-public class MethodContext extends AbstractContext implements MemberContext {
+public class MethodAST extends AbstractAST implements MemberAST {
     public boolean isAdd;
-    public MethodSelectorContext selector;
-    public List<CodeContext> body;
+    public MethodSelectorAST selector;
+    public List<CodeAST> body;
 
-    public MethodContext(Region region, boolean isAdd, MethodSelectorContext selector, List<CodeContext> body) {
+    public MethodAST(Region region, boolean isAdd, MethodSelectorAST selector, List<CodeAST> body) {
         super(region);
         this.isAdd = isAdd;
         this.selector = selector;
@@ -40,7 +40,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
         selector.resolve(thisClass, expectedResultType, resolver, errorMessages);
         body.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
@@ -53,7 +53,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
                 return () -> {
                     String thisClassName = c.getTarget().name;
                     
-                    int methodAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
+                    int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String methodName = selector.name;
                     Type[] argumentTypes = selector.parameterTypes.stream()
                         .map(x -> Type.getType(x.getDescriptor(c.getTarget().name)))
@@ -87,43 +87,43 @@ public class MethodContext extends AbstractContext implements MemberContext {
         }
     }
 
-    public static void toCode(String thisClassName, List<CodeContext> body, MethodCodeGenerator generator) {
+    public static void toCode(String thisClassName, List<CodeAST> body, MethodCodeGenerator generator) {
         toCode(thisClassName, body, generator, new InsnList());
     }
 
-    private static void toCode(String thisClassName, List<CodeContext> body, MethodCodeGenerator generator, InsnList originalIl) {
+    private static void toCode(String thisClassName, List<CodeAST> body, MethodCodeGenerator generator, InsnList originalIl) {
         body.forEach(ctx -> toCode(thisClassName, ctx, generator, originalIl, false));
     }
 
-    public static void toCode(String thisClassName, CodeContext ctx, MethodCodeGenerator generator, boolean asExpression) {
+    public static void toCode(String thisClassName, CodeAST ctx, MethodCodeGenerator generator, boolean asExpression) {
         toCode(thisClassName, ctx, generator, new InsnList(), asExpression);
     }
 
-    private static void toCode(String thisClassName, CodeContext ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
+    private static void toCode(String thisClassName, CodeAST ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
         ctx.accept(new CodeVisitor() {
             @Override
-            public void visitReturn(ReturnContext ctx) {
+            public void visitReturn(ReturnAST ctx) {
                 ctx.expression.accept(this);
                 generator.methodNode.returnValue();
             }
 
             @Override
-            public void visitStringLiteral(LiteralContext<String> ctx) {
+            public void visitStringLiteral(LiteralAST<String> ctx) {
                 generator.methodNode.push(ctx.value);
             }
 
             @Override
-            public void visitIntegerLiteral(LiteralContext<Integer> ctx) {
+            public void visitIntegerLiteral(LiteralAST<Integer> ctx) {
                 generator.methodNode.push(ctx.value);
             }
 
             @Override
-            public void visitLongLiteral(LiteralContext<Long> ctx) {
+            public void visitLongLiteral(LiteralAST<Long> ctx) {
                 generator.methodNode.push(ctx.value);
             }
 
             @Override
-            public void visitBinaryExpression(BinaryExpressionContext ctx) {
+            public void visitBinaryExpression(BinaryExpressionAST ctx) {
                 ctx.lhs.accept(this);
                 ctx.rhs.accept(this);
                 
@@ -150,7 +150,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
             }
 
             @Override
-            public void visitInvocation(InvocationContext ctx) {
+            public void visitInvocation(InvocationAST ctx) {
                 ctx.arguments.forEach(a -> a.accept(this));
                 
                 Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor(thisClassName))).toArray(size -> new Type[size]);
@@ -164,22 +164,22 @@ public class MethodContext extends AbstractContext implements MemberContext {
             }
 
             @Override
-            public void visitFieldSet(FieldSetContext ctx) {
+            public void visitFieldSet(FieldSetAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
 
             @Override
-            public void visitMeta(MetaContext ctx) {
+            public void visitMeta(MetaAST ctx) {
                 ctx.generatedExpression.accept(this);
             }
 
             @Override
-            public void visitThis(ThisContext ctx) {
+            public void visitThis(ThisAST ctx) {
                 generator.methodNode.loadThis();
             }
 
             @Override
-            public void visitFieldGet(FieldGetContext ctx) {
+            public void visitFieldGet(FieldGetAST ctx) {
                 ctx.target.accept(this);
                 generator.methodNode.getField(Type.getType(ctx.target.resultType().getDescriptor(thisClassName)), ctx.fieldName, Type.getType(ctx.resultType().getDescriptor(thisClassName)));
             }
@@ -189,21 +189,21 @@ public class MethodContext extends AbstractContext implements MemberContext {
     public static class MethodCodeGenerator {
         private static class VariableInfo {
             public int index;
-            public TypeContext type;
+            public TypeAST type;
 
-            public VariableInfo(int index, TypeContext type) {
+            public VariableInfo(int index, TypeAST type) {
                 this.index = index;
                 this.type = type;
             }
         }
         
         public GeneratorAdapter methodNode;
-        private TypeContext returnType;
+        private TypeAST returnType;
         private HashMap<String, VariableInfo> localNameToIndexMap = new HashMap<>();
         private Label start;
         private Label end;
 
-        public MethodCodeGenerator(GeneratorAdapter methodNode, TypeContext returnType) {
+        public MethodCodeGenerator(GeneratorAdapter methodNode, TypeAST returnType) {
             this.methodNode = methodNode;
             this.returnType = returnType;
             this.start = new Label();
@@ -218,7 +218,7 @@ public class MethodContext extends AbstractContext implements MemberContext {
             methodNode.visitLabel(end);
         }
         
-        public int declareVariable(String name, String desc, TypeContext type) {
+        public int declareVariable(String name, String desc, TypeAST type) {
             int index = localNameToIndexMap.size();
             localNameToIndexMap.put(name, new VariableInfo(index, type));
             methodNode.visitLocalVariable(name, desc, null, start, end, index);
@@ -233,11 +233,11 @@ public class MethodContext extends AbstractContext implements MemberContext {
             return localNameToIndexMap.containsKey(name);
         }
 
-        private TypeContext getVariableType(String name) {
+        private TypeAST getVariableType(String name) {
             return localNameToIndexMap.get(name).type;
         }
 
-        private TypeContext getReturnType() {
+        private TypeAST getReturnType() {
             return returnType;
         }
     }

@@ -4,15 +4,15 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
 import java.util.List;
 
-public class ThisTypeContext extends AbstractContext implements TypeContext {
-    private ClassContext classInfo;
+public class ThisTypeAST extends AbstractAST implements TypeAST {
+    private ClassAST classInfo;
 
-    public ThisTypeContext(ASMCompiler.Region region) {
+    public ThisTypeAST(ASMCompiler.Region region) {
         super(region);
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         classInfo = thisClass;
     }
 
@@ -33,12 +33,12 @@ public class ThisTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
-    public boolean isCompatibleWith(TypeContext other) {
+    public boolean isCompatibleWith(TypeAST other) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public TypeContext getFieldType(String fieldName) {
+    public TypeAST getFieldType(String fieldName) {
         return classInfo.getFieldType(fieldName);
     }
 }

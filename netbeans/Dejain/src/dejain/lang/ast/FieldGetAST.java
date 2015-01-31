@@ -4,25 +4,25 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
 import java.util.List;
 
-public class FieldGetContext extends AbstractContext implements ExpressionContext {
-    public ExpressionContext target;
+public class FieldGetAST extends AbstractAST implements ExpressionAST {
+    public ExpressionAST target;
     public String fieldName;
-    public TypeContext fieldType;
+    public TypeAST fieldType;
 
-    public FieldGetContext(ASMCompiler.Region region, ExpressionContext target, String fieldName) {
+    public FieldGetAST(ASMCompiler.Region region, ExpressionAST target, String fieldName) {
         super(region);
         this.target = target;
         this.fieldName = fieldName;
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         target.resolve(thisClass, expectedResultType, resolver, errorMessages);
         fieldType = target.resultType().getFieldType(fieldName);
     }
 
     @Override
-    public TypeContext resultType() {
+    public TypeAST resultType() {
         return fieldType;
     }
 

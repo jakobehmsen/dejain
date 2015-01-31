@@ -3,7 +3,7 @@ package dejain.runtime.agent;
 import dejain.lang.ASMCompiler;
 import dejain.lang.CommonClassMap;
 import dejain.lang.CommonClassResolver;
-import dejain.lang.ast.ModuleContext;
+import dejain.lang.ast.ModuleAST;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class Agent {
         System.out.println("Default class map loading: " + (end - start) + "ms");
         classResolver.importPackage("java.lang");
         ASMCompiler compiler = new ASMCompiler(classResolver);
-        ModuleContext module = compiler.compile(sourceCode);
+        ModuleAST module = compiler.compile(sourceCode);
 //        ClassTransformer classTransformer = compiler.compile(sourceCode, errorMessages);
         // Parsing and ClassResolver creation can be performed in parallel
         

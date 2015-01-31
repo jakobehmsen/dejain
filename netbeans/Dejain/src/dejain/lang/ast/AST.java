@@ -7,9 +7,9 @@ import dejain.lang.CommonClassResolver;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
 
-public interface Context {
+public interface AST {
     Region getRegion();
-    void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<Message> errorMessages);
+    void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<Message> errorMessages);
     
     public static class Util {
         public static int getAccessModifier(int accessModifier, boolean isStatic) {

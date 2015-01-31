@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.objectweb.asm.Type;
 
-public class NameTypeContext extends AbstractContext implements TypeContext {
+public class NameTypeAST extends AbstractAST implements TypeAST {
     public String name;
     private Class<?> c;
     
@@ -17,19 +17,19 @@ public class NameTypeContext extends AbstractContext implements TypeContext {
 //        return c;
 //    }
 
-    public NameTypeContext(Region region, String name) {
+    public NameTypeAST(Region region, String name) {
         super(region);
         this.name = name;
     }
 
-    public NameTypeContext(Region region, Class<?> c) {
+    public NameTypeAST(Region region, Class<?> c) {
         super(region);
         this.name = c.getName();
         this.c = c;
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         try {
 //            name = resolver.resolveClassName(name);
             c = resolver.resolveType(name);
@@ -45,7 +45,7 @@ public class NameTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
-    public boolean isCompatibleWith(TypeContext other) {
+    public boolean isCompatibleWith(TypeAST other) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -65,12 +65,12 @@ public class NameTypeContext extends AbstractContext implements TypeContext {
     }
 
     @Override
-    public TypeContext getFieldType(String fieldName) {
+    public TypeAST getFieldType(String fieldName) {
         try {
             Field field = c.getField(fieldName);
-            return new NameTypeContext(getRegion(), field.getType());
+            return new NameTypeAST(getRegion(), field.getType());
         } catch (NoSuchFieldException | SecurityException ex) {
-            Logger.getLogger(NameTypeContext.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return null;

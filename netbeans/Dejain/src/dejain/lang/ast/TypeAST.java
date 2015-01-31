@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.antlr.v4.runtime.RuleContext;
 
-public interface TypeContext extends Context {
+public interface TypeAST extends AST {
     /**
      * 
      * @param thisClassName Separated by '/'.
@@ -28,7 +28,7 @@ public interface TypeContext extends Context {
      * @return 
      */
     String getSimpleName(String thisClassName);
-    boolean isCompatibleWith(TypeContext other);
+    boolean isCompatibleWith(TypeAST other);
     
     default String getDescriptor() {
         return getDescriptor(null);
@@ -74,5 +74,5 @@ public interface TypeContext extends Context {
 //        return name;
 //    }
 
-    public TypeContext getFieldType(String fieldName);
+    public TypeAST getFieldType(String fieldName);
 }

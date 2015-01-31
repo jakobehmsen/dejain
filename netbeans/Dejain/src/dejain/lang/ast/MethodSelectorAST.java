@@ -11,14 +11,14 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.ParameterNode;
 
-public class MethodSelectorContext {
+public class MethodSelectorAST {
     public Integer accessModifier;
     public Boolean isStatic;
-    public TypeContext returnType;
+    public TypeAST returnType;
     public String name;
-    public List<TypeContext> parameterTypes;
+    public List<TypeAST> parameterTypes;
 
-    public MethodSelectorContext(Integer accessModifier, Boolean isStatic, TypeContext returnType, String name, List<TypeContext> parameterTypes) {
+    public MethodSelectorAST(Integer accessModifier, Boolean isStatic, TypeAST returnType, String name, List<TypeAST> parameterTypes) {
         this.accessModifier = accessModifier;
         this.isStatic = isStatic;
         this.returnType = returnType;
@@ -26,7 +26,7 @@ public class MethodSelectorContext {
         this.parameterTypes = parameterTypes;
     }
 
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         returnType.resolve(thisClass, expectedResultType, resolver, errorMessages);
         parameterTypes.forEach(pt -> pt.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }

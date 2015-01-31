@@ -1,5 +1,5 @@
 package dejain.lang.ast;
 
-public interface CodeContext extends Context {
+public interface CodeAST extends AST {
     void accept(CodeVisitor visitor);
 }

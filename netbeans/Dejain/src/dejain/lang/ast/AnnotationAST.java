@@ -7,18 +7,18 @@ import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
 import java.util.List;
 
-public class AnnotationContext extends AbstractContext {
+public class AnnotationAST extends AbstractAST {
     public boolean isAdd;
-    public TypeContext type;
+    public TypeAST type;
 
-    public AnnotationContext(Region region, boolean isAdd, TypeContext type) {
+    public AnnotationAST(Region region, boolean isAdd, TypeAST type) {
         super(region);
         this.isAdd = isAdd;
         this.type = type;
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         type.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 

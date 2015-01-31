@@ -6,10 +6,10 @@ import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 
-public class ReturnContext extends AbstractContext implements CodeContext {
-    public ExpressionContext expression;
+public class ReturnAST extends AbstractAST implements CodeAST {
+    public ExpressionAST expression;
 
-    public ReturnContext(Region region, ExpressionContext expression) {
+    public ReturnAST(Region region, ExpressionAST expression) {
         super(region);
         this.expression = expression;
     }
@@ -20,7 +20,7 @@ public class ReturnContext extends AbstractContext implements CodeContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         expression.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 }

@@ -6,23 +6,23 @@ import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import java.util.List;
 
-public class LiteralContext<T> extends AbstractContext implements ExpressionContext {
+public class LiteralAST<T> extends AbstractAST implements ExpressionAST {
     public T value;
-    private LiteralDelegateContext<T> delegate;
+    private LiteralDelegateAST<T> delegate;
 
-    public LiteralContext(Region region, T value, LiteralDelegateContext<T> delegate) {
+    public LiteralAST(Region region, T value, LiteralDelegateAST<T> delegate) {
         super(region);
         this.value = value;
         this.delegate = delegate;
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         
     }
 
     @Override
-    public TypeContext resultType() {
+    public TypeAST resultType() {
         return delegate.resultType(getRegion());
     }
 

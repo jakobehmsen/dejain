@@ -8,14 +8,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.antlr.v4.runtime.RuleContext;
 
-public class FieldSetContext extends AbstractContext implements ExpressionContext {
-    public ExpressionContext target;
-    public TypeContext declaringClass;
+public class FieldSetAST extends AbstractAST implements ExpressionAST {
+    public ExpressionAST target;
+    public TypeAST declaringClass;
     public String fieldName;
-    public TypeContext resultType;
-    public ExpressionContext value;
+    public TypeAST resultType;
+    public ExpressionAST value;
     
-    public FieldSetContext(ASMCompiler.Region region, ExpressionContext target, TypeContext declaringClass, String fieldName, ExpressionContext value) {
+    public FieldSetAST(ASMCompiler.Region region, ExpressionAST target, TypeAST declaringClass, String fieldName, ExpressionAST value) {
         super(region);
         this.target = target;
         this.declaringClass = declaringClass;
@@ -24,7 +24,7 @@ public class FieldSetContext extends AbstractContext implements ExpressionContex
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         target.resolve(thisClass, expectedResultType, resolver, errorMessages);
         declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
         value.resolve(thisClass, expectedResultType, resolver, errorMessages);
@@ -48,7 +48,7 @@ public class FieldSetContext extends AbstractContext implements ExpressionContex
     }
 
     @Override
-    public TypeContext resultType() {
+    public TypeAST resultType() {
         return resultType;
     }
 

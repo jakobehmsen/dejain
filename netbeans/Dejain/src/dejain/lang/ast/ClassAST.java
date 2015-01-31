@@ -17,13 +17,13 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
-public class ClassContext extends AbstractContext {
-    public List<AnnotationContext> annotations;
+public class ClassAST extends AbstractAST {
+    public List<AnnotationAST> annotations;
     public Integer accessModifier;
-    public NameTypeContext type;
-    public List<MemberContext> members;
+    public NameTypeAST type;
+    public List<MemberAST> members;
 
-    public ClassContext(Region region, List<AnnotationContext> annotations, Integer accessModifier, NameTypeContext type, List<MemberContext> members) {
+    public ClassAST(Region region, List<AnnotationAST> annotations, Integer accessModifier, NameTypeAST type, List<MemberAST> members) {
         super(region);
         this.annotations = annotations;
         this.accessModifier = accessModifier;
@@ -32,7 +32,7 @@ public class ClassContext extends AbstractContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         annotations.forEach(a -> a.resolve(this, expectedResultType, resolver, errorMessages));
         if(type != null)
             type.resolve(this, expectedResultType, resolver, errorMessages);
@@ -54,12 +54,12 @@ public class ClassContext extends AbstractContext {
         
         members.forEach(x -> x.accept(new MemberVisitor() {
             @Override
-            public void visitMethod(MethodContext ctx) {
+            public void visitMethod(MethodAST ctx) {
                 ctx.populate(transformer, methodTransformer);
             }
 
             @Override
-            public void visitField(FieldContext ctx) {
+            public void visitField(FieldAST ctx) {
                 ctx.populate(transformer, fieldTransformer);
             }
         }));
@@ -69,11 +69,11 @@ public class ClassContext extends AbstractContext {
 //        transformer.addTransformer(new IfAnyWithin<>(c -> c.getTarget().methods, methodTransformer));
     }
 
-    public TypeContext getFieldType(String fieldName) {
-        Optional<TypeContext> field = members.stream()
-            .filter(m -> m instanceof FieldContext)
-            .filter(f -> ((FieldContext)f).selector.name.equals(fieldName))
-            .map(f -> ((FieldContext)f).selector.fieldType).findFirst();
+    public TypeAST getFieldType(String fieldName) {
+        Optional<TypeAST> field = members.stream()
+            .filter(m -> m instanceof FieldAST)
+            .filter(f -> ((FieldAST)f).selector.name.equals(fieldName))
+            .map(f -> ((FieldAST)f).selector.fieldType).findFirst();
         
         return field.isPresent() ? field.get() : null;
     }

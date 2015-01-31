@@ -11,28 +11,28 @@ import dejain.lang.antlr4.DejainParser;
 import dejain.lang.antlr4.DejainParser.AnnotationContext;
 import dejain.lang.antlr4.DejainParser.ProgramContext;
 import dejain.lang.antlr4.DejainParser.StatementContext;
-import dejain.lang.ast.BinaryExpressionContext;
-import dejain.lang.ast.ClassContext;
-import dejain.lang.ast.ExpressionContext;
-import dejain.lang.ast.FieldContext;
-import dejain.lang.ast.FieldSelectorContext;
-import dejain.lang.ast.LiteralContext;
-import dejain.lang.ast.MemberContext;
-import dejain.lang.ast.MethodContext;
-import dejain.lang.ast.MethodSelectorContext;
-import dejain.lang.ast.ModuleContext;
-import dejain.lang.ast.ReturnContext;
-import dejain.lang.ast.MetaContext;
-import dejain.lang.ast.CodeContext;
+import dejain.lang.ast.BinaryExpressionAST;
+import dejain.lang.ast.ClassAST;
+import dejain.lang.ast.ExpressionAST;
+import dejain.lang.ast.FieldAST;
+import dejain.lang.ast.FieldSelectorAST;
+import dejain.lang.ast.LiteralAST;
+import dejain.lang.ast.MemberAST;
+import dejain.lang.ast.MethodAST;
+import dejain.lang.ast.MethodSelectorAST;
+import dejain.lang.ast.ModuleAST;
+import dejain.lang.ast.ReturnAST;
+import dejain.lang.ast.MetaAST;
+import dejain.lang.ast.CodeAST;
 import dejain.lang.ast.CodeVisitor;
-import dejain.lang.ast.FieldGetContext;
-import dejain.lang.ast.FieldSetContext;
-import dejain.lang.ast.InvocationContext;
-import dejain.lang.ast.LiteralDelegateContext;
+import dejain.lang.ast.FieldGetAST;
+import dejain.lang.ast.FieldSetAST;
+import dejain.lang.ast.InvocationAST;
+import dejain.lang.ast.LiteralDelegateAST;
 import dejain.lang.ast.MemberVisitor;
-import dejain.lang.ast.NameTypeContext;
-import dejain.lang.ast.ThisContext;
-import dejain.lang.ast.TypeContext;
+import dejain.lang.ast.NameTypeAST;
+import dejain.lang.ast.ThisAST;
+import dejain.lang.ast.TypeAST;
 import dejain.runtime.asm.ClassTransformer;
 import dejain.runtime.asm.ClassTransformerSequence;
 import dejain.runtime.asm.CommonClassTransformer;
@@ -108,7 +108,7 @@ public class ASMCompiler {
         return new DejainParser(tokenStream);
     }
     
-    public ExpressionContext compileExpression(InputStream sourceCode) throws IOException {
+    public ExpressionAST compileExpression(InputStream sourceCode) throws IOException {
         DejainParser parser = createParser(sourceCode);
         
         DejainParser.ExpressionContext expression = parser.expression();
@@ -117,8 +117,8 @@ public class ASMCompiler {
         return getExpression(expression, mp);
     }
     
-    public ModuleContext compile(InputStream sourceCode) throws IOException {
-        ArrayList<ClassContext> classes = new ArrayList<>();
+    public ModuleAST compile(InputStream sourceCode) throws IOException {
+        ArrayList<ClassAST> classes = new ArrayList<>();
         
         DejainParser parser = createParser(sourceCode);
         
@@ -127,17 +127,17 @@ public class ASMCompiler {
         program.accept(new DejainBaseVisitor<Object>() {
             @Override
             public Object visitClassTransformer(DejainParser.ClassTransformerContext ctx) {
-                List<dejain.lang.ast.AnnotationContext> annotations = ctx.annotations().annotation().stream()
-                    .map(aCtx -> new dejain.lang.ast.AnnotationContext(new Region(aCtx), aCtx.PLUS() != null, new NameTypeContext(new Region(aCtx), aCtx.typeQualifier().getText())))
+                List<dejain.lang.ast.AnnotationAST> annotations = ctx.annotations().annotation().stream()
+                    .map(aCtx -> new dejain.lang.ast.AnnotationAST(new Region(aCtx), aCtx.PLUS() != null, new NameTypeAST(new Region(aCtx), aCtx.typeQualifier().getText())))
                     .collect(Collectors.toList());
                 
                 Integer accessModifer = null;
                 if(ctx.accessModifier() != null)
                     accessModifer = getAccessModifier(ctx.accessModifier(), null);
                 
-                NameTypeContext type = ctx.typeQualifier() != null ? new NameTypeContext(new Region(ctx), ctx.typeQualifier().getText()) : null;
+                NameTypeAST type = ctx.typeQualifier() != null ? new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText()) : null;
                 
-                ArrayList<MemberContext> members = new ArrayList<>();
+                ArrayList<MemberAST> members = new ArrayList<>();
                 
                 if(ctx.members != null) {
                     for(DejainParser.ClassTransformerMemberDefinitionContext memberCtx: ctx.members.classTransformerMemberDefinition()) {
@@ -147,17 +147,17 @@ public class ASMCompiler {
                             public Object visitClassTransformerMemberField(DejainParser.ClassTransformerMemberFieldContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
-                                TypeContext fieldType = new NameTypeContext(new Region(ctx), ctx.typeQualifier().getText());
+                                TypeAST fieldType = new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText());
                                 String name = ctx.identifier().getText();
                                 
-                                ExpressionContext value = null;
+                                ExpressionAST value = null;
                                 
                                 if(ctx.value != null) {
                                     MetaProcessing mp = new MetaProcessing();
                                     value = getExpression(ctx.value, mp);
                                 }
                                 
-                                FieldContext field = new FieldContext(new Region(ctx), isAdd, new FieldSelectorContext(accessModifier, isStatic, fieldType, name), value);
+                                FieldAST field = new FieldAST(new Region(ctx), isAdd, new FieldSelectorAST(accessModifier, isStatic, fieldType, name), value);
                                 
                                 members.add(field);
                                 
@@ -168,14 +168,14 @@ public class ASMCompiler {
                             public Object visitClassTransformerMemberMethod(DejainParser.ClassTransformerMemberMethodContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
-                                TypeContext returnType = new NameTypeContext(new Region(ctx), ctx.typeQualifier().getText());
+                                TypeAST returnType = new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText());
                                 String name = ctx.identifier().getText();
-                                List<TypeContext> parameterTypes = ctx.parameters().parameter().stream()
-                                    .map(pCtx -> new NameTypeContext(new Region(ctx), pCtx.typeQualifier().getText()))
+                                List<TypeAST> parameterTypes = ctx.parameters().parameter().stream()
+                                    .map(pCtx -> new NameTypeAST(new Region(ctx), pCtx.typeQualifier().getText()))
                                     .collect(Collectors.toList());
                                 MetaProcessing mp = new MetaProcessing();
-                                List<dejain.lang.ast.CodeContext> body = getStatements(ctx.statements(), mp);
-                                MethodContext method = new MethodContext(new Region(ctx), isAdd, new MethodSelectorContext(accessModifier, isStatic, returnType, name, parameterTypes), body);
+                                List<dejain.lang.ast.CodeAST> body = getStatements(ctx.statements(), mp);
+                                MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameterTypes), body);
                                 
                                 members.add(method);
                                 
@@ -185,13 +185,13 @@ public class ASMCompiler {
                     }
                 }
                 
-                classes.add(new ClassContext(new Region(ctx), annotations, accessModifer, type, members));
+                classes.add(new ClassAST(new Region(ctx), annotations, accessModifer, type, members));
                 
                 return null;
             }
         });
         
-        ModuleContext moduleCtx = new ModuleContext(new Region(program), classes);
+        ModuleAST moduleCtx = new ModuleAST(new Region(program), classes);
         
 //        processMeta(moduleCtx);
         
@@ -306,96 +306,96 @@ public class ASMCompiler {
 //        });
 //    }
 
-    private List<dejain.lang.ast.CodeContext> getStatements(DejainParser.StatementsContext ctx, MetaProcessing mp) {
+    private List<dejain.lang.ast.CodeAST> getStatements(DejainParser.StatementsContext ctx, MetaProcessing mp) {
         return ctx.statement().stream()
             .map(sCtx -> getStatement(sCtx, mp))
             .collect(Collectors.toList());
     }
     
-    private dejain.lang.ast.CodeContext getStatement(DejainParser.StatementContext ctx, MetaProcessing mp) {
-        dejain.lang.ast.CodeContext r = ctx.accept(new DejainBaseVisitor<dejain.lang.ast.CodeContext>() {
+    private dejain.lang.ast.CodeAST getStatement(DejainParser.StatementContext ctx, MetaProcessing mp) {
+        dejain.lang.ast.CodeAST r = ctx.accept(new DejainBaseVisitor<dejain.lang.ast.CodeAST>() {
             @Override
-            public CodeContext visitStatement(DejainParser.StatementContext ctx) {
+            public CodeAST visitStatement(DejainParser.StatementContext ctx) {
                 return ctx.nonDelimitedStatement() != null
                     ? ctx.nonDelimitedStatement().accept(this)
                     : ctx.delimitedStatement().accept(this);
             }
             
             @Override
-            public CodeContext visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
-                ExpressionContext expression = getExpression(ctx.expression(), mp);
+            public CodeAST visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
+                ExpressionAST expression = getExpression(ctx.expression(), mp);
                 
-                return new ReturnContext(new Region(ctx), expression);
+                return new ReturnAST(new Region(ctx), expression);
             }
         });
         
         return r;
     }
 
-    private ExpressionContext getExpression(DejainParser.ExpressionContext ctx, MetaProcessing mp) {
-        return ctx.accept(new DejainBaseVisitor<ExpressionContext>() {
+    private ExpressionAST getExpression(DejainParser.ExpressionContext ctx, MetaProcessing mp) {
+        return ctx.accept(new DejainBaseVisitor<ExpressionAST>() {
             @Override
-            public ExpressionContext visitStringLiteral(DejainParser.StringLiteralContext ctx) {
+            public ExpressionAST visitStringLiteral(DejainParser.StringLiteralContext ctx) {
                 String value = ctx.getText().substring(1, ctx.getText().length() - 1);
                 value = value.replace("\\\\", "\\").replace("\\\"", "\"");
-                return new LiteralContext(new Region(ctx), value, LiteralDelegateContext.String);
+                return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.String);
             }
 
             @Override
-            public ExpressionContext visitIntegerLiteral(DejainParser.IntegerLiteralContext ctx) {
+            public ExpressionAST visitIntegerLiteral(DejainParser.IntegerLiteralContext ctx) {
                 int value = Integer.parseInt(ctx.getText());
-                return new LiteralContext(new Region(ctx), value, LiteralDelegateContext.Integer);
+                return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.Integer);
             }
 
             @Override
-            public ExpressionContext visitLongLiteral(DejainParser.LongLiteralContext ctx) {
+            public ExpressionAST visitLongLiteral(DejainParser.LongLiteralContext ctx) {
                 String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
                 long value = Long.parseLong(valueStr);
-                return new LiteralContext(new Region(ctx), value, LiteralDelegateContext.Long);
+                return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.Long);
             }
 
             @Override
-            public ExpressionContext visitBinarySum(DejainParser.BinarySumContext ctx) {
-                ExpressionContext result = ctx.first.accept(this);
+            public ExpressionAST visitBinarySum(DejainParser.BinarySumContext ctx) {
+                ExpressionAST result = ctx.first.accept(this);
                 // Derive 
                 
                 for(int i = 1; i < ctx.leafExpression().size(); i++) {
-                    ExpressionContext lhs = result;
-                    ExpressionContext rhs = ctx.leafExpression(i).accept(this);
+                    ExpressionAST lhs = result;
+                    ExpressionAST rhs = ctx.leafExpression(i).accept(this);
 
                     int operator;
 
                     switch(ctx.binarySumOperator(i - 1).operator.getType()) {
                         case DejainLexer.PLUS:
-                            operator = BinaryExpressionContext.OPERATOR_ADD;
+                            operator = BinaryExpressionAST.OPERATOR_ADD;
                             break;
                         case DejainLexer.MINUS:
-                            operator = BinaryExpressionContext.OPERATOR_SUB;
+                            operator = BinaryExpressionAST.OPERATOR_SUB;
                             break;
                         default:
                             operator = -1;
                     }
 
-                    result = new BinaryExpressionContext(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
+                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
                 }
                 
                 return result;
             }
             
             @Override
-            public ExpressionContext visitMetaExpression(DejainParser.MetaExpressionContext ctx) {
-                ArrayList<CodeContext> body = new ArrayList<>();
+            public ExpressionAST visitMetaExpression(DejainParser.MetaExpressionContext ctx) {
+                ArrayList<CodeAST> body = new ArrayList<>();
                 
                 if(ctx.expression() != null) {
-                    ExpressionContext exprCtx = getExpression(ctx.expression(), mp);
-                    body.add(new ReturnContext(new Region(ctx), exprCtx));
+                    ExpressionAST exprCtx = getExpression(ctx.expression(), mp);
+                    body.add(new ReturnAST(new Region(ctx), exprCtx));
                 } else {
                     body.addAll(getStatements(ctx.statements(), mp));
                 }
                 
                 ArrayList<Message> metaErrorMessages = new ArrayList<>();
                 
-                body.forEach(s -> s.resolve(null, new NameTypeContext(new Region(ctx), String.class), classResolver, metaErrorMessages));
+                body.forEach(s -> s.resolve(null, new NameTypeAST(new Region(ctx), String.class), classResolver, metaErrorMessages));
                 
                 // 1) Generate code to generate code
                 ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
@@ -407,7 +407,7 @@ public class ASMCompiler {
                 generatorClassNode.methods.add(generatorMethod);
                 
                 GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
-                MethodContext.toCode("Generator", body, new MethodContext.MethodCodeGenerator(generatorAdapter, null));
+                MethodAST.toCode("Generator", body, new MethodAST.MethodCodeGenerator(generatorAdapter, null));
                 
                 SingleClassLoader classLoader = new SingleClassLoader(generatorClassNode);
                 Class<?> generatorClass2 = classLoader.loadClass();
@@ -423,11 +423,11 @@ public class ASMCompiler {
                 
                 mp.generatorCount++;
                 
-                return new MetaContext(new Region(ctx), ASMCompiler.this, body, m);
+                return new MetaAST(new Region(ctx), ASMCompiler.this, body, m);
             }
 
             @Override
-            public ExpressionContext visitLookup(DejainParser.LookupContext ctx) {
+            public ExpressionAST visitLookup(DejainParser.LookupContext ctx) {
                 String name = ctx.getText();
                 
                 boolean isVariable = false;
@@ -435,7 +435,7 @@ public class ASMCompiler {
                 if(isVariable) {
                     // What to do?...
                 } else {
-                    return new FieldGetContext(new Region(ctx), new ThisContext(new Region(ctx)), name);
+                    return new FieldGetAST(new Region(ctx), new ThisAST(new Region(ctx)), name);
                 }
                 
                 return super.visitLookup(ctx); //To change body of generated methods, choose Tools | Templates.

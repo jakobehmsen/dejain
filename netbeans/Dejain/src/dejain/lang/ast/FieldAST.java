@@ -24,12 +24,12 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
-public class FieldContext extends AbstractContext implements MemberContext {
+public class FieldAST extends AbstractAST implements MemberAST {
     public boolean isAdd;
-    public FieldSelectorContext selector;
-    public ExpressionContext value;
+    public FieldSelectorAST selector;
+    public ExpressionAST value;
 
-    public FieldContext(Region region, boolean isAdd, FieldSelectorContext selector, ExpressionContext value) {
+    public FieldAST(Region region, boolean isAdd, FieldSelectorAST selector, ExpressionAST value) {
         super(region);
         this.isAdd = isAdd;
         this.selector = selector;
@@ -42,7 +42,7 @@ public class FieldContext extends AbstractContext implements MemberContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         selector.resolve(thisClass, expectedResultType, resolver, errorMessages);
         if(value != null)
             value.resolve(thisClass, expectedResultType, resolver, errorMessages);
@@ -61,7 +61,7 @@ public class FieldContext extends AbstractContext implements MemberContext {
         else {
             classTransformer.addTransformer(c -> {
                 return () -> {
-                    int fieldAccess = Context.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
+                    int fieldAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String fieldName = selector.name;
                     String fieldDescriptor = selector.fieldType.getDescriptor();
 //                    String fieldDescriptor = Type.getDescriptor( selector.fieldType.getName());
@@ -80,7 +80,7 @@ public class FieldContext extends AbstractContext implements MemberContext {
                                     if(name.equals("<init>")) {
                                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
                                         generatorAdapter.loadThis();
-                                        MethodContext.toCode(thisClassName, FieldContext.this.value, new MethodContext.MethodCodeGenerator(generatorAdapter, null), true);
+                                        MethodAST.toCode(thisClassName, FieldAST.this.value, new MethodAST.MethodCodeGenerator(generatorAdapter, null), true);
                                         generatorAdapter.putField(Type.getType(c.getTarget().name), selector.name, Type.getType(selector.fieldType.getDescriptor(thisClassName)));
                                     }
                                 }

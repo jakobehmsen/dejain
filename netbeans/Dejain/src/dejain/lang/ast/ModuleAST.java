@@ -14,16 +14,16 @@ import java.util.List;
 import java.util.function.Function;
 import org.objectweb.asm.tree.ClassNode;
 
-public class ModuleContext extends AbstractContext {
-    public List<ClassContext> classes;
+public class ModuleAST extends AbstractAST {
+    public List<ClassAST> classes;
 
-    public ModuleContext(Region region, List<ClassContext> classes) {
+    public ModuleAST(Region region, List<ClassAST> classes) {
         super(region);
         this.classes = classes;
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         classes.forEach(c -> c.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 

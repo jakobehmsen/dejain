@@ -23,9 +23,9 @@ import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassMap;
 import dejain.lang.CommonClassResolver;
 import dejain.lang.ExhaustiveClassTransformer;
-import dejain.lang.ast.ModuleContext;
+import dejain.lang.ast.ModuleAST;
 import dejain.lang.ast.Transformation;
-import dejain.lang.ast.TypeContext;
+import dejain.lang.ast.TypeAST;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -388,7 +388,7 @@ public class SourceToClassTest {
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {
             try {
-                ModuleContext module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
+                ModuleAST module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
                 ArrayList<Message> errorMessages = new ArrayList<>();
                 module.resolve(null, null, resolver, errorMessages);
                 

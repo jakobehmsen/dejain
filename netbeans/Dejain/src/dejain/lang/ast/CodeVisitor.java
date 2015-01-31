@@ -1,14 +1,14 @@
 package dejain.lang.ast;
 
 public interface CodeVisitor {
-    void visitReturn(ReturnContext ctx);
-    void visitStringLiteral(LiteralContext<String> ctx);
-    void visitIntegerLiteral(LiteralContext<Integer> ctx);
-    void visitBinaryExpression(BinaryExpressionContext ctx);
-    void visitInvocation(InvocationContext ctx);
-    void visitFieldSet(FieldSetContext ctx);
-    void visitLongLiteral(LiteralContext<Long> ctx);
-    void visitMeta(MetaContext ctx);
-    void visitThis(ThisContext ctx);
-    void visitFieldGet(FieldGetContext ctx);
+    void visitReturn(ReturnAST ctx);
+    void visitStringLiteral(LiteralAST<String> ctx);
+    void visitIntegerLiteral(LiteralAST<Integer> ctx);
+    void visitBinaryExpression(BinaryExpressionAST ctx);
+    void visitInvocation(InvocationAST ctx);
+    void visitFieldSet(FieldSetAST ctx);
+    void visitLongLiteral(LiteralAST<Long> ctx);
+    void visitMeta(MetaAST ctx);
+    void visitThis(ThisAST ctx);
+    void visitFieldGet(FieldGetAST ctx);
 }

@@ -14,15 +14,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class MetaContext extends AbstractContext implements ExpressionContext {
+public class MetaAST extends AbstractAST implements ExpressionAST {
     public ASMCompiler compiler;
-    public List<CodeContext> body;
+    public List<CodeAST> body;
     public Method bodyAsMethod;
-    public TypeContext resultType;
-    public ExpressionContext generatedExpression;
+    public TypeAST resultType;
+    public ExpressionAST generatedExpression;
 
     // Region and compiler could probably be merged into a single CompilationContext|CompilationUnit thingy
-    public MetaContext(ASMCompiler.Region region, ASMCompiler compiler, List<CodeContext> body, Method bodyAsMethod) {
+    public MetaAST(ASMCompiler.Region region, ASMCompiler compiler, List<CodeAST> body, Method bodyAsMethod) {
         super(region);
         
         this.compiler = compiler;
@@ -31,7 +31,7 @@ public class MetaContext extends AbstractContext implements ExpressionContext {
     }
 
     @Override
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         body.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
         resultType = expectedResultType;
         
@@ -44,14 +44,14 @@ public class MetaContext extends AbstractContext implements ExpressionContext {
                 metaErrorMessages.stream().map(m -> new Message(m.getRegion(), "Meta error: " + m.getText())).collect(Collectors.toList())
             );
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | UnsupportedEncodingException ex) {
-            Logger.getLogger(MetaContext.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MetaAST.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(MetaContext.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MetaAST.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
-    public TypeContext resultType() {
+    public TypeAST resultType() {
         return resultType;
     }
 

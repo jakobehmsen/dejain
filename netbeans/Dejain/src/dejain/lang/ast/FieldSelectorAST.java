@@ -10,20 +10,20 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.FieldNode;
 
-public class FieldSelectorContext {
+public class FieldSelectorAST {
     public Integer accessModifier;
     public Boolean isStatic;
-    public TypeContext fieldType;
+    public TypeAST fieldType;
     public String name;
 
-    public FieldSelectorContext(Integer accessModifier, Boolean isStatic, TypeContext fieldType, String name) {
+    public FieldSelectorAST(Integer accessModifier, Boolean isStatic, TypeAST fieldType, String name) {
         this.accessModifier = accessModifier;
         this.isStatic = isStatic;
         this.fieldType = fieldType;
         this.name = name;
     }
 
-    public void resolve(ClassContext thisClass, TypeContext expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         fieldType.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
