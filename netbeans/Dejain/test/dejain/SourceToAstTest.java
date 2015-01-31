@@ -23,17 +23,17 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jdk.internal.org.objectweb.asm.Opcodes;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
 /**
  *
  * @author Jakob
  */
-public class NewEmptyJUnitTest {
+public class SourceToAstTest {
     private void testSourceToAST(String source, Predicate<ModuleContext> assertion) throws IOException {
         ASMCompiler compiler = new ASMCompiler(className -> className);
         ModuleContext module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
