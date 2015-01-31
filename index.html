@@ -41,6 +41,24 @@
 }
 </code></pre>
       </section>
+      <section>
+        <h3>
+<a id="code-interpolation" class="anchor" href="#code-interpolation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Code interpolation</h3>
+
+<p>There are limitations to instrumentation based only on code ad verbatim.
+To overcome this, Dejain supports interpolation of explicitly generated code. 
+This code is represented by ASTs, where these ASTs may be implictly converted from non-AST values (e.g. Strings and ints) into their corresponding AST represention.
+</p>
+
+<p>In the below example, code interpolation is shown where the class name of the class being transformed is explicitly used. This String value is then implicitly converted into a String AST and followingly interpolated into the return statement:</p>
+
+<pre><code>c = class {
+    +public String getClassName() {
+        return $c.name;
+    }
+}
+</code></pre>
+      </section>
     </div>
     <footer>
       <p>Project maintained by <a href="https://github.com/jakobehmsen">jakobehmsen</a></p>
