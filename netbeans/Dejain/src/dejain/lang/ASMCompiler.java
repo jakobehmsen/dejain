@@ -198,7 +198,7 @@ public class ASMCompiler {
         return moduleCtx;
     }
     
-    private class MetaProcessing {
+    public static class MetaProcessing {
         public int generatorCount;
     }
     
@@ -393,40 +393,7 @@ public class ASMCompiler {
                     body.addAll(getStatements(ctx.statements(), mp));
                 }
                 
-                ArrayList<Message> metaErrorMessages = new ArrayList<>();
-                
-                body.forEach(s -> s.resolve(null, new NameTypeAST(new Region(ctx), String.class), classResolver, metaErrorMessages));
-                List<TypeAST> returnTypes = MethodAST.getReturnType(body);
-                // Dangerous
-                Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
-                
-                // 1) Generate code to generate code
-                ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
-                generatorClassNode.version = Opcodes.V1_8;
-                generatorClassNode.access = Opcodes.ACC_PUBLIC;
-                generatorClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
-                generatorClassNode.superName = "java/lang/Object";
-                MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
-                generatorClassNode.methods.add(generatorMethod);
-                
-                GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
-                MethodAST.toCode("Generator", body, new MethodAST.MethodCodeGenerator(generatorAdapter, null));
-                
-                SingleClassLoader classLoader = new SingleClassLoader(generatorClassNode);
-                Class<?> generatorClass2 = classLoader.loadClass();
-                
-                Method m = null;
-                
-                try {
-                    // 2) Evaluate the generated code which result in a String
-                    m = generatorClass2.getMethod("generator", null);
-                } catch (NoSuchMethodException | SecurityException | IllegalArgumentException ex) {
-                    Logger.getLogger(ASMCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-                mp.generatorCount++;
-                
-                return new MetaExpressionAST(new Region(ctx), ASMCompiler.this, body, m);
+                return new MetaExpressionAST(new Region(ctx), ASMCompiler.this, body, mp);
             }
 
             @Override
