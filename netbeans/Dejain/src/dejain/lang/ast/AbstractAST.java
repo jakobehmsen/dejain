@@ -14,4 +14,9 @@ public abstract class AbstractAST implements AST {
     public ASMCompiler.Region getRegion() {
         return region;
     }
+
+    @Override
+    public void setRegion(Region region) {
+        this.region = region;
+    }
 }

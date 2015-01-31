@@ -2,6 +2,7 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Message;
+import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,11 +11,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javafx.beans.binding.StringExpression;
 
-public class MetaExpressionAST extends AbstractAST implements ExpressionAST {
+public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
     public ASMCompiler compiler;
     public List<CodeAST> body;
     public Method bodyAsMethod;
@@ -34,9 +37,14 @@ public class MetaExpressionAST extends AbstractAST implements ExpressionAST {
     public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         body.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
         resultType = expectedResultType;
+        // Check that the return type of the body is valid. 
+        // - I.e., convertible into an ExpressionAST.
         
         try {
-            generatedExpression = (ExpressionAST)bodyAsMethod.invoke(null, null);
+            Object value = bodyAsMethod.invoke(null, null);
+            generatedExpression = convertToExpression(value);
+            
+            
 //            generatedExpression = compiler.compileExpression(new ByteArrayInputStream(source.getBytes("UTF-8")));
 //            ArrayList<ASMCompiler.Message> metaErrorMessages = new ArrayList<>();
 //            generatedExpression.resolve(null, null, resolver, metaErrorMessages);
@@ -46,6 +54,20 @@ public class MetaExpressionAST extends AbstractAST implements ExpressionAST {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private ExpressionAST convertToExpression(Object value) {
+        switch(value.getClass().getName()) {
+            case "java.lang.String":
+                return new LiteralAST<>(getRegion(), (String)value, LiteralDelegateAST.String);
+            case "int":
+                return new LiteralAST<>(getRegion(), (int)value, LiteralDelegateAST.Integer);
+        }
+        
+        if(value instanceof ExpressionAST)
+            return (ExpressionAST)value;
+        
+        return null;
     }
 
     @Override

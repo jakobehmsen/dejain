@@ -9,6 +9,7 @@ import org.objectweb.asm.Opcodes;
 
 public interface AST {
     Region getRegion();
+    void setRegion(Region region);
     void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<Message> errorMessages);
     
     public static class Util {
