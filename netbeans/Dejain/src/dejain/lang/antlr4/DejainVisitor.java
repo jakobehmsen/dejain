@@ -250,6 +250,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitExpression(@NotNull DejainParser.ExpressionContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link DejainParser#leafExpressionChain}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLeafExpressionChain(@NotNull DejainParser.LeafExpressionChainContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link DejainParser#throwStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

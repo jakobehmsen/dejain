@@ -290,6 +290,14 @@ public class DejainBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitLeafExpressionChain(@NotNull DejainParser.LeafExpressionChainContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitThrowStatement(@NotNull DejainParser.ThrowStatementContext ctx) { return visitChildren(ctx); }
 
 	/**

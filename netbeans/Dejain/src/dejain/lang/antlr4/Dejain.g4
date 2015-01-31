@@ -2,7 +2,7 @@ grammar Dejain;
 
 program: classTransformer*;
 classTransformer:
-    annotations accessModifier? KW_CLASS typeQualifier? 
+    (identifier ASSIGN_OP) annotations accessModifier? KW_CLASS typeQualifier? 
     (OPEN_BRA members=classTransformerMembers CLOSE_BRA)?;
 classTransformerMembers: classTransformerMemberDefinition*;
 classTransformerMemberDefinition: PLUS? member = classTransformerMember;
@@ -34,11 +34,13 @@ expression: variableAssignment;
 variableAssignment: identifier ASSIGN_OP variableAssignment | binarySum;
 binarySum: first=leafExpression (binarySumOperator rest=leafExpression)*;
 leafExpression: 
-    invocation | literal | lookup | thisResult | proceedStatement | 
-    metaExpression | quotedExpression;
+    (invocation | literal | lookup | thisResult | proceedStatement | 
+    metaExpression | quotedExpression | OPEN_PAR expression CLOSE_PAR) 
+    leafExpressionChain;
+leafExpressionChain: (DOT (lookup|invocation))*;
 binarySumOperator: operator=(PLUS | MINUS);
 thisResult: KW_THIS_RESULT;
-invocation: typeQualifier OPEN_PAR arguments CLOSE_PAR;
+invocation: identifier OPEN_PAR arguments CLOSE_PAR;
 arguments: (expression (COMMA expression)*)?;
 lookup: identifier;
 statements: statement*;
