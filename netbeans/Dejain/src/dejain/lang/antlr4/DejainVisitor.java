@@ -12,13 +12,6 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#tryStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTryStatement(@NotNull DejainParser.TryStatementContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#variableAssignment}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -47,13 +40,6 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitAnnotations(@NotNull DejainParser.AnnotationsContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberFieldAdd}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitClassTransformerMemberFieldAdd(@NotNull DejainParser.ClassTransformerMemberFieldAddContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#binarySum}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -61,18 +47,116 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitBinarySum(@NotNull DejainParser.BinarySumContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#statements}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStatements(@NotNull DejainParser.StatementsContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#program}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitProgram(@NotNull DejainParser.ProgramContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#binarySumOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinarySumOperator(@NotNull DejainParser.BinarySumOperatorContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#classTransformerMember}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassTransformerMember(@NotNull DejainParser.ClassTransformerMemberContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#booleanLiteral}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBooleanLiteral(@NotNull DejainParser.BooleanLiteralContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#identifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIdentifier(@NotNull DejainParser.IdentifierContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#catchStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCatchStatement(@NotNull DejainParser.CatchStatementContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#ifTrueBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfTrueBlock(@NotNull DejainParser.IfTrueBlockContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#invocation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInvocation(@NotNull DejainParser.InvocationContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#stringLiteral}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStringLiteral(@NotNull DejainParser.StringLiteralContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#classTransformerMembers}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassTransformerMembers(@NotNull DejainParser.ClassTransformerMembersContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#parameters}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParameters(@NotNull DejainParser.ParametersContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#delimitedStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDelimitedStatement(@NotNull DejainParser.DelimitedStatementContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#ifFalseBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfFalseBlock(@NotNull DejainParser.IfFalseBlockContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#tryStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTryStatement(@NotNull DejainParser.TryStatementContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberFieldAdd}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassTransformerMemberFieldAdd(@NotNull DejainParser.ClassTransformerMemberFieldAddContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link DejainParser#statements}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStatements(@NotNull DejainParser.StatementsContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberMethodAdd}.
@@ -96,6 +180,13 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitTryCatchStatement(@NotNull DejainParser.TryCatchStatementContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link DejainParser#quotedExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitQuotedExpression(@NotNull DejainParser.QuotedExpressionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link DejainParser#literal}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -110,25 +201,11 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitAccessModifier(@NotNull DejainParser.AccessModifierContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#binarySumOperator}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBinarySumOperator(@NotNull DejainParser.BinarySumOperatorContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#thisResult}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitThisResult(@NotNull DejainParser.ThisResultContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMember}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitClassTransformerMember(@NotNull DejainParser.ClassTransformerMemberContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#parameter}.
@@ -143,13 +220,6 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStatement(@NotNull DejainParser.StatementContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#booleanLiteral}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBooleanLiteral(@NotNull DejainParser.BooleanLiteralContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberDefinition}.
@@ -171,13 +241,6 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLookup(@NotNull DejainParser.LookupContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#identifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIdentifier(@NotNull DejainParser.IdentifierContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#expression}.
@@ -229,13 +292,6 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitMetaExpression(@NotNull DejainParser.MetaExpressionContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#catchStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCatchStatement(@NotNull DejainParser.CatchStatementContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#variableDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -250,13 +306,6 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitFinallyStatement(@NotNull DejainParser.FinallyStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#ifTrueBlock}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIfTrueBlock(@NotNull DejainParser.IfTrueBlockContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberMethod}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -264,32 +313,11 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitClassTransformerMemberMethod(@NotNull DejainParser.ClassTransformerMemberMethodContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#invocation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitInvocation(@NotNull DejainParser.InvocationContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#stringLiteral}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStringLiteral(@NotNull DejainParser.StringLiteralContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#modStatic}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitModStatic(@NotNull DejainParser.ModStaticContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMembers}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitClassTransformerMembers(@NotNull DejainParser.ClassTransformerMembersContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#integerLiteral}.
@@ -313,32 +341,11 @@ public interface DejainVisitor<T> extends ParseTreeVisitor<T> {
 	T visitClassTransformerMemberField(@NotNull DejainParser.ClassTransformerMemberFieldContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#parameters}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitParameters(@NotNull DejainParser.ParametersContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#delimitedStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDelimitedStatement(@NotNull DejainParser.DelimitedStatementContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link DejainParser#typeQualifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTypeQualifier(@NotNull DejainParser.TypeQualifierContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link DejainParser#ifFalseBlock}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIfFalseBlock(@NotNull DejainParser.IfFalseBlockContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link DejainParser#longLiteral}.

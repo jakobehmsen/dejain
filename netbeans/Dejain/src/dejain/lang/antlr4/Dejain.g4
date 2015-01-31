@@ -33,7 +33,9 @@ parameter: typeQualifier identifier;
 expression: variableAssignment;
 variableAssignment: identifier ASSIGN_OP variableAssignment | binarySum;
 binarySum: first=leafExpression (binarySumOperator rest=leafExpression)*;
-leafExpression: invocation | literal | lookup | thisResult | proceedStatement | metaExpression;
+leafExpression: 
+    invocation | literal | lookup | thisResult | proceedStatement | 
+    metaExpression | quotedExpression;
 binarySumOperator: operator=(PLUS | MINUS);
 thisResult: KW_THIS_RESULT;
 invocation: typeQualifier OPEN_PAR arguments CLOSE_PAR;
@@ -44,6 +46,7 @@ statement: nonDelimitedStatement | delimitedStatement SEMI_COLON;
 nonDelimitedStatement: tryCatchStatement | ifElseStatement;
 proceedStatement: ELLIPSES;
 metaExpression: DOLLAR (expression | OPEN_BRA statements CLOSE_BRA);
+quotedExpression: HASH expression;
 tryCatchStatement: 
     tryStatement ((catchStatement finallyStatement?) | finallyStatement);
 tryStatement: KW_TRY OPEN_BRA statements CLOSE_BRA;
@@ -82,6 +85,7 @@ OPEN_PAR: '(';
 CLOSE_PAR: ')';
 AT: '@';
 DOLLAR: '$';
+HASH: '#';
 PLUS: '+';
 MINUS: '-';
 ASSIGN_OP: '=';
