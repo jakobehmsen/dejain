@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class MetaAST extends AbstractAST implements ExpressionAST {
+public class MetaExpressionAST extends AbstractAST implements ExpressionAST {
     public ASMCompiler compiler;
     public List<CodeAST> body;
     public Method bodyAsMethod;
@@ -22,7 +22,7 @@ public class MetaAST extends AbstractAST implements ExpressionAST {
     public ExpressionAST generatedExpression;
 
     // Region and compiler could probably be merged into a single CompilationContext|CompilationUnit thingy
-    public MetaAST(ASMCompiler.Region region, ASMCompiler compiler, List<CodeAST> body, Method bodyAsMethod) {
+    public MetaExpressionAST(ASMCompiler.Region region, ASMCompiler compiler, List<CodeAST> body, Method bodyAsMethod) {
         super(region);
         
         this.compiler = compiler;
@@ -36,17 +36,15 @@ public class MetaAST extends AbstractAST implements ExpressionAST {
         resultType = expectedResultType;
         
         try {
-            String source = (String)bodyAsMethod.invoke(null, null);
-            generatedExpression = compiler.compileExpression(new ByteArrayInputStream(source.getBytes("UTF-8")));
-            ArrayList<ASMCompiler.Message> metaErrorMessages = new ArrayList<>();
-            generatedExpression.resolve(null, null, resolver, metaErrorMessages);
-            errorMessages.addAll(
-                metaErrorMessages.stream().map(m -> new Message(m.getRegion(), "Meta error: " + m.getText())).collect(Collectors.toList())
-            );
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | UnsupportedEncodingException ex) {
-            Logger.getLogger(MetaAST.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(MetaAST.class.getName()).log(Level.SEVERE, null, ex);
+            generatedExpression = (ExpressionAST)bodyAsMethod.invoke(null, null);
+//            generatedExpression = compiler.compileExpression(new ByteArrayInputStream(source.getBytes("UTF-8")));
+//            ArrayList<ASMCompiler.Message> metaErrorMessages = new ArrayList<>();
+//            generatedExpression.resolve(null, null, resolver, metaErrorMessages);
+//            errorMessages.addAll(
+//                metaErrorMessages.stream().map(m -> new Message(m.getRegion(), "Meta error: " + m.getText())).collect(Collectors.toList())
+//            );
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

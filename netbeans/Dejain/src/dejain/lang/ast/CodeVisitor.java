@@ -8,7 +8,7 @@ public interface CodeVisitor {
     void visitInvocation(InvocationAST ctx);
     void visitFieldSet(FieldSetAST ctx);
     void visitLongLiteral(LiteralAST<Long> ctx);
-    void visitMeta(MetaAST ctx);
+    void visitMeta(MetaExpressionAST ctx);
     void visitThis(ThisAST ctx);
     void visitFieldGet(FieldGetAST ctx);
 }

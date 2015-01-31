@@ -169,7 +169,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
 
             @Override
-            public void visitMeta(MetaAST ctx) {
+            public void visitMeta(MetaExpressionAST ctx) {
                 ctx.generatedExpression.accept(this);
             }
 

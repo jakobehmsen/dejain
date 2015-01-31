@@ -22,7 +22,7 @@ import dejain.lang.ast.MethodAST;
 import dejain.lang.ast.MethodSelectorAST;
 import dejain.lang.ast.ModuleAST;
 import dejain.lang.ast.ReturnAST;
-import dejain.lang.ast.MetaAST;
+import dejain.lang.ast.MetaExpressionAST;
 import dejain.lang.ast.CodeAST;
 import dejain.lang.ast.CodeVisitor;
 import dejain.lang.ast.FieldGetAST;
@@ -423,7 +423,7 @@ public class ASMCompiler {
                 
                 mp.generatorCount++;
                 
-                return new MetaAST(new Region(ctx), ASMCompiler.this, body, m);
+                return new MetaExpressionAST(new Region(ctx), ASMCompiler.this, body, m);
             }
 
             @Override
