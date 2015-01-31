@@ -139,7 +139,7 @@ public class SourceToClassTest {
         String expectedResult = "Hi";
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
-            "class {+public String toString() {return $\"\\\"" + expectedResult + "\\\"\";}}", 
+            "class {+public String toString() {return $\"" + expectedResult + "\";}}", 
             forClass("dejain.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
@@ -159,7 +159,7 @@ public class SourceToClassTest {
         String str2 = "i";
         String expectedResult = str1 + str2;
         
-        String strConcSrc = "\"\\\"" + str1 + "\\\" + \\\"" + str2 + "\\\"\"";
+        String strConcSrc = "\"" + str1 + "\" + \"" + str2 + "\"";
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "class {+public String toString() {return $" + strConcSrc + ";}}", 
