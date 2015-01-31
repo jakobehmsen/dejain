@@ -42,7 +42,7 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
         
         try {
             Object value = bodyAsMethod.invoke(null, null);
-            generatedExpression = convertToExpression(value);
+            generatedExpression = convertToExpression(value, bodyAsMethod.getReturnType());
             
             
 //            generatedExpression = compiler.compileExpression(new ByteArrayInputStream(source.getBytes("UTF-8")));
@@ -56,8 +56,8 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
         }
     }
     
-    private ExpressionAST convertToExpression(Object value) {
-        switch(value.getClass().getName()) {
+    private ExpressionAST convertToExpression(Object value, Class<?> returnType) {
+        switch(returnType.getName()) {
             case "java.lang.String":
                 return new LiteralAST<>(getRegion(), (String)value, LiteralDelegateAST.String);
             case "int":
@@ -72,7 +72,7 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
 
     @Override
     public TypeAST resultType() {
-        return resultType;
+        return generatedExpression.resultType();
     }
 
     @Override

@@ -6,6 +6,7 @@ import dejain.lang.ClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
 import dejain.runtime.asm.CompositeTransformer;
 import dejain.runtime.asm.IfAllTransformer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.OptionalInt;
@@ -37,6 +38,68 @@ public class MethodAST extends AbstractAST implements MemberAST {
     @Override
     public void accept(MemberVisitor visitor) {
         visitor.visitMethod(this);
+    }
+    
+    public static List<TypeAST> getReturnType(List<CodeAST> body) {
+        ArrayList<TypeAST> returnTypes = new ArrayList<>();
+        
+        body.forEach(c -> getReturnType(c, returnTypes));
+        
+        return returnTypes;
+    }
+    
+    public static void getReturnType(CodeAST code, List<TypeAST> returnTypes) {
+        code.accept(new CodeVisitor() {
+            @Override
+            public void visitReturn(ReturnAST ctx) {
+                returnTypes.add(ctx.expression.resultType());
+            }
+
+            @Override
+            public void visitStringLiteral(LiteralAST<String> ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitIntegerLiteral(LiteralAST<Integer> ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitBinaryExpression(BinaryExpressionAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitInvocation(InvocationAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitFieldSet(FieldSetAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitLongLiteral(LiteralAST<Long> ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitMeta(MetaExpressionAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitThis(ThisAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void visitFieldGet(FieldGetAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
     }
 
     @Override

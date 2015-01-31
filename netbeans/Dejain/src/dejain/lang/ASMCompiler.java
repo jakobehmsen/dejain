@@ -396,6 +396,9 @@ public class ASMCompiler {
                 ArrayList<Message> metaErrorMessages = new ArrayList<>();
                 
                 body.forEach(s -> s.resolve(null, new NameTypeAST(new Region(ctx), String.class), classResolver, metaErrorMessages));
+                List<TypeAST> returnTypes = MethodAST.getReturnType(body);
+                // Dangerous
+                Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
                 
                 // 1) Generate code to generate code
                 ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
@@ -403,7 +406,7 @@ public class ASMCompiler {
                 generatorClassNode.access = Opcodes.ACC_PUBLIC;
                 generatorClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
                 generatorClassNode.superName = "java/lang/Object";
-                MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, "generator", Type.getMethodDescriptor(Type.getType(String.class)), null, new String[]{});
+                MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
                 generatorClassNode.methods.add(generatorMethod);
                 
                 GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);

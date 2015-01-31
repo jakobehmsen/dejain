@@ -39,6 +39,10 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         }
     }
 
+    public Class<?> getType() {
+        return c;
+    }
+
     @Override
     public String toString() {
         return name;
