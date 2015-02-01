@@ -26,9 +26,12 @@
       </header>
       <section>
         <h3>
-<a id="welcome-to-the-project-page-of-dejain" class="anchor" href="#welcome-to-the-project-page-of-dejain" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to the project page of Dejain</h3>
+<a id="welcome-to-the-project-page-of-dejain" class="anchor" href="#welcome-to-the-project-page-of-dejain" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction to Dejain</h3>
 
-<p>Dejain is a declarative Java bytecode instrumentation language with a syntax leaning towards Java. Its imagined applications lie within model driven development by using POJOs as models.</p>
+<p>
+Dejain is a declarative Java bytecode instrumentation language with a syntax leaning towards Java. 
+Its imagined applications lie within model driven development by using POJOs as models.
+</p>
 
 <p>Take a look below to see how easy it is to add an extra field and override the toString method of all classes being loaded:</p>
 
@@ -43,9 +46,10 @@
       </section>
       <section>
         <h3>
-<a id="code-interpolation" class="anchor" href="#code-interpolation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Code interpolation</h3>
+<a id="code-interpolation" class="anchor" href="#code-interpolation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Code Interpolation</h3>
 
-<p>There are limitations to instrumentation based only on code ad verbatim.
+<p>
+There are limitations to instrumentation based only on code ad verbatim.
 To overcome this, Dejain supports interpolation of explicitly generated code. 
 This code is represented by ASTs, where these ASTs may be implictly converted from non-AST values (e.g. Strings and ints) into their corresponding AST represention.
 </p>
@@ -58,6 +62,59 @@ This code is represented by ASTs, where these ASTs may be implictly converted fr
     }
 }
 </code></pre>
+      </section>
+	  <section>
+        <h3>
+<a id="code-interpolation-beyond-expressions" class="anchor" href="#code-interpolation-beyond-expressions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Code Interpolation - Beyond Expressions</h3>
+
+<p>
+The previous example of code interpolation involved interpolation of expressions. 
+In some cases, it is practical to generate statements - perhaps even in a varying amount and combination.
+</p>
+
+<p>For an example of such interpolation, look below where a description method is generated which builds and returns a description of all the instance fields:</p>
+
+<pre><code>class {
+    fields = !static;
+
+    +public String getDescription() {
+        StringBuilder descriptionBuilder = new StringBuilder();
+		
+        $fields.stream().map(f -> 
+            #descriptionBuilder.append($f.name + " = " + $f.value)
+        );
+		
+        return descriptionBuilder.toString();
+    }
+}
+</code></pre>
+
+<p>For example, the following class</p>
+
+<pre><code>public class Person {
+    private String firstName;
+    private String lastName;
+    private int age;
+}
+</code></pre>
+
+<p>will be transformed into</p>
+
+<pre><code>public class Person {
+    ...
+	
+    public String getDescription() {
+        StringBuilder descriptionBuilder = new StringBuilder();
+		
+        descriptionBuilder.append("firstName" + " = " + firstName);
+        descriptionBuilder.append("lastName" + " = " + lastName);
+        descriptionBuilder.append("age" + " = " + age);
+		
+        return descriptionBuilder.toString();
+    }
+}
+</code></pre>
+
       </section>
     </div>
     <footer>
