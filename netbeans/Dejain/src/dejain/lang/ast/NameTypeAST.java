@@ -4,7 +4,6 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import java.lang.reflect.Field;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,10 +12,6 @@ import org.objectweb.asm.Type;
 public class NameTypeAST extends AbstractAST implements TypeAST {
     public String name;
     private Class<?> c;
-    
-//    public Class<?> getType() {
-//        return c;
-//    }
 
     public NameTypeAST(Region region, String name) {
         super(region);

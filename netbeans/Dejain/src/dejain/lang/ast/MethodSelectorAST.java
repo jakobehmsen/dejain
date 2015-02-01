@@ -2,15 +2,11 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
-import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.IfAllTransformer;
-import dejain.runtime.asm.IfAllWithin;
-import java.util.Hashtable;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.ParameterNode;
 
 public class MethodSelectorAST {
     public Integer accessModifier;

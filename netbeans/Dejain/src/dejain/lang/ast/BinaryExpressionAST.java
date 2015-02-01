@@ -5,7 +5,6 @@ import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.List;
 
 public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {

@@ -1,25 +1,12 @@
 package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
-import dejain.lang.ASMCompiler.Message;
-import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.SingleClassLoader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import javafx.beans.binding.StringExpression;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
@@ -31,7 +18,6 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
     public List<CodeAST> body;
     public Method bodyAsMethod;
     public TypeAST resultType;
-//    public ExpressionAST generatedExpression;
     public ASMCompiler.MetaProcessing mp;
 
     // Region and compiler could probably be merged into a single CompilationContext|CompilationUnit thingy
@@ -118,41 +104,9 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
             Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-//        try {
-//            Object generator = generatorClass2.newInstance();
-//            
-//            // 2) Evaluate the generated code which result in a String
-//            for(Map.Entry<String, Object> patternVariable: patternVariables.entrySet()) {
-//                try {
-//                    Field f = generatorClass2.getField(patternVariable.getKey());
-//                    f.set(generator, patternVariable.getValue());
-//                } catch (NoSuchFieldException ex) {
-//                    Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
-//            
-//            bodyAsMethod = generatorClass2.getMethod("generator", null);
-//            
-//            // Expression is derived pr transformation
-//            Object value = bodyAsMethod.invoke(generator, null);
-//            generatedExpression = convertToExpression(value, bodyAsMethod.getReturnType());
-//        } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-//            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-
         mp.generatorCount++;
         
-//        resultType = expectedResultType;
         resultType = new NameTypeAST(getRegion(), resultType(bodyAsMethod.getReturnType()));
-        // Check that the return type of the body is valid. 
-        // - I.e., convertible into an ExpressionAST.
-        
-//        try {
-//            Object value = bodyAsMethod.invoke(null, null);
-//            generatedExpression = convertToExpression(value, bodyAsMethod.getReturnType());
-//        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-//            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-//        }
     }
     
     public ExpressionAST convertToExpression(Object value, Class<?> returnType) {
@@ -184,7 +138,6 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
 
     @Override
     public TypeAST resultType() {
-//        return new NameTypeAST(getRegion(), resultType(bodyAsMethod.getReturnType()));
         return resultType;
     }
 

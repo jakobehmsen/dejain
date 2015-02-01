@@ -3,23 +3,14 @@ package dejain.lang.ast;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
-import dejain.lang.CommonClassResolver;
-import dejain.lang.antlr4.DejainLexer;
-import dejain.lang.antlr4.DejainParser;
 import dejain.runtime.asm.CommonClassTransformer;
 import dejain.runtime.asm.CompositeTransformer;
-import dejain.runtime.asm.FirstByIndexTransformer;
 import dejain.runtime.asm.IfAllTransformer;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.stream.IntStream;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
@@ -65,10 +56,7 @@ public class FieldAST extends AbstractAST implements MemberAST {
                     int fieldAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String fieldName = selector.name;
                     String fieldDescriptor = selector.fieldType.getDescriptor();
-//                    String fieldDescriptor = Type.getDescriptor( selector.fieldType.getName());
                     if(this.value != null) {
-//                        String thisClassName = c.getTarget().name;
-                    
                         ((List<MethodNode>)c.getTarget().methods).stream().filter(m -> m.name.equals("<init>")).forEach(cons -> {
                             InsnList originalInstructions = cons.instructions;
                             cons.instructions = new InsnList();

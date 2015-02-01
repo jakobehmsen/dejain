@@ -3,7 +3,6 @@ package dejain.lang.ast;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
-import org.objectweb.asm.tree.ClassNode;
 
 public class Transformation<T> {
     private Transformation parent;

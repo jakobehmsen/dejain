@@ -4,7 +4,6 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
-import java.util.Hashtable;
 import java.util.List;
 
 public class AnnotationAST extends AbstractAST {
@@ -22,7 +21,7 @@ public class AnnotationAST extends AbstractAST {
         type.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
-    void populate(CommonClassTransformer transformer) {
+    public void populate(CommonClassTransformer transformer) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -1,6 +1,5 @@
 package dejain.lang.ast;
 
-import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
@@ -10,22 +9,17 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.OptionalInt;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -120,8 +114,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
         } else {
             classTransformer.addTransformer(c -> {
                 return () -> {
-                    String thisClassName = c.getTarget().name;
-                    
                     int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                     String methodName = selector.name;
                     Type[] argumentTypes = selector.parameterTypes.stream()
@@ -253,16 +245,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
                             Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-//                    for(Map.Entry<String, Object> patternVariable: patternVariables.entrySet()) {
-//                        try {
-//                            Field f = generatorClass2.getField(patternVariable.getKey());
-//                            f.set(generator, patternVariable.getValue());
-//                        } catch (NoSuchFieldException ex) {
-//                            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-//                        }
-//                    }
-
-//                    bodyAsMethod = generatorClass2.getMethod("generator", null);
 
                     // Expression is derived pr transformation
                     Object value = ctx.bodyAsMethod.invoke(generator, null);
@@ -271,9 +253,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
                     Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                
-//                ctx.generatedExpression.accept(this);
             }
 
             @Override

@@ -2,7 +2,6 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
-import java.util.Hashtable;
 import java.util.List;
 
 public class FieldGetAST extends AbstractAST implements ExpressionAST {
@@ -21,12 +20,6 @@ public class FieldGetAST extends AbstractAST implements ExpressionAST {
         // At this point, a lookup may implicate either a field get or a "match-captured-variable".
         
         target.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        
-//        Class<?> patternVariableType = patternVariables.get(fieldName);
-//        
-//        if(patternVariableType != null)
-//            fieldType = patternVariableType;
-//        else
         fieldType = target.resultType().getFieldType(fieldName);
     }
 

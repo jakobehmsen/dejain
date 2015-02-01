@@ -2,7 +2,6 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
-import java.util.Hashtable;
 import java.util.List;
 
 public class ThisAST extends AbstractAST implements ExpressionAST {

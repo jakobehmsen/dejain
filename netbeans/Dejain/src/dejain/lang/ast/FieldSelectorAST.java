@@ -2,10 +2,8 @@ package dejain.lang.ast;
 
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
-import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
 import dejain.runtime.asm.IfAllTransformer;
-import java.util.Hashtable;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -29,10 +27,7 @@ public class FieldSelectorAST {
     }
 
     public void populate(CommonClassTransformer transformer) {
-//        transformer.addPredicate(c -> c.fields.stream().anyMatch(f -> 
-//            ((FieldNode)f).name.equals(name)) &&
-//            ((FieldNode)f).access == 
-//        );
+        
     }
 
     public void populate(IfAllTransformer<Transformation<FieldNode>> transformer) {

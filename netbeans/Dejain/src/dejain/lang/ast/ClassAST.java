@@ -3,14 +3,9 @@ package dejain.lang.ast;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
-import dejain.lang.CommonClassResolver;
-import dejain.runtime.asm.ClassTransformer;
 import dejain.runtime.asm.CommonClassTransformer;
-import dejain.runtime.asm.FirstByIndexTransformer;
 import dejain.runtime.asm.IfAllTransformer;
 import dejain.runtime.asm.IfAllWithin;
-import dejain.runtime.asm.IfAnyTransformer;
-import dejain.runtime.asm.IfAnyWithin;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
@@ -36,12 +31,7 @@ public class ClassAST extends AbstractAST implements Scope {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-//        Hashtable<String, Object> classPatternVariables = new Hashtable<>();
-//        
-//        if(variableId != null)
-//            
-//            
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {    
         annotations.forEach(a -> a.resolve(this, expectedResultType, resolver, errorMessages));
         if(type != null)
             type.resolve(this, expectedResultType, resolver, errorMessages);
@@ -61,24 +51,8 @@ public class ClassAST extends AbstractAST implements Scope {
         IfAllTransformer<Transformation<FieldNode>> fieldTransformer = new IfAllTransformer<>();
         IfAllTransformer<Transformation<MethodNode>> methodTransformer = new IfAllTransformer<>();
         
-//        members.forEach(x -> x.accept(new MemberVisitor() {
-//            @Override
-//            public void visitMethod(MethodAST ctx) {
-//                ctx.populate(transformer, methodTransformer);
-//            }
-//
-//            @Override
-//            public void visitField(FieldAST ctx) {
-//                ctx.populate(transformer, fieldTransformer);
-//            }
-//        }));
-        
         transformer.addTransformer(c -> {
-            
-//            Transformation<ClassNode> classTransformation = c.inner(c.getTarget());
-            
             if(variableId != null) {
-//                c.putVariableValue(variableId, c.getTarget());
                 Hashtable<String, Object> variables = new Hashtable<>();
                 variables.put(variableId, c.getTarget());
                 c = c.inner(c.getTarget(), variables);
@@ -103,11 +77,6 @@ public class ClassAST extends AbstractAST implements Scope {
 
             return memberTransformer.apply(c);
         });
-        
-//        transformer.addTransformer(new IfAnyWithin<>(c -> (List<Transformation<FieldNode>>)c.getTarget().fields.stream().map(f -> c.inner(f)).collect(Collectors.toList()), fieldTransformer));
-//        transformer.addTransformer(new IfAnyWithin<>(c -> (List<Transformation<MethodNode>>)c.getTarget().methods.stream().map(f -> c.inner(f)).collect(Collectors.toList()), methodTransformer));
-        
-//        transformer.addTransformer(new IfAnyWithin<>(c -> c.getTarget().methods, methodTransformer));
     }
 
     public TypeAST getFieldType(String fieldName) {

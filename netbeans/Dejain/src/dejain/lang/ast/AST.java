@@ -3,7 +3,6 @@ package dejain.lang.ast;
 import dejain.lang.ASMCompiler.Message;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
-import java.util.Hashtable;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
 

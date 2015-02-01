@@ -3,12 +3,7 @@ package dejain.lang.ast;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
-import java.lang.reflect.Method;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.beanutils.MethodUtils;
 
 public class InvocationAST extends AbstractAST implements ExpressionAST {
     public ExpressionAST target;
