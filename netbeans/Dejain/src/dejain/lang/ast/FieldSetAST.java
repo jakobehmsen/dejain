@@ -3,6 +3,7 @@ package dejain.lang.ast;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
 import java.lang.reflect.Field;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +25,7 @@ public class FieldSetAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         target.resolve(thisClass, expectedResultType, resolver, errorMessages);
         declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
         value.resolve(thisClass, expectedResultType, resolver, errorMessages);

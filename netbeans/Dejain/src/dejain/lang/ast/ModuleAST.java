@@ -10,6 +10,7 @@ import dejain.runtime.asm.CompositeTransformer;
 import dejain.runtime.asm.FirstByIndexTransformer;
 import dejain.runtime.asm.IfAllTransformer;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.function.Function;
 import org.objectweb.asm.tree.ClassNode;
@@ -23,7 +24,7 @@ public class ModuleAST extends AbstractAST {
     }
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         classes.forEach(c -> c.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 

@@ -1,20 +1,39 @@
 package dejain.lang.ast;
 
+//import dejain.lang.ASMCompiler;
+
 import dejain.lang.ASMCompiler;
 import dejain.lang.ClassResolver;
 import java.util.List;
 
-public class ThisTypeAST extends AbstractAST implements TypeAST {
-    private ClassAST classInfo;
+//import dejain.lang.ASMCompiler.Message;
+//import dejain.lang.ASMCompiler.Region;
+//import dejain.lang.ClassResolver;
+//import java.util.Hashtable;
+//import java.util.List;
+//import org.objectweb.asm.Opcodes;
 
-    public ThisTypeAST(ASMCompiler.Region region) {
+public class ThisTypeAST extends AbstractAST implements TypeAST {
+    private Scope classInfo;
+
+    public ThisTypeAST(dejain.lang.ASMCompiler.Region region) {
         super(region);
     }
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         classInfo = thisClass;
     }
+
+//    @Override
+//    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+//        classInfo = thisClass;
+//    }
+    
+//    @Override
+//    public void resolve(dejain.lang.ast.Scope thisClass, dejain.lang.ast.TypeAST expectedResultType, dejain.lang.ClassResolver resolver, java.util.List<dejain.lang.ASMCompiler.Message> errorMessages) {
+//        classInfo = thisClass;
+//    }
 
     @Override
     public String getDescriptor(String thisClassName) {

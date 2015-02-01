@@ -5,6 +5,7 @@ import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.IfAllTransformer;
 import dejain.runtime.asm.IfAllWithin;
+import java.util.Hashtable;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -26,7 +27,7 @@ public class MethodSelectorAST {
         this.parameterTypes = parameterTypes;
     }
 
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         returnType.resolve(thisClass, expectedResultType, resolver, errorMessages);
         parameterTypes.forEach(pt -> pt.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }

@@ -4,6 +4,7 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
+import java.util.Hashtable;
 import java.util.List;
 
 public class LiteralAST<T> extends AbstractAST implements ExpressionAST {
@@ -17,7 +18,7 @@ public class LiteralAST<T> extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         
     }
 

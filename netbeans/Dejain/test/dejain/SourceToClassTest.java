@@ -240,6 +240,27 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAdd1PublicMethodReturningClassName() throws IOException {
+        int i1 = 5;
+        String str2 = "i";
+        String expectedResult = i1 + str2;
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            "c=class {+public String getClassName() {return $c.name;}}", 
+            forClass("dejain.TestClass1", 
+                chasMethodWhere(
+                    mname(is("getClassName"))
+                    .and(rreturnType(is(String.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("getClassName", invocationResult(is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAdd1PublicMethodReturningIntPlusIntPlusString() throws IOException {
         int i1 = 1;
         int i2 = 5;

@@ -9,6 +9,8 @@ import dejain.lang.antlr4.DejainBaseVisitor;
 import dejain.lang.antlr4.DejainLexer;
 import dejain.lang.antlr4.DejainParser;
 import dejain.lang.antlr4.DejainParser.AnnotationContext;
+import dejain.lang.antlr4.DejainParser.InvocationContext;
+import dejain.lang.antlr4.DejainParser.LookupContext;
 import dejain.lang.antlr4.DejainParser.ProgramContext;
 import dejain.lang.antlr4.DejainParser.StatementContext;
 import dejain.lang.ast.BinaryExpressionAST;
@@ -30,6 +32,7 @@ import dejain.lang.ast.FieldSetAST;
 import dejain.lang.ast.InvocationAST;
 import dejain.lang.ast.LiteralDelegateAST;
 import dejain.lang.ast.MemberVisitor;
+import dejain.lang.ast.MetaScope;
 import dejain.lang.ast.NameTypeAST;
 import dejain.lang.ast.ThisAST;
 import dejain.lang.ast.TypeAST;
@@ -43,6 +46,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -108,14 +112,14 @@ public class ASMCompiler {
         return new DejainParser(tokenStream);
     }
     
-    public ExpressionAST compileExpression(InputStream sourceCode) throws IOException {
-        DejainParser parser = createParser(sourceCode);
-        
-        DejainParser.ExpressionContext expression = parser.expression();
-        
-        MetaProcessing mp = new MetaProcessing();
-        return getExpression(expression, mp);
-    }
+//    public ExpressionAST compileExpression(InputStream sourceCode) throws IOException {
+//        DejainParser parser = createParser(sourceCode);
+//        
+//        DejainParser.ExpressionContext expression = parser.expression();
+//        
+//        MetaProcessing mp = new MetaProcessing();
+//        return getExpression(expression, mp);
+//    }
     
     public ModuleAST compile(InputStream sourceCode) throws IOException {
         ArrayList<ClassAST> classes = new ArrayList<>();
@@ -124,12 +128,27 @@ public class ASMCompiler {
         
         DejainParser.ProgramContext program = parser.program();
         
+        Hashtable<String, TypeAST> patternVariables = new Hashtable<>();
+        MetaScope metaScope = new MetaScope(patternVariables);
+        
         program.accept(new DejainBaseVisitor<Object>() {
             @Override
             public Object visitClassTransformer(DejainParser.ClassTransformerContext ctx) {
                 List<dejain.lang.ast.AnnotationAST> annotations = ctx.annotations().annotation().stream()
                     .map(aCtx -> new dejain.lang.ast.AnnotationAST(new Region(aCtx), aCtx.PLUS() != null, new NameTypeAST(new Region(aCtx), aCtx.typeQualifier().getText())))
                     .collect(Collectors.toList());
+                
+                try {
+                    if(ctx.variableId != null) {
+                        String variableName = ctx.variableId.getText();
+                        Region r = new Region(ctx.variableId);
+                        Class<?> c = ClassNode.class;
+                        NameTypeAST t = new NameTypeAST(r, c);
+                        patternVariables.put(variableName, t);
+                    }
+                } catch(Exception e) {
+                    e.toString();
+                }
                 
                 Integer accessModifer = null;
                 if(ctx.accessModifier() != null)
@@ -153,7 +172,7 @@ public class ASMCompiler {
                                 ExpressionAST value = null;
                                 
                                 if(ctx.value != null) {
-                                    MetaProcessing mp = new MetaProcessing();
+                                    MetaProcessing mp = new MetaProcessing(patternVariables);
                                     value = getExpression(ctx.value, mp);
                                 }
                                 
@@ -173,7 +192,7 @@ public class ASMCompiler {
                                 List<TypeAST> parameterTypes = ctx.parameters().parameter().stream()
                                     .map(pCtx -> new NameTypeAST(new Region(ctx), pCtx.typeQualifier().getText()))
                                     .collect(Collectors.toList());
-                                MetaProcessing mp = new MetaProcessing();
+                                MetaProcessing mp = new MetaProcessing(patternVariables);
                                 List<dejain.lang.ast.CodeAST> body = getStatements(ctx.statements(), mp);
                                 MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameterTypes), body);
                                 
@@ -185,7 +204,9 @@ public class ASMCompiler {
                     }
                 }
                 
-                classes.add(new ClassAST(new Region(ctx), annotations, accessModifer, type, members));
+                String variableId = ctx.variableId != null ? ctx.variableId.getText() : null;
+                
+                classes.add(new ClassAST(new Region(ctx), variableId, annotations, accessModifer, type, members));
                 
                 return null;
             }
@@ -200,6 +221,11 @@ public class ASMCompiler {
     
     public static class MetaProcessing {
         public int generatorCount;
+        public MetaScope metaScope;
+
+        public MetaProcessing(Hashtable<String, TypeAST> patternVariables) {
+            metaScope = new MetaScope(patternVariables);
+        }
     }
     
 //    private void processMeta(ModuleContext ctx) {
@@ -358,7 +384,22 @@ public class ASMCompiler {
             public ExpressionAST visitLeafExpression(DejainParser.LeafExpressionContext ctx) {
                 ExpressionAST result = ctx.getChild(0).accept(this);
                 
-                // Visit chain
+                for(int i = 0; i < ctx.leafExpressionChain().getChildCount(); i++) {
+                    if(ctx.leafExpressionChain().getChild(i) instanceof ParserRuleContext) {
+                        ParserRuleContext chainCtx = (ParserRuleContext)ctx.leafExpressionChain().getChild(i);
+
+                        switch(chainCtx.getRuleIndex()) {
+                            case DejainParser.RULE_lookup:
+                                LookupContext lookupCtx = (LookupContext)chainCtx;
+                                String fieldName = lookupCtx.identifier().getText();
+                                result = new FieldGetAST(new Region(chainCtx), result, fieldName);
+                                break;
+                            case DejainParser.RULE_invocation:
+                                InvocationContext invocationCtx = (InvocationContext)chainCtx;
+                                break;
+                        }
+                    }
+                }
                 
                 return result;
             }

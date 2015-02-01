@@ -6,10 +6,16 @@ import dejain.lang.ClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
 import dejain.runtime.asm.CompositeTransformer;
 import dejain.runtime.asm.IfAllTransformer;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.objectweb.asm.Label;
@@ -103,7 +109,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
     }
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
         selector.resolve(thisClass, expectedResultType, resolver, errorMessages);
         body.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
@@ -130,7 +136,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType);
 
                     generator.start();
-                    toCode(thisClassName, body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
+                    toCode(c, body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
                     generator.end();
 
                     methodNode.visitEnd();
@@ -150,19 +156,19 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
     }
 
-    public static void toCode(String thisClassName, List<CodeAST> body, MethodCodeGenerator generator) {
-        toCode(thisClassName, body, generator, new InsnList());
+    public static void toCode(Transformation<ClassNode> c, List<CodeAST> body, MethodCodeGenerator generator) {
+        toCode(c, body, generator, new InsnList());
     }
 
-    private static void toCode(String thisClassName, List<CodeAST> body, MethodCodeGenerator generator, InsnList originalIl) {
-        body.forEach(ctx -> toCode(thisClassName, ctx, generator, originalIl, false));
+    private static void toCode(Transformation<ClassNode> c, List<CodeAST> body, MethodCodeGenerator generator, InsnList originalIl) {
+        body.forEach(ctx -> toCode(c, ctx, generator, originalIl, false));
     }
 
-    public static void toCode(String thisClassName, CodeAST ctx, MethodCodeGenerator generator, boolean asExpression) {
-        toCode(thisClassName, ctx, generator, new InsnList(), asExpression);
+    public static void toCode(Transformation<ClassNode> c, CodeAST ctx, MethodCodeGenerator generator, boolean asExpression) {
+        toCode(c, ctx, generator, new InsnList(), asExpression);
     }
 
-    private static void toCode(String thisClassName, CodeAST ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
+    private static void toCode(Transformation<ClassNode> c, CodeAST ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
         ctx.accept(new CodeVisitor() {
             @Override
             public void visitReturn(ReturnAST ctx) {
@@ -190,7 +196,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 ctx.lhs.accept(this);
                 ctx.rhs.accept(this);
                 
-                switch(ctx.resultType().getSimpleName(thisClassName)) {
+                switch(ctx.resultType().getSimpleName(c.getTarget().name)) {
                     case "String":
                         generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
                         break;
@@ -216,14 +222,14 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public void visitInvocation(InvocationAST ctx) {
                 ctx.arguments.forEach(a -> a.accept(this));
                 
-                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor(thisClassName))).toArray(size -> new Type[size]);
-                Type returnType = Type.getType(ctx.resultType().getDescriptor(thisClassName));
+                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor(c.getTarget().name))).toArray(size -> new Type[size]);
+                Type returnType = Type.getType(ctx.resultType().getDescriptor(c.getTarget().name));
                 Method method = new Method(ctx.methodName, returnType, argumentTypes);
                 
                 if(ctx.target != null)
-                    generator.methodNode.invokeVirtual(Type.getType(ctx.target.resultType().getDescriptor(thisClassName)), method);
+                    generator.methodNode.invokeVirtual(Type.getType(ctx.target.resultType().getDescriptor(c.getTarget().name)), method);
                 else
-                    generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getDescriptor(thisClassName)), method);
+                    generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getDescriptor(c.getTarget().name)), method);
             }
 
             @Override
@@ -233,7 +239,41 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public void visitMeta(MetaExpressionAST ctx) {
-                ctx.generatedExpression.accept(this);
+                Class<?> generatorClass2 = ctx.bodyAsMethod.getDeclaringClass();
+                try {
+                    Object generator = generatorClass2.newInstance();
+
+                    // 2) Evaluate the generated code which result in a String
+                    for(String fieldName: ctx.mp.metaScope.getFieldNames()) {
+                        try {
+                            Field f = generatorClass2.getField(fieldName);
+                            Object value = c.getVariableValue(fieldName);
+                            f.set(generator, value);
+                        } catch (NoSuchFieldException ex) {
+                            Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+//                    for(Map.Entry<String, Object> patternVariable: patternVariables.entrySet()) {
+//                        try {
+//                            Field f = generatorClass2.getField(patternVariable.getKey());
+//                            f.set(generator, patternVariable.getValue());
+//                        } catch (NoSuchFieldException ex) {
+//                            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                    }
+
+//                    bodyAsMethod = generatorClass2.getMethod("generator", null);
+
+                    // Expression is derived pr transformation
+                    Object value = ctx.bodyAsMethod.invoke(generator, null);
+                    ExpressionAST generatedExpression = ctx.convertToExpression(value, ctx.bodyAsMethod.getReturnType());
+                    generatedExpression.accept(this);
+                } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+                    Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                
+//                ctx.generatedExpression.accept(this);
             }
 
             @Override
@@ -244,7 +284,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             @Override
             public void visitFieldGet(FieldGetAST ctx) {
                 ctx.target.accept(this);
-                generator.methodNode.getField(Type.getType(ctx.target.resultType().getDescriptor(thisClassName)), ctx.fieldName, Type.getType(ctx.resultType().getDescriptor(thisClassName)));
+                generator.methodNode.getField(Type.getType(ctx.target.resultType().getDescriptor(c.getTarget().name)), ctx.fieldName, Type.getType(ctx.resultType().getDescriptor(c.getTarget().name)));
             }
         });
     }

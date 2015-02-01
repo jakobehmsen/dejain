@@ -5,6 +5,7 @@ import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
 
 public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
@@ -35,7 +36,7 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     private TypeAST resultType;
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         resultType = new NameTypeAST(getRegion(), Void.class);
         
         lhs.resolve(thisClass, expectedResultType, resolver, errorMessages);

@@ -4,6 +4,7 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import dejain.lang.CommonClassResolver;
+import java.util.Hashtable;
 import java.util.List;
 
 public class ReturnAST extends AbstractAST implements CodeAST {
@@ -20,7 +21,7 @@ public class ReturnAST extends AbstractAST implements CodeAST {
     }
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         expression.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 }

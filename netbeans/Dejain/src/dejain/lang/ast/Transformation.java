@@ -1,12 +1,21 @@
 package dejain.lang.ast;
 
+import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Map;
+import org.objectweb.asm.tree.ClassNode;
 
 public class Transformation<T> {
+    private Transformation parent;
     private T target;
-    private Map<String, String> variables;
+    private Map<String, Object> variables;
 
-    public Transformation(T target, Map<String, String> variables) {
+    public Transformation(T target) {
+        this.target = target;
+        this.variables = new Hashtable<String, Object>();
+    }
+
+    public Transformation(T target, Map<String, Object> variables) {
         this.target = target;
         this.variables = variables;
     }
@@ -15,11 +24,24 @@ public class Transformation<T> {
         return target;
     }
     
-    public String getVariableValue(String name) {
-        return variables.get(name);
+    public Object getVariableValue(String name) {
+        Object v = variables.get(name);
+        if(v == null && parent != null)
+            return parent.getVariableValue(name);
+        return v;
+    }
+
+    public void putVariableValue(String name, Object value) {
+        variables.put(name, value);
     }
     
     public <R> Transformation<R> inner(R target) {
-        return new Transformation<>(target, variables);
+        return inner(target, Collections.emptyMap());
+    }
+    
+    public <R> Transformation<R> inner(R target, Map<String, Object> variables) {
+        Transformation t = new Transformation<>(target, variables);
+        t.parent = this;
+        return t;
     }
 }

@@ -3,8 +3,8 @@ package dejain.lang.ast;
 import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
-import dejain.lang.CommonClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
+import java.util.Hashtable;
 import java.util.List;
 
 public class AnnotationAST extends AbstractAST {
@@ -18,7 +18,7 @@ public class AnnotationAST extends AbstractAST {
     }
 
     @Override
-    public void resolve(ClassAST thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         type.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
