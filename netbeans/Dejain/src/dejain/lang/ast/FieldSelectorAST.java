@@ -23,7 +23,8 @@ public class FieldSelectorAST {
     }
 
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        fieldType.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        if(fieldType != null)
+            fieldType.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
     public void populate(CommonClassTransformer transformer) {

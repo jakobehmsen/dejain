@@ -6,7 +6,11 @@ import dejain.lang.ClassResolver;
 import dejain.runtime.asm.CommonClassTransformer;
 import dejain.runtime.asm.CompositeTransformer;
 import dejain.runtime.asm.IfAllTransformer;
+import dejain.runtime.asm.IfAllWithin;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -50,9 +54,32 @@ public class FieldAST extends AbstractAST implements MemberAST {
     }
 
     public void populate(CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<FieldNode>> transformer) {
-        if(!isAdd)
-            selector.populate(transformer);
-        else {
+        if(!isAdd) {
+            IfAllTransformer<Transformation<ClassNode>> fieldsTransformerSequence = new IfAllTransformer<>();
+            
+            fieldsTransformerSequence.addTransformer(c -> () -> {
+                if(variableId != null)
+                    c.putVariableValue(variableId, new ArrayList<>());
+            });
+            
+            Predicate<FieldNode> fieldFilter = f -> true;
+            
+            if(selector.accessModifier != null)
+                fieldFilter = fieldFilter.and(f -> (f.access & selector.accessModifier) != 0);
+            if(selector.isStatic != null)
+                fieldFilter = fieldFilter.and(f -> (f.access & Opcodes.ACC_STATIC) != 0);
+            if(selector.fieldType != null)
+                fieldFilter = fieldFilter.and(f -> Type.getType(f.desc).getClassName().equals(selector.fieldType.getDescriptor()));
+            if(selector.name != null)
+                fieldFilter = fieldFilter.and(f -> f.name.equals(selector.name));
+            
+            fieldsTransformerSequence.addTransformer(new IfAllWithin<>(c -> c.getTarget().fields, fieldFilter, (c, f) -> {
+                if(variableId != null)
+                    ((ArrayList<FieldNode>)c.getVariableValue(variableId)).add(f);
+                
+                return () -> { };
+            }));            
+        } else {
             classTransformer.addTransformer(c -> {
                 return () -> {
                     int fieldAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);

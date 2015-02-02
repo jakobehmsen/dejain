@@ -52,13 +52,19 @@ public class ClassAST extends AbstractAST implements Scope {
         IfAllTransformer<Transformation<MethodNode>> methodTransformer = new IfAllTransformer<>();
         
         transformer.addTransformer(c -> {
+//            Hashtable<String, Object> variables = new Hashtable<>();
+                
             if(variableId != null) {
-                Hashtable<String, Object> variables = new Hashtable<>();
-                variables.put(variableId, c.getTarget());
-                c = c.inner(c.getTarget(), variables);
+                c.putVariableValue(variableId, c.getTarget());
+//                variables.put(variableId, c.getTarget());
             }
+            
+//            c = c.inner(c.getTarget(), variables);
                 
             IfAllTransformer<Transformation<ClassNode>> memberTransformer = new IfAllTransformer<>();
+
+//            memberTransformer.addTransformer(new IfAllWithin<>(c2 -> (List<Transformation<FieldNode>>)c2.getTarget().fields.stream().map(f -> c2.inner(f)).collect(Collectors.toList()), fieldTransformer));
+//            memberTransformer.addTransformer(new IfAllWithin<>(c2 -> (List<Transformation<MethodNode>>)c2.getTarget().methods.stream().map(f -> c2.inner(f)).collect(Collectors.toList()), methodTransformer));
             
             members.forEach(x -> x.accept(new MemberVisitor() {
                 @Override
@@ -71,9 +77,6 @@ public class ClassAST extends AbstractAST implements Scope {
                     ctx.populate(memberTransformer, fieldTransformer);
                 }
             }));
-
-            memberTransformer.addTransformer(new IfAllWithin<>(c2 -> (List<Transformation<FieldNode>>)c2.getTarget().fields.stream().map(f -> c2.inner(f)).collect(Collectors.toList()), fieldTransformer));
-            memberTransformer.addTransformer(new IfAllWithin<>(c2 -> (List<Transformation<MethodNode>>)c2.getTarget().methods.stream().map(f -> c2.inner(f)).collect(Collectors.toList()), methodTransformer));
 
             return memberTransformer.apply(c);
         });

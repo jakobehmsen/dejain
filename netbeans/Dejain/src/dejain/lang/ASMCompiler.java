@@ -167,8 +167,8 @@ public class ASMCompiler {
                             public Object visitClassTransformerMemberField(DejainParser.ClassTransformerMemberFieldContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
-                                TypeAST fieldType = new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText());
-                                String name = ctx.identifier().getText();
+                                TypeAST fieldType = ctx.typeQualifier() != null ? new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText()) : null;
+                                String name = ctx.identifier() != null ? ctx.identifier().getText() : null;
                                 
                                 ExpressionAST value = null;
                                 

@@ -14,7 +14,7 @@ public class ExhaustiveClassTransformer {
 
     public ExhaustiveClassTransformer(Function<Transformation<ClassNode>, Runnable> transformer) {
         this((ClassTransformer)(c -> {
-            Transformation<ClassNode> transformation = new Transformation<>(c, new Hashtable<>());
+            Transformation<ClassNode> transformation = new Transformation<>(c);
             Runnable t = transformer.apply(transformation);
             return t != null ? c1 -> t.run() : null;
         }));
