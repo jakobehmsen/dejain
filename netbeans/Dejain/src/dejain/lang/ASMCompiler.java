@@ -161,6 +161,7 @@ public class ASMCompiler {
                 if(ctx.members != null) {
                     for(DejainParser.ClassTransformerMemberDefinitionContext memberCtx: ctx.members.classTransformerMemberDefinition()) {
                         boolean isAdd = memberCtx.PLUS() != null;
+                        String variableId = memberCtx.variableId != null ? memberCtx.variableId.getText() : null;
                         memberCtx.member.accept(new DejainBaseVisitor<Object>() {
                             @Override
                             public Object visitClassTransformerMemberField(DejainParser.ClassTransformerMemberFieldContext ctx) {
@@ -176,7 +177,7 @@ public class ASMCompiler {
                                     value = getExpression(ctx.value, mp);
                                 }
                                 
-                                FieldAST field = new FieldAST(new Region(ctx), isAdd, new FieldSelectorAST(accessModifier, isStatic, fieldType, name), value);
+                                FieldAST field = new FieldAST(new Region(ctx), variableId, isAdd, new FieldSelectorAST(accessModifier, isStatic, fieldType, name), value);
                                 
                                 members.add(field);
                                 

@@ -17,12 +17,14 @@ import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
 public class FieldAST extends AbstractAST implements MemberAST {
+    public String variableId;
     public boolean isAdd;
     public FieldSelectorAST selector;
     public ExpressionAST value;
 
-    public FieldAST(Region region, boolean isAdd, FieldSelectorAST selector, ExpressionAST value) {
+    public FieldAST(Region region, String variableId, boolean isAdd, FieldSelectorAST selector, ExpressionAST value) {
         super(region);
+        this.variableId = variableId;
         this.isAdd = isAdd;
         this.selector = selector;
         this.value = value;
