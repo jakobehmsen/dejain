@@ -5,7 +5,7 @@ classTransformer:
     (variableId=identifier ASSIGN_OP)? annotations accessModifier? KW_CLASS typeQualifier? 
     (OPEN_BRA members=classTransformerMembers CLOSE_BRA)?;
 classTransformerMembers: classTransformerMemberDefinition*;
-classTransformerMemberDefinition: PLUS? member = classTransformerMember;
+classTransformerMemberDefinition: (PLUS | (variableId=identifier ASSIGN_OP))? member = classTransformerMember;
 classTransformerMember: 
     classTransformerMemberField | classTransformerMemberMethod;
 /*  
