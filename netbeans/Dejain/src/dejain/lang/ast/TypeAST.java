@@ -33,5 +33,5 @@ public interface TypeAST extends AST {
         return getSimpleName(null);
     }
 
-    public TypeAST getFieldType(String fieldName);
+    TypeAST getFieldType(String fieldName);
 }
