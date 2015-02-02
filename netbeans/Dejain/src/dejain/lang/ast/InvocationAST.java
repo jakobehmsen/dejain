@@ -62,7 +62,7 @@ public class InvocationAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void accept(CodeVisitor visitor) {
-        visitor.visitInvocation(this);
+    public <T> T accept(CodeVisitor<T> visitor) {
+        return visitor.visitInvocation(this);
     }
 }

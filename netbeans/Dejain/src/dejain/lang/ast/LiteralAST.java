@@ -26,7 +26,7 @@ public class LiteralAST<T> extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void accept(CodeVisitor visitor) {
-        delegate.accept(visitor, this);
+    public <T> T accept(CodeVisitor<T> visitor) {
+        return delegate.accept(visitor, this);
     }
 }

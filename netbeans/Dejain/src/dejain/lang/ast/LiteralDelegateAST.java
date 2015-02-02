@@ -10,8 +10,8 @@ public interface LiteralDelegateAST<T> {
         }
 
         @Override
-        public void accept(CodeVisitor visitor, LiteralAST<java.lang.String> ctx) {
-            visitor.visitStringLiteral(ctx);
+        public <R> R accept(CodeVisitor<R> visitor, LiteralAST<java.lang.String> ctx) {
+            return visitor.visitStringLiteral(ctx);
         }
     };
     
@@ -22,8 +22,8 @@ public interface LiteralDelegateAST<T> {
         }
 
         @Override
-        public void accept(CodeVisitor visitor, LiteralAST<java.lang.Integer> ctx) {
-            visitor.visitIntegerLiteral(ctx);
+        public <R> R accept(CodeVisitor<R> visitor, LiteralAST<java.lang.Integer> ctx) {
+            return visitor.visitIntegerLiteral(ctx);
         }
     };
     
@@ -34,11 +34,11 @@ public interface LiteralDelegateAST<T> {
         }
 
         @Override
-        public void accept(CodeVisitor visitor, LiteralAST<java.lang.Long> ctx) {
-            visitor.visitLongLiteral(ctx);
+        public <R> R accept(CodeVisitor<R> visitor, LiteralAST<java.lang.Long> ctx) {
+            return visitor.visitLongLiteral(ctx);
         }
     };
     
     TypeAST resultType(Region region);
-    void accept(CodeVisitor visitor, LiteralAST<T> ctx);
+    <R> R accept(CodeVisitor<R> visitor, LiteralAST<T> ctx);
 }

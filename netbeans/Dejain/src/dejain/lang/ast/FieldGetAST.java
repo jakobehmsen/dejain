@@ -29,7 +29,7 @@ public class FieldGetAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void accept(CodeVisitor visitor) {
-        visitor.visitFieldGet(this);
+    public <T> T accept(CodeVisitor<T> visitor) {
+        return visitor.visitFieldGet(this);
     }
 }

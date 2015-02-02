@@ -28,8 +28,8 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void accept(CodeVisitor visitor) {
-        visitor.visitBinaryExpression(this);
+    public <T> T accept(CodeVisitor<T> visitor) {
+        return visitor.visitBinaryExpression(this);
     }
     
     private TypeAST resultType;

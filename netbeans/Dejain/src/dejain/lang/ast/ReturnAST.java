@@ -14,8 +14,8 @@ public class ReturnAST extends AbstractAST implements CodeAST {
     }
 
     @Override
-    public void accept(CodeVisitor visitor) {
-        visitor.visitReturn(this);
+    public <T> T accept(CodeVisitor<T> visitor) {
+        return visitor.visitReturn(this);
     }
 
     @Override

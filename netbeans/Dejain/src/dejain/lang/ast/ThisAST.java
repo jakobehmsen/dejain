@@ -23,7 +23,7 @@ public class ThisAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void accept(CodeVisitor visitor) {
-        visitor.visitThis(this);
+    public <T> T accept(CodeVisitor<T> visitor) {
+        return visitor.visitThis(this);
     }
 }

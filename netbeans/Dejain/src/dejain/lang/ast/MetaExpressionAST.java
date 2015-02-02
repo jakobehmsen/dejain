@@ -30,7 +30,7 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
         this.mp = mp;
     }
     
-    private static int getOpcodesVersion() {
+    public static int getOpcodesVersion() {
         String javaVersion = System.getProperty("java.version");
         String[] javaVersionNumbers = javaVersion.split("\\.|_");
         int major = Integer.parseInt(javaVersionNumbers[0]);
@@ -142,7 +142,7 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void accept(CodeVisitor visitor) {
-        visitor.visitMeta(this);
+    public <T> T accept(CodeVisitor<T> visitor) {
+        return visitor.visitMeta(this);
     }
 }
