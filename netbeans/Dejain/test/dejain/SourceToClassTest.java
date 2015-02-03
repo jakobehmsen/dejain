@@ -411,7 +411,7 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddFieldReturnFieldInMethod() throws IOException {
+    public void testAllClassesAddFieldReturnFieldIntMethod() throws IOException {
         String myFieldName = "myField";
         String myFieldValue = "Hi";
         String expectedResult = myFieldName + "=" + myFieldValue;

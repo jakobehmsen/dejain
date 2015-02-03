@@ -11,7 +11,15 @@ import org.objectweb.asm.Type;
 
 public class NameTypeAST extends AbstractAST implements TypeAST {
     public String name;
+    public String descriptor;
     private Class<?> c;
+
+    public static NameTypeAST fromDescriptor(String descriptor) {
+        NameTypeAST i = new NameTypeAST(null, "");
+        i.name = Type.getType(descriptor).getClassName();
+        i.descriptor = descriptor;
+        return i;
+    }
 
     public NameTypeAST(Region region, String name) {
         super(region);
@@ -56,7 +64,8 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     
     @Override
     public String getDescriptor(String thisClassName) {
-        return Type.getDescriptor(c);
+//        return Type.getDescriptor(c);
+        return descriptor != null ? descriptor : Type.getDescriptor(c);
     }
 
     @Override

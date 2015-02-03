@@ -11,6 +11,11 @@ public class ThisTypeAST extends AbstractAST implements TypeAST {
         super(region);
     }
 
+    public ThisTypeAST(dejain.lang.ASMCompiler.Region region, Scope classInfo) {
+        super(region);
+        this.classInfo = classInfo;
+    }
+
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         classInfo = thisClass;

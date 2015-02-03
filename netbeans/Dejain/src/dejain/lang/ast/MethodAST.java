@@ -162,16 +162,16 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
     private static void toCode(Transformation<ClassNode> c, List<CodeAST> body, MethodCodeGenerator generator, InsnList originalIl) {
         body.forEach(ctx -> {
-            PreparedAST pa = toCode(ctx);
+            PreparedAST pa = toCode(c.getTarget(), ctx);
             pa.generate(c, generator, originalIl);
         });
     }
 
-    public static PreparedAST toCode(CodeAST ctx) {
+    public static PreparedAST toCode(ClassNode thisClass, CodeAST ctx) {
         return ctx.accept(new CodeVisitor<PreparedAST>() {
             @Override
             public PreparedAST visitReturn(ReturnAST ctx) {
-                PreparedExpressionAST expression = toExpression(ctx.expression, true);
+                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, true);
                 
                 return new PreparedAST() {
                     @Override
@@ -231,7 +231,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public PreparedAST visitInvocation(InvocationAST ctx) {
-                return toExpression(ctx, false);
+                return toExpression(thisClass, ctx, false);
 //                ctx.arguments.forEach(a -> a.accept(this));
 //                
 //                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor(c.getTarget().name))).toArray(size -> new Type[size]);
@@ -292,11 +292,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
         });
     }
     
-    public static PreparedExpressionAST toExpression(ExpressionAST expression) {
-        return toExpression(expression, true);
+    public static PreparedExpressionAST toExpression(ClassNode thisClass, ExpressionAST expression) {
+        return toExpression(thisClass, expression, true);
     }
     
-    public static PreparedExpressionAST toExpression(ExpressionAST expression, boolean asExpression) {
+    public static PreparedExpressionAST toExpression(ClassNode thisClass, ExpressionAST expression, boolean asExpression) {
         return expression.accept(new CodeVisitor<PreparedExpressionAST>() {
             @Override
             public PreparedExpressionAST visitReturn(ReturnAST ctx) {
@@ -512,7 +512,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
 //                ctx.body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
 //                ctx.body.stream().collect(Collectors.toList())
-                List<PreparedAST> body = ((List<CodeAST>)ctx.body).stream().map(c -> toCode(c)).collect(Collectors.toList());
+                List<PreparedAST> body = ((List<CodeAST>)ctx.body).stream().map(c -> toCode(thisClass, c)).collect(Collectors.toList());
 //                ctx.body.stream().map(c -> toCode(c)).collect(Collectors.toList());
                 List<TypeAST> returnTypes = body.stream().map(c -> c.returns()).filter(r -> r != null).collect(null);
 //                List<TypeAST> returnTypes = MethodAST.getReturnType(ctx.body);
@@ -587,7 +587,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                             // Expression is derived pr transformation
                             Object astValue = ctx.bodyAsMethod.invoke(metaObject, null);
                             ExpressionAST generatedExpression = ctx.convertToExpression(astValue, ctx.bodyAsMethod.getReturnType());
-                            PreparedAST preparedGeneratedExpression = toExpression(generatedExpression, true);
+                            PreparedAST preparedGeneratedExpression = toExpression(thisClass, generatedExpression, true);
                             preparedGeneratedExpression.generate(c, generator, originalIl);
 //                            generatedExpression.accept(this);
                         } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
@@ -607,7 +607,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 return new PreparedExpressionAST() {
                     @Override
                     public TypeAST resultType() {
-                        return new ThisTypeAST(ctx.getRegion());
+                        return new ThisTypeAST(ctx.getRegion(), new ClassNodeScope(thisClass));
                     }
 
                     @Override
@@ -632,7 +632,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
                         if(asExpression) {
                             target.generate(c, generator, originalIl);
-                            generator.methodNode.getField(Type.getType(ctx.target.resultType().getDescriptor(c.getTarget().name)), ctx.fieldName, Type.getType(ctx.resultType().getDescriptor(c.getTarget().name)));
+                            generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), ctx.fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
                         }
                     }
                 };
