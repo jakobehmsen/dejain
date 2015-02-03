@@ -28,6 +28,7 @@ import dejain.lang.ast.Transformation;
 import dejain.lang.ast.TypeAST;
 import dejain.runtime.asm.ClassTransformer;
 import java.io.ByteArrayInputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -39,6 +40,10 @@ import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.util.ASMifier;
+import org.objectweb.asm.util.CheckClassAdapter;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 /**
  *
@@ -426,6 +431,27 @@ public class SourceToClassTest {
         );
     }
     
+    @Test
+    public void testAllClassesAddMethodFromFields() throws IOException {
+        String src =
+            "class {\n" +
+            "    fields=;\n" +
+            "    \n" +
+            "    +public String getDescription() {\n" +
+            "        return $fields.toString();\n" +
+            "    }\n" +
+            "}\n";
+        
+        String expectedResult = Arrays.asList(TestClass1.class.getDeclaredFields()).stream().map(f -> f.getName()).collect(Collectors.joining(",", "[", "]"));
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            src, 
+            forClass("dejain.TestClass1", 
+                forInstance(imethod("getDescription", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
     private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {
@@ -440,7 +466,18 @@ public class SourceToClassTest {
                 } else {
                     Function<Transformation<ClassNode>, Runnable> classTransformer = module.toClassTransformer();
                     ExhaustiveClassTransformer eTransformer = new ExhaustiveClassTransformer(classTransformer);
-                    return eTransformer.transform(bytes);
+                    byte[] newBytes = eTransformer.transform(bytes);
+                    
+                    InputStream classStream = new ByteArrayInputStream(newBytes);
+                    ClassReader classReader = new ClassReader(classStream);
+//                    classReader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
+                    CheckClassAdapter.verify(classReader, false, new PrintWriter(System.out));
+//                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+//                    classReader.accept(classWriter, 0);
+//                    Textifier asmifier = new Textifier();
+//                    classWriter.
+                    
+                    return newBytes;
                 }
             } catch (IOException ex) {
                 Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -474,7 +511,11 @@ public class SourceToClassTest {
             })
             .toArray(size -> new Class<?>[size]);
         
-        assertTrue(assertion.test(classes));
+        try {
+            assertTrue(assertion.test(classes));
+        } catch(Error e) {
+            throw e;
+        }
         
         // Read all classes
         // Replace interusages with derived classes
