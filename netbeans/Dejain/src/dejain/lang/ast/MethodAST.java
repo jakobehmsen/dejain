@@ -275,7 +275,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 //                    Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
 //                }
                 
-                return null;
+                throw new UnsupportedOperationException();
             }
 
             @Override
@@ -292,7 +292,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
         });
     }
     
-    private static PreparedExpressionAST toExpression(ExpressionAST expression, boolean asExpression) {
+    public static PreparedExpressionAST toExpression(ExpressionAST expression) {
+        return toExpression(expression, true);
+    }
+    
+    public static PreparedExpressionAST toExpression(ExpressionAST expression, boolean asExpression) {
         return expression.accept(new CodeVisitor<PreparedExpressionAST>() {
             @Override
             public PreparedExpressionAST visitReturn(ReturnAST ctx) {
@@ -332,22 +336,19 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
 
             @Override
-            public PreparedExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {                
-                PreparedExpressionAST lhs = ctx.lhs.accept(this);             
-                PreparedExpressionAST rhs = ctx.rhs.accept(this);
-                
-                ctx.lhs.accept(this);
-                ctx.rhs.accept(this);
+            public PreparedExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
+                PreparedExpressionAST lhsTmp = ctx.lhs.accept(this);             
+                PreparedExpressionAST rhsTmp = ctx.rhs.accept(this);
                 
                 TypeAST resultType;
                 
-                if(lhs.resultType().getDescriptor().equals("Ljava/lang/String;") || rhs.resultType().getDescriptor().equals("Ljava/lang/String;")) {
+                if(lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;") || rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;")) {
                     switch(ctx.operator) {
                         case OPERATOR_ADD:
-                            if(!lhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
-                                lhs = expressionAsString(lhs);
-                            if(!rhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
-                                rhs = expressionAsString(rhs);
+                            if(!lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
+                                lhsTmp = expressionAsString(lhsTmp);
+                            if(!rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
+                                rhsTmp = expressionAsString(rhsTmp);
                             resultType = new NameTypeAST(ctx.getRegion(), String.class);
                             break;
                         default:
@@ -355,10 +356,13 @@ public class MethodAST extends AbstractAST implements MemberAST {
 //                            errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
                             break;
                     }
-                } else if(lhs.resultType().getSimpleName().equals("int") && rhs.resultType().getSimpleName().equals("int")) {
+                } else if(lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int")) {
                     resultType = new NameTypeAST(ctx.getRegion(), int.class);
                 } else
                     resultType = null;
+                
+                PreparedExpressionAST lhs = lhsTmp;             
+                PreparedExpressionAST rhs = rhsTmp;
                 
                 return new PreparedExpressionAST() {
                     @Override
@@ -368,6 +372,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                     @Override
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        lhs.generate(c, generator, originalIl);
+                        rhs.generate(c, generator, originalIl);
+                        
                         switch(resultType().getSimpleName(c.getTarget().name)) {
                             case "String":
                                 generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
@@ -443,7 +450,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
             
             private PreparedExpressionAST createInvocation(PreparedExpressionAST target, TypeAST declaringClass, String methodName, List<PreparedExpressionAST> arguments) {
-                Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
+                Class<?>[] parameterTypes = arguments.stream().map(a -> 
+                    ((NameTypeAST)a.resultType()).getType()
+                ).toArray(size -> new Class<?>[size]);
                 Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> Type.getType(a)).toArray(size -> new Type[size]);
         
                 java.lang.reflect.Method method;
@@ -463,8 +472,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                     @Override
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        arguments.forEach(a -> a.generate(c, generator, originalIl));
-                        Method asmMethod = new Method(methodName, Type.VOID_TYPE, argumentTypes);
+                        arguments.forEach(a -> 
+                            a.generate(c, generator, originalIl));
+                        Method asmMethod = new Method(methodName, Type.getType(method.getReturnType()), argumentTypes);
                         if(target != null)
                             generator.methodNode.invokeVirtual(Type.getType(target.resultType().getDescriptor()), asmMethod);
                         else
@@ -532,7 +542,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                 GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
 //                MethodAST.toCode(new Transformation<>(generatorClassNode), body, new MethodAST.MethodCodeGenerator(generatorAdapter, null));
-                body.forEach(c -> c.generate(null, new MethodCodeGenerator(generatorAdapter, null), new InsnList()));
+                body.forEach(c -> c.generate(new Transformation<>(metaObjectClassNode), new MethodCodeGenerator(generatorAdapter, null), new InsnList()));
 
                 SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
                 Class<?> metaObjectClass = classLoader.loadClass();
