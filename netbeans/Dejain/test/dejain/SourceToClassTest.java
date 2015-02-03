@@ -246,9 +246,7 @@ public class SourceToClassTest {
     
     @Test
     public void testAllClassesAdd1PublicMethodReturningClassName() throws IOException {
-        int i1 = 5;
-        String str2 = "i";
-        String expectedResult = i1 + str2;
+        String expectedResult = dejain.TestClass1.class.getName().replace(".", "/");
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             "c=class {+public String getClassName() {return $c.name;}}", 

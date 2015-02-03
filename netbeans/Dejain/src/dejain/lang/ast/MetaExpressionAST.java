@@ -64,49 +64,49 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
-        body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
-        List<TypeAST> returnTypes = MethodAST.getReturnType(body);
-        // Dangerous
-        Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
-
-        // 1) Generate code to generate code
-        ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
-        
-        mp.metaScope.addFields(generatorClassNode);
-        
-        generatorClassNode.version = getOpcodesVersion();
-        generatorClassNode.access = Opcodes.ACC_PUBLIC;
-        generatorClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
-        generatorClassNode.superName = "java/lang/Object";
-        MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
-        generatorClassNode.methods.add(generatorMethod);
-        
-        MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
-        defaultConstructor.visitCode();
-        defaultConstructor.visitVarInsn(Opcodes.ALOAD, 0);
-        defaultConstructor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-        defaultConstructor.visitInsn(Opcodes.RETURN);
-        defaultConstructor.visitMaxs(1,1);
-        defaultConstructor.visitEnd();
-        generatorClassNode.methods.add(defaultConstructor);
-
-        GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
-        MethodAST.toCode(new Transformation<>(generatorClassNode), body, new MethodAST.MethodCodeGenerator(generatorAdapter, null));
-
-        SingleClassLoader classLoader = new SingleClassLoader(generatorClassNode);
-        Class<?> generatorClass2 = classLoader.loadClass();
-        try {
-            bodyAsMethod = generatorClass2.getMethod("generator", null);
-        } catch (NoSuchMethodException ex) {
-            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        mp.generatorCount++;
-        
-        resultType = new NameTypeAST(getRegion(), resultType(bodyAsMethod.getReturnType()));
+//        // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
+//        body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
+//        List<TypeAST> returnTypes = MethodAST.getReturnType(body);
+//        // Dangerous
+//        Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
+//
+//        // 1) Generate code to generate code
+//        ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
+//        
+//        mp.metaScope.addFields(generatorClassNode);
+//        
+//        generatorClassNode.version = getOpcodesVersion();
+//        generatorClassNode.access = Opcodes.ACC_PUBLIC;
+//        generatorClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
+//        generatorClassNode.superName = "java/lang/Object";
+//        MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
+//        generatorClassNode.methods.add(generatorMethod);
+//        
+//        MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+//        defaultConstructor.visitCode();
+//        defaultConstructor.visitVarInsn(Opcodes.ALOAD, 0);
+//        defaultConstructor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+//        defaultConstructor.visitInsn(Opcodes.RETURN);
+//        defaultConstructor.visitMaxs(1,1);
+//        defaultConstructor.visitEnd();
+//        generatorClassNode.methods.add(defaultConstructor);
+//
+//        GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
+//        MethodAST.toCode(new Transformation<>(generatorClassNode), body, new MethodAST.MethodCodeGenerator(generatorAdapter, null));
+//
+//        SingleClassLoader classLoader = new SingleClassLoader(generatorClassNode);
+//        Class<?> generatorClass2 = classLoader.loadClass();
+//        try {
+//            bodyAsMethod = generatorClass2.getMethod("generator", null);
+//        } catch (NoSuchMethodException ex) {
+//            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (SecurityException ex) {
+//            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//
+//        mp.generatorCount++;
+//        
+//        resultType = new NameTypeAST(getRegion(), resultType(bodyAsMethod.getReturnType()));
     }
     
     public ExpressionAST convertToExpression(Object value, Class<?> returnType) {

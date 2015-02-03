@@ -14,10 +14,15 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public String descriptor;
     private Class<?> c;
 
-    public static NameTypeAST fromDescriptor(String descriptor) {
+    public static NameTypeAST fromDescriptor(String descriptor /*Assumed to be fully qualified*/) {
         NameTypeAST i = new NameTypeAST(null, "");
         i.name = Type.getType(descriptor).getClassName();
         i.descriptor = descriptor;
+        try {
+            i.c = Class.forName(i.name);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return i;
     }
 
@@ -77,7 +82,8 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public TypeAST getFieldType(String fieldName) {
         try {
             Field field = c.getField(fieldName);
-            return new NameTypeAST(getRegion(), field.getType());
+//            return new NameTypeAST(getRegion(), field.getType());
+            return NameTypeAST.fromDescriptor(Type.getType(field.getType()).getDescriptor());
         } catch (NoSuchFieldException | SecurityException ex) {
             Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
         }

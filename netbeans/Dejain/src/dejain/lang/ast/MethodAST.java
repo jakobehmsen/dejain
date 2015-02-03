@@ -179,6 +179,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         expression.generate(c, generator, originalIl);
                         generator.methodNode.returnValue();
                     }
+
+                    @Override
+                    public TypeAST returns() {
+                        return expression.resultType();
+                    }
                 };
                 
 //                ctx.expression.accept(this);
@@ -512,18 +517,18 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
 //                ctx.body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
 //                ctx.body.stream().collect(Collectors.toList())
-                List<PreparedAST> body = ((List<CodeAST>)ctx.body).stream().map(c -> toCode(thisClass, c)).collect(Collectors.toList());
-//                ctx.body.stream().map(c -> toCode(c)).collect(Collectors.toList());
-                List<TypeAST> returnTypes = body.stream().map(c -> c.returns()).filter(r -> r != null).collect(null);
-//                List<TypeAST> returnTypes = MethodAST.getReturnType(ctx.body);
-                // Dangerous
-                Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
 
                 // 1) Generate code to generate code
                 ClassNode metaObjectClassNode = new ClassNode(Opcodes.ASM5);
 
                 ctx.mp.metaScope.addFields(metaObjectClassNode);
-
+                
+                List<PreparedAST> body = ((List<CodeAST>)ctx.body).stream().map(c -> 
+                    toCode(metaObjectClassNode, c)).collect(Collectors.toList());
+                List<TypeAST> returnTypes = body.stream().map(c -> 
+                    c.returns()).filter(r -> r != null).collect(Collectors.toList());
+                Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
+                
                 metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
                 metaObjectClassNode.access = Opcodes.ACC_PUBLIC;
                 metaObjectClassNode.name = "dejain/generator/ASMGenerator" + ctx.mp.generatorCount;
@@ -546,15 +551,15 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                 SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
                 Class<?> metaObjectClass = classLoader.loadClass();
-                java.lang.reflect.Method bodyAsMethod;
+                java.lang.reflect.Method bodyAsMethodTmp = null;
                 
                 try {
-                    bodyAsMethod = metaObjectClass.getMethod("generator", null);
-                } catch (NoSuchMethodException ex) {
-                    Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
+                    bodyAsMethodTmp = metaObjectClass.getMethod("generator", null);
+                } catch (NoSuchMethodException | SecurityException ex) {
                     Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                
+                java.lang.reflect.Method bodyAsMethod = bodyAsMethodTmp;
 
                 ctx.mp.generatorCount++;
 
@@ -585,8 +590,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
                             }
 
                             // Expression is derived pr transformation
-                            Object astValue = ctx.bodyAsMethod.invoke(metaObject, null);
-                            ExpressionAST generatedExpression = ctx.convertToExpression(astValue, ctx.bodyAsMethod.getReturnType());
+                            Object astValue = bodyAsMethod.invoke(metaObject, null);
+                            ExpressionAST generatedExpression = ctx.convertToExpression(astValue, bodyAsMethod.getReturnType());
                             PreparedAST preparedGeneratedExpression = toExpression(thisClass, generatedExpression, true);
                             preparedGeneratedExpression.generate(c, generator, originalIl);
 //                            generatedExpression.accept(this);
