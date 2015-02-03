@@ -36,27 +36,27 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        resultType = new NameTypeAST(getRegion(), Void.class);
-        
-        lhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        rhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        
-        if(lhs.resultType().getDescriptor().equals("Ljava/lang/String;") || rhs.resultType().getDescriptor().equals("Ljava/lang/String;")) {
-            switch(operator) {
-                case OPERATOR_ADD:
-                    if(!lhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
-                        lhs = expressionAsString(lhs);
-                    if(!rhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
-                        rhs = expressionAsString(rhs);
-                    resultType = new NameTypeAST(getRegion(), String.class);
-                    break;
-                default:
-                    errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
-                    break;
-            }
-        } else if(lhs.resultType().getSimpleName().equals("int") && rhs.resultType().getSimpleName().equals("int")) {
-            resultType = new NameTypeAST(getRegion(), int.class);
-        }
+//        resultType = new NameTypeAST(getRegion(), Void.class);
+//        
+//        lhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
+//        rhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
+//        
+//        if(lhs.resultType().getDescriptor().equals("Ljava/lang/String;") || rhs.resultType().getDescriptor().equals("Ljava/lang/String;")) {
+//            switch(operator) {
+//                case OPERATOR_ADD:
+//                    if(!lhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
+//                        lhs = expressionAsString(lhs);
+//                    if(!rhs.resultType().getDescriptor().equals("Ljava/lang/String;"))
+//                        rhs = expressionAsString(rhs);
+//                    resultType = new NameTypeAST(getRegion(), String.class);
+//                    break;
+//                default:
+//                    errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
+//                    break;
+//            }
+//        } else if(lhs.resultType().getSimpleName().equals("int") && rhs.resultType().getSimpleName().equals("int")) {
+//            resultType = new NameTypeAST(getRegion(), int.class);
+//        }
     }
     
     private String getOperatorString() {
