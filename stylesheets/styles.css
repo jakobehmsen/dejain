@@ -23,7 +23,7 @@ body {
   padding: 50px 0;
   margin: 0;
   font: 16px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #555;
+  color: #333;
   font-weight: 300;
   /*background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAeCAYAAABNChwpAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAAAUdEVYdENyZWF0aW9uIFRpbWUAMy82LzEygrTcTAAAAFRJREFUSIljfPDggZRf5RIGGNjUHsNATz6jXmSL1Kb2GLiAX+USBnrymRgGGDCORgFmoNAXjEbBaBSMRsFoFIxGwWgUjEbBaBSMRsFoFIxGwWgUAABYNujumib3wAAAAABJRU5ErkJggg==') fixed;
   */
@@ -92,9 +92,9 @@ header.without-description h1 {
 }
 header p {
   margin: 0;
-  color: #61778B;
+  color: #374857;
   width: 300px;
-  font-size: 13px;
+  font-size: 17px;
 }
 header p.view {
   display: none;
