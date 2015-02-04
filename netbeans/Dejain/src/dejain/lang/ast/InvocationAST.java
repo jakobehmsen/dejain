@@ -32,12 +32,12 @@ public class InvocationAST extends AbstractAST implements ExpressionAST {
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        if(target != null)
-            target.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        else
-            declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        
-        arguments.forEach(a -> a.resolve(thisClass, expectedResultType, resolver, errorMessages));
+//        if(target != null)
+//            target.resolve(thisClass, expectedResultType, resolver, errorMessages);
+//        else
+//            declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
+//        
+//        arguments.forEach(a -> a.resolve(thisClass, expectedResultType, resolver, errorMessages));
         
 //        Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
 //        
