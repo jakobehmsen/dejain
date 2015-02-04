@@ -460,14 +460,25 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 ).toArray(size -> new Class<?>[size]);
                 Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> Type.getType(a)).toArray(size -> new Type[size]);
         
-                java.lang.reflect.Method method;
+                java.lang.reflect.Method tmpMethod;
+                Type tmpTargetType = null;
 
                 if(target != null) {
                     // Generalize getAccessibleMethod
-                    method = MethodUtils.getAccessibleMethod(((NameTypeAST)target.resultType()).getType(), methodName, parameterTypes);
+                    tmpTargetType = Type.getType(target.resultType().getDescriptor());
+                    tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)target.resultType()).getType(), methodName, parameterTypes);
+                    if(target != null) {
+                        // Generalize getAccessibleMethod
+                        tmpTargetType = Type.getType(Object.class);
+                        tmpMethod = MethodUtils.getAccessibleMethod(Object.class, methodName, parameterTypes);
+                    }
                 } else {
-                    method = MethodUtils.getAccessibleMethod(((NameTypeAST)declaringClass).getType(), methodName, parameterTypes);
+                    tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)declaringClass).getType(), methodName, parameterTypes);
                 }
+                
+                Type targetType = tmpTargetType;
+                
+                java.lang.reflect.Method method = tmpMethod;
                 
                 return new PreparedExpressionAST() {
                     @Override
@@ -477,11 +488,13 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                     @Override
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        target.generate(c, generator, originalIl);
+                        
                         arguments.forEach(a -> 
                             a.generate(c, generator, originalIl));
                         Method asmMethod = new Method(methodName, Type.getType(method.getReturnType()), argumentTypes);
                         if(target != null)
-                            generator.methodNode.invokeVirtual(Type.getType(target.resultType().getDescriptor()), asmMethod);
+                            generator.methodNode.invokeVirtual(targetType, asmMethod);
                         else
                             generator.methodNode.invokeStatic(Type.getType(declaringClass.getDescriptor()), asmMethod);
                         
