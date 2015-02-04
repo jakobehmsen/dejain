@@ -27,7 +27,8 @@ public class IfAllWithin<T, R> implements Function<T, Runnable> {
                 .collect(Collectors.toList());
         
         List<Runnable> tranformations = applicableObjects.stream()
-            .map(o -> transformer.apply(obj, o)).collect(Collectors.toList());
+            .map(o -> 
+                transformer.apply(obj, o)).collect(Collectors.toList());
         
         return applicableObjects.size() == objects.size()
             ? () -> tranformations.forEach(r -> r.run())  //() -> applicableObjects.forEach(o -> transformer.accept(obj, o))

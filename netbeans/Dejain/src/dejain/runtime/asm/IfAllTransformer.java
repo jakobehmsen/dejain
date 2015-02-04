@@ -17,7 +17,8 @@ public class IfAllTransformer<T> implements CompositeTransformer<T> {
     public Runnable apply(T obj) {
         List<Runnable> applicableTransformers = 
             transformers.stream()
-                .map(t -> t.apply(obj))
+                .map(t -> 
+                    t.apply(obj))
                 .filter(tr -> tr != null)
                 .collect(Collectors.toList());
         

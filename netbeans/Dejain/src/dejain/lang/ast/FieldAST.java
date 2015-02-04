@@ -57,28 +57,39 @@ public class FieldAST extends AbstractAST implements MemberAST {
         if(!isAdd) {
             IfAllTransformer<Transformation<ClassNode>> fieldsTransformerSequence = new IfAllTransformer<>();
             
-            fieldsTransformerSequence.addTransformer(c -> () -> {
+            fieldsTransformerSequence.addTransformer(c -> {
                 if(variableId != null)
                     c.putVariableValue(variableId, new ArrayList<>());
+                return() -> { };
             });
             
             Predicate<FieldNode> fieldFilter = f -> true;
             
             if(selector.accessModifier != null)
                 fieldFilter = fieldFilter.and(f -> (f.access & selector.accessModifier) != 0);
-            if(selector.isStatic != null)
-                fieldFilter = fieldFilter.and(f -> (f.access & Opcodes.ACC_STATIC) != 0);
+            if(selector.isStatic != null) {
+                if(selector.isStatic)
+                    fieldFilter = fieldFilter.and(f -> (f.access & Opcodes.ACC_STATIC) != 0);
+                else
+                    fieldFilter = fieldFilter.and(f -> (f.access & Opcodes.ACC_STATIC) == 0);
+            }
             if(selector.fieldType != null)
                 fieldFilter = fieldFilter.and(f -> Type.getType(f.desc).getClassName().equals(selector.fieldType.getDescriptor()));
             if(selector.name != null)
                 fieldFilter = fieldFilter.and(f -> f.name.equals(selector.name));
+            
+            Predicate<FieldNode> ff = fieldFilter;
+            fieldFilter = f ->
+                ff.test(f);
             
             fieldsTransformerSequence.addTransformer(new IfAllWithin<>(c -> c.getTarget().fields, fieldFilter, (c, f) -> {
                 if(variableId != null)
                     ((ArrayList<FieldNode>)c.getVariableValue(variableId)).add(f);
                 
                 return () -> { };
-            }));            
+            }));
+            
+            classTransformer.addTransformer(fieldsTransformerSequence);
         } else {
             classTransformer.addTransformer(c -> {
                 return () -> {
