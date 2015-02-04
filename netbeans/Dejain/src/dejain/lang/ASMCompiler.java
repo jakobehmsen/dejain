@@ -405,6 +405,10 @@ public class ASMCompiler {
                                 break;
                             case DejainParser.RULE_invocation:
                                 InvocationContext invocationCtx = (InvocationContext)chainCtx;
+                                String methodName = invocationCtx.identifier().getText();
+                                List<ExpressionAST> arguments = invocationCtx.arguments().expression().stream()
+                                    .map(eCtx -> getExpression(eCtx, mp)).collect(Collectors.toList());
+                                result = new InvocationAST(new Region(chainCtx), result, null, methodName, arguments, null);
                                 break;
                         }
                     }
