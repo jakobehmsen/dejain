@@ -165,6 +165,14 @@ public class ASMCompiler {
                         memberCtx.member.accept(new DejainBaseVisitor<Object>() {
                             @Override
                             public Object visitClassTransformerMemberField(DejainParser.ClassTransformerMemberFieldContext ctx) {
+                                if(variableId != null) {
+                                    String variableName = variableId;
+                                    Region r = new Region(ctx);
+                                    Class<?> c = List.class;
+                                    NameTypeAST t = new NameTypeAST(r, c);
+                                    patternVariables.put(variableName, t);
+                                }
+                                
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
                                 TypeAST fieldType = ctx.typeQualifier() != null ? new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText()) : null;
