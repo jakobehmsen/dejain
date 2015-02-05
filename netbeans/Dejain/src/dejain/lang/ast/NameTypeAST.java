@@ -51,6 +51,30 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public NameTypeAST(Region region, String name) {
         super(region);
         this.name = name;
+        descriptor = getDescriptorFromName(name);
+        try {
+            c = getClassFromName(name);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private static String getDescriptorFromName(String name) {
+        switch(name) {
+            case "int":
+                return "I";
+            default:
+                return "L" + name + ";";
+        }
+    }
+    
+    private static Class<?> getClassFromName(String name) throws ClassNotFoundException {
+        switch(name) {
+            case "int":
+                return int.class;
+            default:
+                return Class.forName(name);
+        }
     }
 
     public NameTypeAST(Region region, Class<?> c) {
