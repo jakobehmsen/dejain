@@ -169,7 +169,8 @@ public class ASMCompiler {
                                     String variableName = variableId;
                                     Region r = new Region(ctx);
                                     Class<?> c = List.class;
-                                    NameTypeAST t = new NameTypeAST(r, c);
+//                                    NameTypeAST t = new NameTypeAST(r, c);
+                                    NameTypeAST t = NameTypeAST.fromDescriptor(Type.getDescriptor(c), new TypeAST[]{NameTypeAST.fromDescriptor(Type.getDescriptor(FieldNode.class))});
                                     patternVariables.put(variableName, t);
                                 }
                                 
