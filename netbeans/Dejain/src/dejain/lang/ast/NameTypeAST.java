@@ -51,18 +51,32 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public NameTypeAST(Region region, String name) {
         super(region);
         this.name = name;
-        descriptor = getDescriptorFromName(name);
-        try {
-            c = getClassFromName(name);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        descriptor = getDescriptorFromName(name);
+//        try {
+//            c = getClassFromName(name);
+//        } catch (ClassNotFoundException ex) {
+//            Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
     
     private static String getDescriptorFromName(String name) {
         switch(name) {
+            case "boolean":
+                return "Z";
+            case "byte":
+                return "B";
+            case "short":
+                return "S";
             case "int":
                 return "I";
+            case "long":
+                return "J";
+            case "float":
+                return "F";
+            case "double":
+                return "D";
+            case "char":
+                return "C";
             default:
                 return "L" + name + ";";
         }
@@ -89,6 +103,7 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
 //            name = resolver.resolveClassName(name);
             c = resolver.resolveType(name);
             name = c.getName().replace(".", "/");
+            descriptor = getDescriptorFromName(name);
         } catch (ClassNotFoundException ex) {
             errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve type " + name + "."));
         }

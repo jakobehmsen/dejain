@@ -19,7 +19,8 @@ public class VariableDeclarationAST extends AbstractAST implements ExpressionAST
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        
+        type.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        value.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
     @Override

@@ -38,8 +38,8 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
 //        resultType = new NameTypeAST(getRegion(), Void.class);
 //        
-//        lhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
-//        rhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        lhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        rhs.resolve(thisClass, expectedResultType, resolver, errorMessages);
 //        
 //        if(lhs.resultType().getDescriptor().equals("Ljava/lang/String;") || rhs.resultType().getDescriptor().equals("Ljava/lang/String;")) {
 //            switch(operator) {

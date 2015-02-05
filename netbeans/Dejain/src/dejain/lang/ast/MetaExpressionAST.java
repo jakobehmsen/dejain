@@ -65,7 +65,7 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
 //        // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
-//        body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
+        body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
 //        List<TypeAST> returnTypes = MethodAST.getReturnType(body);
 //        // Dangerous
 //        Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
