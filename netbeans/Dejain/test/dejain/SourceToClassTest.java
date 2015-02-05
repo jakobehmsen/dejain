@@ -432,7 +432,7 @@ public class SourceToClassTest {
             "class {\n" +
             "    fields=;\n" +
             "    \n" +
-            "    +public Object getDescription() {\n" +
+            "    +public String getDescription() {\n" +
             "        return $fields.get(0).name;\n" +
             "    }\n" +
             "}\n";
@@ -442,6 +442,29 @@ public class SourceToClassTest {
             src, 
             forClass("dejain.TestClass1", 
                 forInstance(imethod("getDescription", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodReturnValueOfMetaVariable() throws IOException {
+        int expectedResult = 5;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() {\n" +
+            "        return ${\n" +
+            "            int i = 5;\n" +
+            "            return i;\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            src, 
+            forClass("dejain.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
             )
         );
     }
