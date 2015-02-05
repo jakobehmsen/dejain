@@ -4,17 +4,28 @@ import dejain.lang.ASMCompiler;
 import dejain.lang.ASMCompiler.Region;
 import dejain.lang.ClassResolver;
 import java.lang.reflect.Field;
+import java.lang.reflect.TypeVariable;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import javassist.bytecode.SignatureAttribute.TypeParameter;
 import org.objectweb.asm.Type;
 
 public class NameTypeAST extends AbstractAST implements TypeAST {
     public String name;
     public String descriptor;
     private Class<?> c;
+    private TypeAST[] typeParameters;
+    private Hashtable<String, TypeAST> typeVariableNameToTypeMap = new Hashtable<>();
 
     public static NameTypeAST fromDescriptor(String descriptor /*Assumed to be fully qualified*/) {
+        return fromDescriptor(descriptor, new TypeAST[]{});
+    }
+
+    public static NameTypeAST fromDescriptor(String descriptor /*Assumed to be fully qualified*/, TypeAST[] typeParameters) {
         NameTypeAST i = new NameTypeAST(null, "");
         i.name = Type.getType(descriptor).getClassName();
         i.descriptor = descriptor;
@@ -22,6 +33,17 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
             i.c = Class.forName(i.name);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        i.typeParameters = typeParameters;
+        if(typeParameters.length > 0) {
+            TypeVariable[] tvs = i.c.getTypeParameters();
+            for(int j = 0; j < tvs.length; j++) {
+                String name = tvs[j].getName();
+                String tname = tvs[j].getTypeName();
+                TypeAST arg = typeParameters[j];
+                
+                i.typeVariableNameToTypeMap.put(name, arg);
+            }
         }
         return i;
     }
@@ -54,7 +76,14 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
 
     @Override
     public String toString() {
-        return name;
+        String typeParametersStr = "";
+        if(typeParameters.length > 0) {
+            typeParametersStr = IntStream.range(0, typeParameters.length).mapToObj(i -> {
+                String name = c.getTypeParameters()[i].getName();
+                return typeVariableNameToTypeMap.get(name).toString();
+            }).collect(Collectors.joining(",", "<", ">"));
+        }
+        return name + typeParametersStr;
     }
 
     @Override
@@ -82,6 +111,13 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public TypeAST getFieldType(String fieldName) {
         try {
             Field field = c.getField(fieldName);
+            String fieldTypeDescriptor;
+            if(field.getGenericType() instanceof TypeVariable) {
+                // Must be typecast
+                TypeVariable tv = (TypeVariable)field.getGenericType();
+                fieldTypeDescriptor = typeVariableNameToTypeMap.get(tv.getName()).getDescriptor();
+            } else
+                fieldTypeDescriptor = Type.getType(field.getType()).getDescriptor();
 //            return new NameTypeAST(getRegion(), field.getType());
             return NameTypeAST.fromDescriptor(Type.getType(field.getType()).getDescriptor());
         } catch (NoSuchFieldException | SecurityException ex) {
@@ -89,5 +125,10 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         }
         
         return null;
+    }
+
+    @Override
+    public TypeAST getTypeArgument(String name) {
+        return typeVariableNameToTypeMap.get(name);
     }
 }

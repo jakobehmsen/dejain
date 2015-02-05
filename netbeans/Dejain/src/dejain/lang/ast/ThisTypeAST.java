@@ -46,4 +46,9 @@ public class ThisTypeAST extends AbstractAST implements TypeAST {
     public TypeAST getFieldType(String fieldName) {
         return classInfo.getFieldType(fieldName);
     }
+
+    @Override
+    public TypeAST getTypeArgument(String name) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
