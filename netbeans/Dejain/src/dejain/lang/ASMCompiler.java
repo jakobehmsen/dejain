@@ -31,11 +31,13 @@ import dejain.lang.ast.FieldGetAST;
 import dejain.lang.ast.FieldSetAST;
 import dejain.lang.ast.InvocationAST;
 import dejain.lang.ast.LiteralDelegateAST;
+import dejain.lang.ast.LookupAST;
 import dejain.lang.ast.MemberVisitor;
 import dejain.lang.ast.MetaScope;
 import dejain.lang.ast.NameTypeAST;
 import dejain.lang.ast.ThisAST;
 import dejain.lang.ast.TypeAST;
+import dejain.lang.ast.VariableDeclarationAST;
 import dejain.runtime.asm.ClassTransformer;
 import dejain.runtime.asm.ClassTransformerSequence;
 import dejain.runtime.asm.CommonClassTransformer;
@@ -363,6 +365,20 @@ public class ASMCompiler {
                 
                 return new ReturnAST(new Region(ctx), expression);
             }
+
+            @Override
+            public ExpressionAST visitVariableDeclaration(DejainParser.VariableDeclarationContext ctx) {
+                String type = ctx.typeQualifier().getText();
+                String name = ctx.identifier().getText();
+                
+                ExpressionAST value;
+                if(ctx.expression() != null)
+                    value = getExpression(ctx.expression(), mp);
+                else
+                    value = null;
+                
+                return new VariableDeclarationAST(new Region(ctx), name, new NameTypeAST(new Region(ctx.typeQualifier()), type), value);
+            }
         });
         
         return r;
@@ -463,16 +479,18 @@ public class ASMCompiler {
             @Override
             public ExpressionAST visitLookup(DejainParser.LookupContext ctx) {
                 String name = ctx.getText();
+                return new LookupAST(new Region(ctx), name);
+//                boolean isVariable = false;
+//                
+//                
+//                
+//                if(isVariable) {
+//                    // What to do?...
+//                } else {
+//                    return new FieldGetAST(new Region(ctx), new ThisAST(new Region(ctx)), name);
+//                }
                 
-                boolean isVariable = false;
-                
-                if(isVariable) {
-                    // What to do?...
-                } else {
-                    return new FieldGetAST(new Region(ctx), new ThisAST(new Region(ctx)), name);
-                }
-                
-                return super.visitLookup(ctx); //To change body of generated methods, choose Tools | Templates.
+//                return super.visitLookup(ctx); //To change body of generated methods, choose Tools | Templates.
             }
         });
     }
