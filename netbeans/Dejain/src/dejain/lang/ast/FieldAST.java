@@ -8,6 +8,7 @@ import dejain.runtime.asm.CompositeTransformer;
 import dejain.runtime.asm.IfAllTransformer;
 import dejain.runtime.asm.IfAllWithin;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -109,7 +110,7 @@ public class FieldAST extends AbstractAST implements MemberAST {
                                     if(name.equals("<init>")) {
                                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
                                         generatorAdapter.loadThis();
-                                        PreparedAST pa = MethodAST.toExpression(new ClassNodeScope(c.getTarget()), FieldAST.this.value);
+                                        PreparedAST pa = MethodAST.toExpression(new ClassNodeScope(c.getTarget()), FieldAST.this.value, new Hashtable<>());
                                         pa.generate(c, new MethodAST.MethodCodeGenerator(generatorAdapter, null), new InsnList());
                                         generatorAdapter.putField(Type.getType(c.getTarget().name), selector.name, Type.getType(selector.fieldType.getDescriptor(c.getTarget().name)));
                                     }
