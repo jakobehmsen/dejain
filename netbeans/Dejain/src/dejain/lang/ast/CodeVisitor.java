@@ -11,4 +11,6 @@ public interface CodeVisitor<T> {
     T visitMeta(MetaExpressionAST ctx);
     T visitThis(ThisAST ctx);
     T visitFieldGet(FieldGetAST ctx);
+    T visitVariableDeclaration(VariableDeclarationAST ctx);
+    T visitLookup(LookupAST ctx);
 }
