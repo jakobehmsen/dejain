@@ -25,25 +25,19 @@ import dejain.lang.CommonClassResolver;
 import dejain.lang.ExhaustiveClassTransformer;
 import dejain.lang.ast.ModuleAST;
 import dejain.lang.ast.Transformation;
-import dejain.lang.ast.TypeAST;
-import dejain.runtime.asm.ClassTransformer;
 import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.util.ASMifier;
 import org.objectweb.asm.util.CheckClassAdapter;
-import org.objectweb.asm.util.Textifier;
-import org.objectweb.asm.util.TraceClassVisitor;
 
 /**
  *
@@ -430,17 +424,19 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodFromFields() throws IOException {
+    public void testAllClassesAddMethodReturnNameOfSingleField() throws IOException {
+        Field singleField = TestClass1.class.getDeclaredFields()[0];
+        String expectedResult = singleField.getName();
+        
         String src =
             "class {\n" +
             "    fields=;\n" +
             "    \n" +
-            "    +public String getDescription() {\n" +
-            "        return $fields.toString();\n" +
+            "    +public Object getDescription() {\n" +
+            "        return $fields.get(0).name;\n" +
             "    }\n" +
             "}\n";
         
-        String expectedResult = Arrays.asList(TestClass1.class.getDeclaredFields()).stream().map(f -> f.getName()).collect(Collectors.joining(",", "[", "]"));
         testSourceToClasses(
             new String[]{"dejain.TestClass1"}, 
             src, 
