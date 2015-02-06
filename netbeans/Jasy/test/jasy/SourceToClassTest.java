@@ -47,9 +47,9 @@ public class SourceToClassTest {
     @Test
     public void testAllClassesAdd1PublicPrimitiveField() throws IOException {
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public float someField2;}", 
-            forClass("dejain.TestClass1", chasFieldWhere(
+            forClass("jasy.TestClass1", chasFieldWhere(
                 fname(is("someField2"))
                 .and(ftype(is(float.class)))
                 .and(fmodifiers(isPublic()))
@@ -61,9 +61,9 @@ public class SourceToClassTest {
     @Test
     public void testAllClassesAdd1ProtectedPrimitiveField() throws IOException {
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+protected float someField2;}", 
-            forClass("dejain.TestClass1", chasFieldWhere(
+            forClass("jasy.TestClass1", chasFieldWhere(
                 fname(is("someField2"))
                 .and(ftype(is(float.class)))
                 .and(fmodifiers(isProtected()))
@@ -75,9 +75,9 @@ public class SourceToClassTest {
     @Test
     public void testAllClassesAdd1PrivatePrimitiveField() throws IOException {
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+private float someField2;}", 
-            forClass("dejain.TestClass1", chasFieldWhere(
+            forClass("jasy.TestClass1", chasFieldWhere(
                 fname(is("someField2"))
                 .and(ftype(is(float.class)))
                 .and(fmodifiers(isPrivate()))
@@ -89,9 +89,9 @@ public class SourceToClassTest {
     @Test
     public void testAllClassesAdd1PublicStaticPrimitiveField() throws IOException {
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public static float someField2;}", 
-            forClass("dejain.TestClass1", chasFieldWhere(
+            forClass("jasy.TestClass1", chasFieldWhere(
                 fname(is("someField2"))
                 .and(ftype(is(float.class)))
                 .and(fmodifiers(isPublic()))
@@ -103,9 +103,9 @@ public class SourceToClassTest {
     @Test
     public void testAllClassesAdd1PublicObjectField() throws IOException {
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String someField2;}", 
-            forClass("dejain.TestClass1", chasFieldWhere(
+            forClass("jasy.TestClass1", chasFieldWhere(
                 fname(is("someField2"))
                 .and(ftype(is(String.class)))
                 .and(fmodifiers(isPublic()))
@@ -118,9 +118,9 @@ public class SourceToClassTest {
     public void testAllClassesAdd1PublicMethodReturningStringLiteral() throws IOException {
         String expectedResult = "Hi";
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String toString() {return \"" + expectedResult + "\";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
                     .and(rreturnType(is(String.class)))
@@ -137,9 +137,9 @@ public class SourceToClassTest {
     public void testAllClassesAdd1PublicMethodReturningGeneratedStringLiteral() throws IOException {
         String expectedResult = "Hi";
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String toString() {return $\"" + expectedResult + "\";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
                     .and(rreturnType(is(String.class)))
@@ -160,9 +160,9 @@ public class SourceToClassTest {
         
         String strConcSrc = "\"" + str1 + "\" + \"" + str2 + "\"";
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String toString() {return $" + strConcSrc + ";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
                     .and(rreturnType(is(String.class)))
@@ -181,9 +181,9 @@ public class SourceToClassTest {
         int i2 = 7;
         int expectedResult = i1 + i2;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public int toInt() {return " + i1 + " + $" + i2 + ";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toInt"))
                     .and(rreturnType(is(int.class)))
@@ -202,9 +202,9 @@ public class SourceToClassTest {
         String str2 = "i";
         String expectedResult = str1 + str2;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String toString() {return \"" + str1 + "\" + \"" + str2 + "\";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
                     .and(rreturnType(is(String.class)))
@@ -223,9 +223,9 @@ public class SourceToClassTest {
         String str2 = "i";
         String expectedResult = i1 + str2;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String toString() {return " + i1 + " + \"" + str2 + "\";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
                     .and(rreturnType(is(String.class)))
@@ -242,9 +242,9 @@ public class SourceToClassTest {
     public void testAllClassesAdd1PublicMethodReturningClassName() throws IOException {
         String expectedResult = jasy.TestClass1.class.getName().replace(".", "/");
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "c=class {+public String getClassName() {return $c.name;}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("getClassName"))
                     .and(rreturnType(is(String.class)))
@@ -264,9 +264,9 @@ public class SourceToClassTest {
         String str3 = "i";
         String expectedResult = i1 + i2 + str3;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String toString() {return " + i1 + " + " + i2 + " + \"" + str3 + "\";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
                     .and(rreturnType(is(String.class)))
@@ -288,9 +288,9 @@ public class SourceToClassTest {
         int i5 = 7;
         String expectedResult = i1 + i2 + str3 + i4 + i5;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public String toString() {return " + i1 + " + " + i2 + " + \"" + str3 + "\" + " + i4 + " + " + i5 + ";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toString"))
                     .and(rreturnType(is(String.class)))
@@ -309,9 +309,9 @@ public class SourceToClassTest {
         int i2 = 4;
         int expectedResult = i1 + i2;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+public int toInt() {return " + i1 + " + " + i2 + ";}}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasMethodWhere(
                     mname(is("toInt"))
                     .and(rreturnType(is(int.class)))
@@ -330,9 +330,9 @@ public class SourceToClassTest {
         int i = 7;
         String expectedResult = str + i;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+private String myField = \"" + str + "\" + " + i + ";}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasFieldWhere(
                     fname(is("myField"))
                     .and(ftype(is(String.class)))
@@ -349,9 +349,9 @@ public class SourceToClassTest {
     public void testAllClassesAdd1IntFieldWithValue() throws IOException {
         int expectedResult = 7;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+private int myField = " + expectedResult + ";}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasFieldWhere(
                     fname(is("myField"))
                     .and(ftype(is(int.class)))
@@ -368,9 +368,9 @@ public class SourceToClassTest {
     public void testAllClassesAdd1ShortFieldWithValue() throws IOException {
         short expectedResult = 7;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+private short myField = " + expectedResult + ";}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasFieldWhere(
                     fname(is("myField"))
                     .and(ftype(is(short.class)))
@@ -387,9 +387,9 @@ public class SourceToClassTest {
     public void testAllClassesAdd1LongFieldWithValue() throws IOException {
         long expectedResult = 3000000000L;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+private long myField = " + expectedResult + "L;}", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasFieldWhere(
                     fname(is("myField"))
                     .and(ftype(is(long.class)))
@@ -408,9 +408,9 @@ public class SourceToClassTest {
         String myFieldValue = "Hi";
         String expectedResult = myFieldName + "=" + myFieldValue;
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             "class {+private String " + myFieldName + " = \"" + myFieldValue + "\"; +public String toString() {return \"" + myFieldName+ "=\" + " + myFieldName + ";} }", 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 chasFieldWhere(
                     fname(is("myField"))
                     .and(ftype(is(String.class)))
@@ -438,9 +438,9 @@ public class SourceToClassTest {
             "}\n";
         
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             src, 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 forInstance(imethod("getDescription", invocationResult(is(expectedResult))))
             )
         );
@@ -461,9 +461,9 @@ public class SourceToClassTest {
             "}\n";
         
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             src, 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 forInstance(imethod("getValue", invocationResult(is(expectedResult))))
             )
         );
@@ -482,9 +482,9 @@ public class SourceToClassTest {
             "}\n";
         
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             src, 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 forInstance(imethod("getValue", invocationResult(is(expectedResult))))
             )
         );
@@ -504,9 +504,9 @@ public class SourceToClassTest {
             "}\n";
         
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             src, 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 forInstance(imethod("getValue", invocationResult(is(expectedResult))))
             )
         );
@@ -525,9 +525,9 @@ public class SourceToClassTest {
             "}\n";
         
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             src, 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 forInstance(imethod("getValue", invocationResult(is(expectedResult))))
             )
         );
@@ -549,9 +549,9 @@ public class SourceToClassTest {
             "}\n";
         
         testSourceToClasses(
-            new String[]{"dejain.TestClass1"}, 
+            new String[]{"jasy.TestClass1"}, 
             src, 
-            forClass("dejain.TestClass1", 
+            forClass("jasy.TestClass1", 
                 forInstance(imethod("getValue", invocationResult(is(expectedResult))))
             )
         );
