@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
-public class DejainParser extends Parser {
+public class JasyParser extends Parser {
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
@@ -75,7 +75,7 @@ public class DejainParser extends Parser {
 	@Override
 	public ATN getATN() { return _ATN; }
 
-	public DejainParser(TokenStream input) {
+	public JasyParser(TokenStream input) {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
@@ -92,7 +92,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_program; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitProgram(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitProgram(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -136,8 +136,8 @@ public class DejainParser extends Parser {
 		public ClassTransformerMembersContext classTransformerMembers() {
 			return getRuleContext(ClassTransformerMembersContext.class,0);
 		}
-		public TerminalNode KW_CLASS() { return getToken(DejainParser.KW_CLASS, 0); }
-		public TerminalNode ASSIGN_OP() { return getToken(DejainParser.ASSIGN_OP, 0); }
+		public TerminalNode KW_CLASS() { return getToken(JasyParser.KW_CLASS, 0); }
+		public TerminalNode ASSIGN_OP() { return getToken(JasyParser.ASSIGN_OP, 0); }
 		public AnnotationsContext annotations() {
 			return getRuleContext(AnnotationsContext.class,0);
 		}
@@ -147,18 +147,18 @@ public class DejainParser extends Parser {
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
 		public TypeQualifierContext typeQualifier() {
 			return getRuleContext(TypeQualifierContext.class,0);
 		}
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public ClassTransformerContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_classTransformer; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitClassTransformer(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitClassTransformer(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -233,7 +233,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_classTransformerMembers; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitClassTransformerMembers(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitClassTransformerMembers(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -274,11 +274,11 @@ public class DejainParser extends Parser {
 	public static class ClassTransformerMemberDefinitionContext extends ParserRuleContext {
 		public IdentifierContext variableId;
 		public ClassTransformerMemberContext member;
-		public TerminalNode ASSIGN_OP() { return getToken(DejainParser.ASSIGN_OP, 0); }
+		public TerminalNode ASSIGN_OP() { return getToken(JasyParser.ASSIGN_OP, 0); }
 		public ClassTransformerMemberContext classTransformerMember() {
 			return getRuleContext(ClassTransformerMemberContext.class,0);
 		}
-		public TerminalNode PLUS() { return getToken(DejainParser.PLUS, 0); }
+		public TerminalNode PLUS() { return getToken(JasyParser.PLUS, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
@@ -288,7 +288,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_classTransformerMemberDefinition; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitClassTransformerMemberDefinition(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitClassTransformerMemberDefinition(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -343,7 +343,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_classTransformerMember; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitClassTransformerMember(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitClassTransformerMember(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -382,11 +382,11 @@ public class DejainParser extends Parser {
 
 	public static class ClassTransformerMemberFieldContext extends ParserRuleContext {
 		public ExpressionContext value;
-		public TerminalNode SEMI_COLON() { return getToken(DejainParser.SEMI_COLON, 0); }
+		public TerminalNode SEMI_COLON() { return getToken(JasyParser.SEMI_COLON, 0); }
 		public ModStaticContext modStatic() {
 			return getRuleContext(ModStaticContext.class,0);
 		}
-		public TerminalNode ASSIGN_OP() { return getToken(DejainParser.ASSIGN_OP, 0); }
+		public TerminalNode ASSIGN_OP() { return getToken(JasyParser.ASSIGN_OP, 0); }
 		public AnnotationsContext annotations() {
 			return getRuleContext(AnnotationsContext.class,0);
 		}
@@ -408,7 +408,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_classTransformerMemberField; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitClassTransformerMemberField(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitClassTransformerMemberField(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -490,14 +490,14 @@ public class DejainParser extends Parser {
 		public AnnotationsContext annotations() {
 			return getRuleContext(AnnotationsContext.class,0);
 		}
-		public TerminalNode OPEN_PAR() { return getToken(DejainParser.OPEN_PAR, 0); }
+		public TerminalNode OPEN_PAR() { return getToken(JasyParser.OPEN_PAR, 0); }
 		public AccessModifierContext accessModifier() {
 			return getRuleContext(AccessModifierContext.class,0);
 		}
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public TerminalNode CLOSE_PAR() { return getToken(DejainParser.CLOSE_PAR, 0); }
+		public TerminalNode CLOSE_PAR() { return getToken(JasyParser.CLOSE_PAR, 0); }
 		public TypeQualifierContext typeQualifier() {
 			return getRuleContext(TypeQualifierContext.class,0);
 		}
@@ -507,7 +507,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_classTransformerMemberMethod; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitClassTransformerMemberMethod(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitClassTransformerMemberMethod(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -582,7 +582,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_classTransformerMemberMethodBlody; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitClassTransformerMemberMethodBlody(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitClassTransformerMemberMethodBlody(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -624,15 +624,15 @@ public class DejainParser extends Parser {
 		public StatementsContext statements() {
 			return getRuleContext(StatementsContext.class,0);
 		}
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public BlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_block; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitBlock(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitBlock(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -666,9 +666,9 @@ public class DejainParser extends Parser {
 		public ParameterContext parameter(int i) {
 			return getRuleContext(ParameterContext.class,i);
 		}
-		public List<TerminalNode> COMMA() { return getTokens(DejainParser.COMMA); }
+		public List<TerminalNode> COMMA() { return getTokens(JasyParser.COMMA); }
 		public TerminalNode COMMA(int i) {
-			return getToken(DejainParser.COMMA, i);
+			return getToken(JasyParser.COMMA, i);
 		}
 		public ParametersContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -676,7 +676,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_parameters; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitParameters(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitParameters(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -736,7 +736,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_parameter; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitParameter(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitParameter(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -772,7 +772,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_expression; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitExpression(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitExpression(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -805,7 +805,7 @@ public class DejainParser extends Parser {
 		public BinarySumContext binarySum() {
 			return getRuleContext(BinarySumContext.class,0);
 		}
-		public TerminalNode ASSIGN_OP() { return getToken(DejainParser.ASSIGN_OP, 0); }
+		public TerminalNode ASSIGN_OP() { return getToken(JasyParser.ASSIGN_OP, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
@@ -815,7 +815,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_variableAssignment; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitVariableAssignment(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitVariableAssignment(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -875,7 +875,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_binarySum; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitBinarySum(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitBinarySum(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -939,21 +939,21 @@ public class DejainParser extends Parser {
 		public QuotedExpressionContext quotedExpression() {
 			return getRuleContext(QuotedExpressionContext.class,0);
 		}
-		public TerminalNode OPEN_PAR() { return getToken(DejainParser.OPEN_PAR, 0); }
+		public TerminalNode OPEN_PAR() { return getToken(JasyParser.OPEN_PAR, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
 		public ThisResultContext thisResult() {
 			return getRuleContext(ThisResultContext.class,0);
 		}
-		public TerminalNode CLOSE_PAR() { return getToken(DejainParser.CLOSE_PAR, 0); }
+		public TerminalNode CLOSE_PAR() { return getToken(JasyParser.CLOSE_PAR, 0); }
 		public LeafExpressionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_leafExpression; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitLeafExpression(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitLeafExpression(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1031,7 +1031,7 @@ public class DejainParser extends Parser {
 	}
 
 	public static class LeafExpressionChainContext extends ParserRuleContext {
-		public List<TerminalNode> DOT() { return getTokens(DejainParser.DOT); }
+		public List<TerminalNode> DOT() { return getTokens(JasyParser.DOT); }
 		public List<InvocationContext> invocation() {
 			return getRuleContexts(InvocationContext.class);
 		}
@@ -1042,7 +1042,7 @@ public class DejainParser extends Parser {
 			return getRuleContext(LookupContext.class,i);
 		}
 		public TerminalNode DOT(int i) {
-			return getToken(DejainParser.DOT, i);
+			return getToken(JasyParser.DOT, i);
 		}
 		public InvocationContext invocation(int i) {
 			return getRuleContext(InvocationContext.class,i);
@@ -1053,7 +1053,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_leafExpressionChain; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitLeafExpressionChain(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitLeafExpressionChain(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1109,15 +1109,15 @@ public class DejainParser extends Parser {
 
 	public static class BinarySumOperatorContext extends ParserRuleContext {
 		public Token operator;
-		public TerminalNode PLUS() { return getToken(DejainParser.PLUS, 0); }
-		public TerminalNode MINUS() { return getToken(DejainParser.MINUS, 0); }
+		public TerminalNode PLUS() { return getToken(JasyParser.PLUS, 0); }
+		public TerminalNode MINUS() { return getToken(JasyParser.MINUS, 0); }
 		public BinarySumOperatorContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_binarySumOperator; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitBinarySumOperator(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitBinarySumOperator(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1150,14 +1150,14 @@ public class DejainParser extends Parser {
 	}
 
 	public static class ThisResultContext extends ParserRuleContext {
-		public TerminalNode KW_THIS_RESULT() { return getToken(DejainParser.KW_THIS_RESULT, 0); }
+		public TerminalNode KW_THIS_RESULT() { return getToken(JasyParser.KW_THIS_RESULT, 0); }
 		public ThisResultContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_thisResult; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitThisResult(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitThisResult(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1189,15 +1189,15 @@ public class DejainParser extends Parser {
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public TerminalNode OPEN_PAR() { return getToken(DejainParser.OPEN_PAR, 0); }
-		public TerminalNode CLOSE_PAR() { return getToken(DejainParser.CLOSE_PAR, 0); }
+		public TerminalNode OPEN_PAR() { return getToken(JasyParser.OPEN_PAR, 0); }
+		public TerminalNode CLOSE_PAR() { return getToken(JasyParser.CLOSE_PAR, 0); }
 		public InvocationContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_invocation; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitInvocation(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitInvocation(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1226,7 +1226,7 @@ public class DejainParser extends Parser {
 	}
 
 	public static class ArgumentsContext extends ParserRuleContext {
-		public List<TerminalNode> COMMA() { return getTokens(DejainParser.COMMA); }
+		public List<TerminalNode> COMMA() { return getTokens(JasyParser.COMMA); }
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
@@ -1234,7 +1234,7 @@ public class DejainParser extends Parser {
 			return getRuleContexts(ExpressionContext.class);
 		}
 		public TerminalNode COMMA(int i) {
-			return getToken(DejainParser.COMMA, i);
+			return getToken(JasyParser.COMMA, i);
 		}
 		public ArgumentsContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -1242,7 +1242,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_arguments; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitArguments(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitArguments(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1299,7 +1299,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_lookup; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitLookup(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitLookup(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1337,7 +1337,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_statements; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitStatements(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitStatements(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1376,7 +1376,7 @@ public class DejainParser extends Parser {
 	}
 
 	public static class StatementContext extends ParserRuleContext {
-		public TerminalNode SEMI_COLON() { return getToken(DejainParser.SEMI_COLON, 0); }
+		public TerminalNode SEMI_COLON() { return getToken(JasyParser.SEMI_COLON, 0); }
 		public NonDelimitedStatementContext nonDelimitedStatement() {
 			return getRuleContext(NonDelimitedStatementContext.class,0);
 		}
@@ -1392,7 +1392,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_statement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1450,7 +1450,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_nonDelimitedStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitNonDelimitedStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitNonDelimitedStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1489,14 +1489,14 @@ public class DejainParser extends Parser {
 	}
 
 	public static class ProceedStatementContext extends ParserRuleContext {
-		public TerminalNode ELLIPSES() { return getToken(DejainParser.ELLIPSES, 0); }
+		public TerminalNode ELLIPSES() { return getToken(JasyParser.ELLIPSES, 0); }
 		public ProceedStatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_proceedStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitProceedStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitProceedStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1525,19 +1525,19 @@ public class DejainParser extends Parser {
 		public StatementsContext statements() {
 			return getRuleContext(StatementsContext.class,0);
 		}
-		public TerminalNode DOLLAR() { return getToken(DejainParser.DOLLAR, 0); }
+		public TerminalNode DOLLAR() { return getToken(JasyParser.DOLLAR, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public MetaExpressionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_metaExpression; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitMetaExpression(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitMetaExpression(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1599,14 +1599,14 @@ public class DejainParser extends Parser {
 		public DelimitedStatementContext delimitedStatement() {
 			return getRuleContext(DelimitedStatementContext.class,0);
 		}
-		public TerminalNode HASH() { return getToken(DejainParser.HASH, 0); }
+		public TerminalNode HASH() { return getToken(JasyParser.HASH, 0); }
 		public QuotedExpressionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_quotedExpression; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitQuotedExpression(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitQuotedExpression(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1667,7 +1667,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_tryCatchStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitTryCatchStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitTryCatchStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1722,16 +1722,16 @@ public class DejainParser extends Parser {
 		public StatementsContext statements() {
 			return getRuleContext(StatementsContext.class,0);
 		}
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode KW_TRY() { return getToken(DejainParser.KW_TRY, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode KW_TRY() { return getToken(JasyParser.KW_TRY, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public TryStatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_tryStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitTryStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitTryStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1766,18 +1766,18 @@ public class DejainParser extends Parser {
 		public StatementsContext statements() {
 			return getRuleContext(StatementsContext.class,0);
 		}
-		public TerminalNode KW_CATCH() { return getToken(DejainParser.KW_CATCH, 0); }
-		public TerminalNode OPEN_PAR() { return getToken(DejainParser.OPEN_PAR, 0); }
-		public TerminalNode CLOSE_PAR() { return getToken(DejainParser.CLOSE_PAR, 0); }
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode KW_CATCH() { return getToken(JasyParser.KW_CATCH, 0); }
+		public TerminalNode OPEN_PAR() { return getToken(JasyParser.OPEN_PAR, 0); }
+		public TerminalNode CLOSE_PAR() { return getToken(JasyParser.CLOSE_PAR, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public CatchStatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_catchStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitCatchStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitCatchStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1809,19 +1809,19 @@ public class DejainParser extends Parser {
 	}
 
 	public static class FinallyStatementContext extends ParserRuleContext {
-		public TerminalNode KW_FINALLY() { return getToken(DejainParser.KW_FINALLY, 0); }
+		public TerminalNode KW_FINALLY() { return getToken(JasyParser.KW_FINALLY, 0); }
 		public StatementsContext statements() {
 			return getRuleContext(StatementsContext.class,0);
 		}
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public FinallyStatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_finallyStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitFinallyStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitFinallyStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1854,22 +1854,22 @@ public class DejainParser extends Parser {
 		public IfTrueBlockContext ifTrueBlock() {
 			return getRuleContext(IfTrueBlockContext.class,0);
 		}
-		public TerminalNode OPEN_PAR() { return getToken(DejainParser.OPEN_PAR, 0); }
+		public TerminalNode OPEN_PAR() { return getToken(JasyParser.OPEN_PAR, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
 		public IfFalseBlockContext ifFalseBlock() {
 			return getRuleContext(IfFalseBlockContext.class,0);
 		}
-		public TerminalNode KW_IF() { return getToken(DejainParser.KW_IF, 0); }
-		public TerminalNode CLOSE_PAR() { return getToken(DejainParser.CLOSE_PAR, 0); }
+		public TerminalNode KW_IF() { return getToken(JasyParser.KW_IF, 0); }
+		public TerminalNode CLOSE_PAR() { return getToken(JasyParser.CLOSE_PAR, 0); }
 		public IfElseStatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_ifElseStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitIfElseStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitIfElseStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1913,15 +1913,15 @@ public class DejainParser extends Parser {
 		public List<StatementContext> statement() {
 			return getRuleContexts(StatementContext.class);
 		}
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public IfTrueBlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_ifTrueBlock; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitIfTrueBlock(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitIfTrueBlock(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1992,16 +1992,16 @@ public class DejainParser extends Parser {
 		public StatementContext statement() {
 			return getRuleContext(StatementContext.class,0);
 		}
-		public TerminalNode KW_ELSE() { return getToken(DejainParser.KW_ELSE, 0); }
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode KW_ELSE() { return getToken(JasyParser.KW_ELSE, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public IfFalseBlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_ifFalseBlock; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitIfFalseBlock(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitIfFalseBlock(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2089,7 +2089,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_delimitedStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitDelimitedStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitDelimitedStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2143,7 +2143,7 @@ public class DejainParser extends Parser {
 	public static class VariableDeclarationContext extends ParserRuleContext {
 		public IdentifierContext id;
 		public ExpressionContext value;
-		public TerminalNode ASSIGN_OP() { return getToken(DejainParser.ASSIGN_OP, 0); }
+		public TerminalNode ASSIGN_OP() { return getToken(JasyParser.ASSIGN_OP, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
@@ -2159,7 +2159,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_variableDeclaration; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitVariableDeclaration(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitVariableDeclaration(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2196,7 +2196,7 @@ public class DejainParser extends Parser {
 	}
 
 	public static class ReturnStatementContext extends ParserRuleContext {
-		public TerminalNode KW_RETURN() { return getToken(DejainParser.KW_RETURN, 0); }
+		public TerminalNode KW_RETURN() { return getToken(JasyParser.KW_RETURN, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
@@ -2206,7 +2206,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_returnStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitReturnStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitReturnStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2233,7 +2233,7 @@ public class DejainParser extends Parser {
 	}
 
 	public static class ThrowStatementContext extends ParserRuleContext {
-		public TerminalNode KW_THROW() { return getToken(DejainParser.KW_THROW, 0); }
+		public TerminalNode KW_THROW() { return getToken(JasyParser.KW_THROW, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
@@ -2243,7 +2243,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_throwStatement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitThrowStatement(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitThrowStatement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2288,7 +2288,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_literal; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitLiteral(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2340,14 +2340,14 @@ public class DejainParser extends Parser {
 	}
 
 	public static class StringLiteralContext extends ParserRuleContext {
-		public TerminalNode STRING() { return getToken(DejainParser.STRING, 0); }
+		public TerminalNode STRING() { return getToken(JasyParser.STRING, 0); }
 		public StringLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_stringLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitStringLiteral(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitStringLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2373,14 +2373,14 @@ public class DejainParser extends Parser {
 	}
 
 	public static class IntegerLiteralContext extends ParserRuleContext {
-		public TerminalNode INTEGER() { return getToken(DejainParser.INTEGER, 0); }
+		public TerminalNode INTEGER() { return getToken(JasyParser.INTEGER, 0); }
 		public IntegerLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_integerLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitIntegerLiteral(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitIntegerLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2406,14 +2406,14 @@ public class DejainParser extends Parser {
 	}
 
 	public static class LongLiteralContext extends ParserRuleContext {
-		public TerminalNode LONG() { return getToken(DejainParser.LONG, 0); }
+		public TerminalNode LONG() { return getToken(JasyParser.LONG, 0); }
 		public LongLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_longLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitLongLiteral(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitLongLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2439,15 +2439,15 @@ public class DejainParser extends Parser {
 	}
 
 	public static class BooleanLiteralContext extends ParserRuleContext {
-		public TerminalNode KW_TRUE() { return getToken(DejainParser.KW_TRUE, 0); }
-		public TerminalNode KW_FALSE() { return getToken(DejainParser.KW_FALSE, 0); }
+		public TerminalNode KW_TRUE() { return getToken(JasyParser.KW_TRUE, 0); }
+		public TerminalNode KW_FALSE() { return getToken(JasyParser.KW_FALSE, 0); }
 		public BooleanLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_booleanLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitBooleanLiteral(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitBooleanLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2482,16 +2482,16 @@ public class DejainParser extends Parser {
 		public StatementsContext statements() {
 			return getRuleContext(StatementsContext.class,0);
 		}
-		public TerminalNode DOLLAR() { return getToken(DejainParser.DOLLAR, 0); }
-		public TerminalNode CLOSE_BRA() { return getToken(DejainParser.CLOSE_BRA, 0); }
-		public TerminalNode OPEN_BRA() { return getToken(DejainParser.OPEN_BRA, 0); }
+		public TerminalNode DOLLAR() { return getToken(JasyParser.DOLLAR, 0); }
+		public TerminalNode CLOSE_BRA() { return getToken(JasyParser.CLOSE_BRA, 0); }
+		public TerminalNode OPEN_BRA() { return getToken(JasyParser.OPEN_BRA, 0); }
 		public MetaBlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_metaBlock; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitMetaBlock(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitMetaBlock(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2520,8 +2520,8 @@ public class DejainParser extends Parser {
 	}
 
 	public static class AnnotationContext extends ParserRuleContext {
-		public TerminalNode AT() { return getToken(DejainParser.AT, 0); }
-		public TerminalNode PLUS() { return getToken(DejainParser.PLUS, 0); }
+		public TerminalNode AT() { return getToken(JasyParser.AT, 0); }
+		public TerminalNode PLUS() { return getToken(JasyParser.PLUS, 0); }
 		public TypeQualifierContext typeQualifier() {
 			return getRuleContext(TypeQualifierContext.class,0);
 		}
@@ -2531,7 +2531,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_annotation; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitAnnotation(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitAnnotation(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2579,7 +2579,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_annotations; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitAnnotations(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitAnnotations(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2618,7 +2618,7 @@ public class DejainParser extends Parser {
 	}
 
 	public static class TypeQualifierContext extends ParserRuleContext {
-		public List<TerminalNode> DOT() { return getTokens(DejainParser.DOT); }
+		public List<TerminalNode> DOT() { return getTokens(JasyParser.DOT); }
 		public IdentifierContext identifier(int i) {
 			return getRuleContext(IdentifierContext.class,i);
 		}
@@ -2626,7 +2626,7 @@ public class DejainParser extends Parser {
 			return getRuleContexts(IdentifierContext.class);
 		}
 		public TerminalNode DOT(int i) {
-			return getToken(DejainParser.DOT, i);
+			return getToken(JasyParser.DOT, i);
 		}
 		public TypeQualifierContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -2634,7 +2634,7 @@ public class DejainParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_typeQualifier; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitTypeQualifier(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitTypeQualifier(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2675,14 +2675,14 @@ public class DejainParser extends Parser {
 	}
 
 	public static class ModStaticContext extends ParserRuleContext {
-		public TerminalNode MOD_STATIC() { return getToken(DejainParser.MOD_STATIC, 0); }
+		public TerminalNode MOD_STATIC() { return getToken(JasyParser.MOD_STATIC, 0); }
 		public ModStaticContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_modStatic; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitModStatic(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitModStatic(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2708,16 +2708,16 @@ public class DejainParser extends Parser {
 	}
 
 	public static class AccessModifierContext extends ParserRuleContext {
-		public TerminalNode ACC_MOD_PROTECTED() { return getToken(DejainParser.ACC_MOD_PROTECTED, 0); }
-		public TerminalNode ACC_MOD_PRIVATE() { return getToken(DejainParser.ACC_MOD_PRIVATE, 0); }
-		public TerminalNode ACC_MOD_PUBLIC() { return getToken(DejainParser.ACC_MOD_PUBLIC, 0); }
+		public TerminalNode ACC_MOD_PROTECTED() { return getToken(JasyParser.ACC_MOD_PROTECTED, 0); }
+		public TerminalNode ACC_MOD_PRIVATE() { return getToken(JasyParser.ACC_MOD_PRIVATE, 0); }
+		public TerminalNode ACC_MOD_PUBLIC() { return getToken(JasyParser.ACC_MOD_PUBLIC, 0); }
 		public AccessModifierContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_accessModifier; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitAccessModifier(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitAccessModifier(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2749,14 +2749,14 @@ public class DejainParser extends Parser {
 	}
 
 	public static class IdentifierContext extends ParserRuleContext {
-		public TerminalNode ID() { return getToken(DejainParser.ID, 0); }
+		public TerminalNode ID() { return getToken(JasyParser.ID, 0); }
 		public IdentifierContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_identifier; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DejainVisitor ) return ((DejainVisitor<? extends T>)visitor).visitIdentifier(this);
+			if ( visitor instanceof JasyVisitor ) return ((JasyVisitor<? extends T>)visitor).visitIdentifier(this);
 			else return visitor.visitChildren(this);
 		}
 	}
