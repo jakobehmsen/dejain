@@ -27,6 +27,7 @@ import dejain.lang.ast.ReturnAST;
 import dejain.lang.ast.MetaExpressionAST;
 import dejain.lang.ast.CodeAST;
 import dejain.lang.ast.CodeVisitor;
+import dejain.lang.ast.RootExpressionAST;
 import dejain.lang.ast.FieldGetAST;
 import dejain.lang.ast.FieldSetAST;
 import dejain.lang.ast.InvocationAST;
@@ -37,6 +38,7 @@ import dejain.lang.ast.MetaScope;
 import dejain.lang.ast.NameTypeAST;
 import dejain.lang.ast.ThisAST;
 import dejain.lang.ast.TypeAST;
+import dejain.lang.ast.VariableAssignmentAST;
 import dejain.lang.ast.VariableDeclarationAST;
 import dejain.runtime.asm.ClassTransformer;
 import dejain.runtime.asm.ClassTransformerSequence;
@@ -358,6 +360,16 @@ public class ASMCompiler {
                     ? ctx.nonDelimitedStatement().accept(this)
                     : ctx.delimitedStatement().accept(this);
             }
+
+            @Override
+            public CodeAST visitDelimitedStatement(DejainParser.DelimitedStatementContext ctx) {
+                if(ctx.expression() != null) {
+                    ExpressionAST expression = getExpression(ctx.expression(), mp);
+                    return new RootExpressionAST(new Region(ctx), expression);
+                }
+                
+                return ctx.getChild(0).accept(this);
+            }
             
             @Override
             public CodeAST visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
@@ -384,7 +396,7 @@ public class ASMCompiler {
         return r;
     }
 
-    private ExpressionAST getExpression(DejainParser.ExpressionContext ctx, MetaProcessing mp) {
+    private ExpressionAST getExpression(ParserRuleContext ctx, MetaProcessing mp) {
         return ctx.accept(new DejainBaseVisitor<ExpressionAST>() {
             @Override
             public ExpressionAST visitStringLiteral(DejainParser.StringLiteralContext ctx) {
@@ -491,6 +503,17 @@ public class ASMCompiler {
 //                }
                 
 //                return super.visitLookup(ctx); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public ExpressionAST visitVariableAssignment(DejainParser.VariableAssignmentContext ctx) {
+                if(ctx.ASSIGN_OP() != null) {
+                    String name = ctx.identifier().getText();
+                    ExpressionAST value = getExpression(ctx.value, mp);
+
+                    return new VariableAssignmentAST(new Region(ctx), name, value);
+                } else
+                    return ctx.binarySum().accept(this);
             }
         });
     }

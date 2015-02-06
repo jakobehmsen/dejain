@@ -13,4 +13,6 @@ public interface CodeVisitor<T> {
     T visitFieldGet(FieldGetAST ctx);
     T visitVariableDeclaration(VariableDeclarationAST ctx);
     T visitLookup(LookupAST ctx);
+    T visitVariableAssignment(VariableAssignmentAST ctx);
+    T visitRootExpression(RootExpressionAST ctx);
 }

@@ -31,7 +31,7 @@ methodDefinition:
 parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
 expression: variableAssignment;
-variableAssignment: identifier ASSIGN_OP variableAssignment | binarySum;
+variableAssignment: identifier ASSIGN_OP value=variableAssignment | binarySum;
 binarySum: first=leafExpression (binarySumOperator rest=leafExpression)*;
 leafExpression: 
     (invocation | literal | lookup | thisResult | proceedStatement | 

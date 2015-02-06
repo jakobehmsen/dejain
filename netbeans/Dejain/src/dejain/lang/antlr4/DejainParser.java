@@ -914,6 +914,7 @@ public class DejainParser extends Parser {
 	}
 
 	public static class VariableAssignmentContext extends ParserRuleContext {
+		public VariableAssignmentContext value;
 		public VariableAssignmentContext variableAssignment() {
 			return getRuleContext(VariableAssignmentContext.class,0);
 		}
@@ -946,7 +947,7 @@ public class DejainParser extends Parser {
 				{
 				setState(232); identifier();
 				setState(233); match(ASSIGN_OP);
-				setState(234); variableAssignment();
+				setState(234); ((VariableAssignmentContext)_localctx).value = variableAssignment();
 				}
 				break;
 
