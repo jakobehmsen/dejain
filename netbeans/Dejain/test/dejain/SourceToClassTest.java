@@ -513,6 +513,27 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodReturnValueOfSharedMetaVariable() throws IOException {
+        int expectedResult = 5;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() ${\n" +
+            "        int i = " + expectedResult + ";\n" +
+            "        return #return $i;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            src, 
+            forClass("dejain.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodReturnSumOfVariable() throws IOException {
         int i1 = 5;
         int i2 = 7;
