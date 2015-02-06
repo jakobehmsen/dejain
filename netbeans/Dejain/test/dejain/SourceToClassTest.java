@@ -491,6 +491,28 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodReturnValueOfVariableWithSeparateDeclaration() throws IOException {
+        int expectedResult = 5;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() {\n" +
+            "        int i;\n" +
+            "        i = " + expectedResult + ";\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            src, 
+            forClass("dejain.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodReturnSumOfVariable() throws IOException {
         int i1 = 5;
         int i2 = 7;
