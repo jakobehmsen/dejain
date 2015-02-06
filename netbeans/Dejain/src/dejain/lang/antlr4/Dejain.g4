@@ -8,26 +8,17 @@ classTransformerMembers: classTransformerMemberDefinition*;
 classTransformerMemberDefinition: (PLUS | (variableId=identifier ASSIGN_OP))? member = classTransformerMember;
 classTransformerMember: 
     classTransformerMemberField | classTransformerMemberMethod;
-/*  
-    classTransformerMemberField | classTransformerMemberFieldAdd |
-    classTransformerMemberMethod | classTransformerMemberMethodAdd;
-*/
+
 classTransformerMemberField:
     annotations accessModifier? modStatic? typeQualifier? identifier? 
     (ASSIGN_OP value=expression)? SEMI_COLON;
-classTransformerMemberFieldAdd:
-    PLUS annotations accessModifier? modStatic? typeQualifier identifier 
-    (ASSIGN_OP expression)?
-    SEMI_COLON;
 
 classTransformerMemberMethod: 
     annotations accessModifier? modStatic? typeQualifier? identifier?
-    OPEN_PAR parameters CLOSE_PAR OPEN_BRA statements CLOSE_BRA;
-classTransformerMemberMethodAdd: PLUS methodDefinition;
-methodDefinition: 
-    annotations accessModifier? modStatic? typeQualifier identifier
-    OPEN_PAR parameters CLOSE_PAR OPEN_BRA statements CLOSE_BRA;
+    OPEN_PAR parameters CLOSE_PAR body=classTransformerMemberMethodBlody;
+classTransformerMemberMethodBlody: metaBlock | block;
 
+block: OPEN_BRA statements CLOSE_BRA;
 parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
 expression: variableAssignment;
@@ -44,11 +35,11 @@ invocation: identifier OPEN_PAR arguments CLOSE_PAR;
 arguments: (expression (COMMA expression)*)?;
 lookup: identifier;
 statements: statement*;
-statement: nonDelimitedStatement | delimitedStatement SEMI_COLON;
+statement: metaBlock | nonDelimitedStatement | delimitedStatement SEMI_COLON;
 nonDelimitedStatement: tryCatchStatement | ifElseStatement;
 proceedStatement: ELLIPSES;
 metaExpression: DOLLAR (expression | OPEN_BRA statements CLOSE_BRA);
-quotedExpression: HASH expression;
+quotedExpression: HASH (expression | nonDelimitedStatement | delimitedStatement);
 tryCatchStatement: 
     tryStatement ((catchStatement finallyStatement?) | finallyStatement);
 tryStatement: KW_TRY OPEN_BRA statements CLOSE_BRA;
@@ -71,7 +62,8 @@ literal: stringLiteral | integerLiteral | longLiteral | booleanLiteral;
 stringLiteral: STRING;
 integerLiteral: INTEGER;
 longLiteral: LONG;
-booleanLiteral: KW_TRUE | KW_FALSE; 
+booleanLiteral: KW_TRUE | KW_FALSE;
+metaBlock: DOLLAR OPEN_BRA statements CLOSE_BRA;
 
 annotation: AT PLUS? typeQualifier;
 annotations: annotation*;
