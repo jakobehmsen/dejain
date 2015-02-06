@@ -207,7 +207,14 @@ public class ASMCompiler {
                                     .map(pCtx -> new NameTypeAST(new Region(ctx), pCtx.typeQualifier().getText()))
                                     .collect(Collectors.toList());
                                 MetaProcessing mp = new MetaProcessing(patternVariables);
-                                List<dejain.lang.ast.CodeAST> body = getStatements(ctx.statements(), mp);
+                                
+                                List<dejain.lang.ast.CodeAST> body = null;
+                                if(ctx.body.block() != null) {
+                                    // TODO: Wrap into meta block, that returns the block quoted
+                                    
+                                    body = getStatements(ctx.body.block().statements(), mp);
+                                }
+                                
                                 MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameterTypes), body);
                                 
                                 members.add(method);
