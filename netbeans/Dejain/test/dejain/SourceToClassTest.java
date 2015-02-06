@@ -454,9 +454,54 @@ public class SourceToClassTest {
             "class {\n" +
             "    +public int getValue() {\n" +
             "        return ${\n" +
-            "            int i = 5;\n" +
+            "            int i = " + expectedResult + ";\n" +
             "            return i;\n" +
             "        };\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            src, 
+            forClass("dejain.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodReturnValueOfVariable() throws IOException {
+        int expectedResult = 5;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() {\n" +
+            "        int i = " + expectedResult + ";\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"dejain.TestClass1"}, 
+            src, 
+            forClass("dejain.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodReturnSumOfVariable() throws IOException {
+        int i1 = 5;
+        int i2 = 7;
+        int expectedResult = i1 + i2;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() {\n" +
+            "        int i1 = " + i1 + ";\n" +
+            "        int i2 = " + i2 + ";\n" +
+            "        return i1 + i2;\n" +
             "    }\n" +
             "}\n";
         
