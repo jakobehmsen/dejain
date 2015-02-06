@@ -59,7 +59,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<dejain.lang.ASMCompiler.Message> errorMessages) {
         selector.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        body.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
+        body.forEach(s -> 
+            s.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
     public void populate(CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<MethodNode>> transformer) {
@@ -257,14 +258,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         if(value != null) {
                             value.generate(c, generator, originalIl);
                             
-                            switch(ctx.type.getSimpleName()) {
-                                case "int":
-                                    generator.methodNode.visitVarInsn(Opcodes.ISTORE, ordinal);
-                                    break;
-                                default:
-                                    generator.methodNode.visitVarInsn(Opcodes.ASTORE, ordinal);
-                                    break;
-                            }
+                            appendStore(generator, ordinal, ctx.type);
                         }
                     }
                 };
@@ -274,7 +268,28 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitLookup(LookupAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public PreparedAST visitVariableAssignment(VariableAssignmentAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public PreparedAST visitRootExpression(RootExpressionAST ctx) {
+                return toExpression(thisClass, ctx.expression, variables, false);
+            }
         });
+    }
+
+    private static void appendStore(MethodCodeGenerator generator, int ordinal, TypeAST type) {
+        switch(type.getSimpleName()) {
+            case "int":
+                generator.methodNode.visitVarInsn(Opcodes.ISTORE, ordinal);
+                break;
+            default:
+                generator.methodNode.visitVarInsn(Opcodes.ASTORE, ordinal);
+                break;
+        }
     }
     
     public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables) {
@@ -703,6 +718,52 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         new FieldGetAST(ctx.getRegion(), new ThisAST(ctx.getRegion()), ctx.name)
                         .accept(this);
                 }
+            }
+
+            @Override
+            public PreparedExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
+                PreparedExpressionAST value = getAsExpression(ctx.value);
+                
+                return new PreparedExpressionAST() {
+                    @Override
+                    public TypeAST resultType() {
+                        return value.resultType();
+                    }
+
+                    @Override
+                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        value.generate(c, generator, originalIl);
+                        
+                        if(asExpression)
+                            generator.methodNode.dup();
+                        
+                        int index = generator.getVariableIndex(ctx.name);
+                        TypeAST type = generator.getVariableType(ctx.name);
+                        appendStore(generator, index, type);
+                    }
+                };
+            }
+            
+            private PreparedExpressionAST getAsExpression(ExpressionAST ctx) {
+                return toExpression(thisClass, ctx, variables, true);
+                
+//                boolean changedAsExpression = false;
+//                if(!asExpression) {
+//                    changedAsExpression = true;
+//                    asExpression = true;
+//                }
+//                
+//                PreparedExpressionAST expression = ctx.accept(this);
+//                
+//                if(changedAsExpression)
+//                    asExpression = false;
+//                
+//                return expression;
+            }
+
+            @Override
+            public PreparedExpressionAST visitRootExpression(RootExpressionAST ctx) {
+                return ctx.accept(this);
             }
         });
     }
