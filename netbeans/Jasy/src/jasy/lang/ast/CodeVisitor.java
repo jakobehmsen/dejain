@@ -2,12 +2,12 @@ package jasy.lang.ast;
 
 public interface CodeVisitor<T> {
     T visitReturn(ReturnAST ctx);
-    T visitStringLiteral(LiteralAST<String> ctx);
-    T visitIntegerLiteral(LiteralAST<Integer> ctx);
+    T visitStringLiteral(StringLiteralAST ctx);
+    T visitIntLiteral(IntLiteralAST ctx);
+    T visitLongLiteral(LongLiteralAST ctx);
     T visitBinaryExpression(BinaryExpressionAST ctx);
     T visitInvocation(InvocationAST ctx);
     T visitFieldSet(FieldSetAST ctx);
-    T visitLongLiteral(LiteralAST<Long> ctx);
     T visitMeta(MetaExpressionAST ctx);
     T visitThis(ThisAST ctx);
     T visitFieldGet(FieldGetAST ctx);
@@ -17,4 +17,7 @@ public interface CodeVisitor<T> {
     T visitRootExpression(RootExpressionAST ctx);
     T visitQuote(QuoteAST ctx);
     T visitBlock(BlockAST ctx);
+    T visitNew(NewAST ctx);
+    T visitArray(ArrayAST ctx);
+   T visitNull(NullAST ctx);
 }
