@@ -5,15 +5,16 @@
  */
 package jasy.lang;
 
-import jasy.lang.antlr4.DejainBaseVisitor;
-import jasy.lang.antlr4.DejainLexer;
-import jasy.lang.antlr4.DejainParser;
-import jasy.lang.antlr4.DejainParser.AnnotationContext;
-import jasy.lang.antlr4.DejainParser.InvocationContext;
-import jasy.lang.antlr4.DejainParser.LookupContext;
-import jasy.lang.antlr4.DejainParser.ProgramContext;
-import jasy.lang.antlr4.DejainParser.StatementContext;
+import jasy.lang.antlr4.JasyBaseVisitor;
+import jasy.lang.antlr4.JasyLexer;
+import jasy.lang.antlr4.JasyParser;
+import jasy.lang.antlr4.JasyParser.AnnotationContext;
+import jasy.lang.antlr4.JasyParser.InvocationContext;
+import jasy.lang.antlr4.JasyParser.LookupContext;
+import jasy.lang.antlr4.JasyParser.ProgramContext;
+import jasy.lang.antlr4.JasyParser.StatementContext;
 import jasy.lang.ast.BinaryExpressionAST;
+import jasy.lang.ast.BlockAST;
 import jasy.lang.ast.ClassAST;
 import jasy.lang.ast.ExpressionAST;
 import jasy.lang.ast.FieldAST;
@@ -36,6 +37,7 @@ import jasy.lang.ast.LookupAST;
 import jasy.lang.ast.MemberVisitor;
 import jasy.lang.ast.MetaScope;
 import jasy.lang.ast.NameTypeAST;
+import jasy.lang.ast.QuoteAST;
 import jasy.lang.ast.ThisAST;
 import jasy.lang.ast.TypeAST;
 import jasy.lang.ast.VariableAssignmentAST;
@@ -109,11 +111,11 @@ public class ASMCompiler {
         this.classResolver = classResolver;
     }
     
-    private DejainParser createParser(InputStream sourceCode) throws IOException {
+    private JasyParser createParser(InputStream sourceCode) throws IOException {
         CharStream charStream = new ANTLRInputStream(sourceCode);
-        DejainLexer lexer = new DejainLexer(charStream);
+        JasyLexer lexer = new JasyLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        return new DejainParser(tokenStream);
+        return new JasyParser(tokenStream);
     }
     
 //    public ExpressionAST compileExpression(InputStream sourceCode) throws IOException {
@@ -128,16 +130,16 @@ public class ASMCompiler {
     public ModuleAST compile(InputStream sourceCode) throws IOException {
         ArrayList<ClassAST> classes = new ArrayList<>();
         
-        DejainParser parser = createParser(sourceCode);
+        JasyParser parser = createParser(sourceCode);
         
-        DejainParser.ProgramContext program = parser.program();
+        JasyParser.ProgramContext program = parser.program();
         
         Hashtable<String, TypeAST> patternVariables = new Hashtable<>();
         MetaScope metaScope = new MetaScope(patternVariables);
         
-        program.accept(new DejainBaseVisitor<Object>() {
+        program.accept(new JasyBaseVisitor<Object>() {
             @Override
-            public Object visitClassTransformer(DejainParser.ClassTransformerContext ctx) {
+            public Object visitClassTransformer(JasyParser.ClassTransformerContext ctx) {
                 List<jasy.lang.ast.AnnotationAST> annotations = ctx.annotations().annotation().stream()
                     .map(aCtx -> new jasy.lang.ast.AnnotationAST(new Region(aCtx), aCtx.PLUS() != null, new NameTypeAST(new Region(aCtx), aCtx.typeQualifier().getText())))
                     .collect(Collectors.toList());
@@ -163,12 +165,12 @@ public class ASMCompiler {
                 ArrayList<MemberAST> members = new ArrayList<>();
                 
                 if(ctx.members != null) {
-                    for(DejainParser.ClassTransformerMemberDefinitionContext memberCtx: ctx.members.classTransformerMemberDefinition()) {
+                    for(JasyParser.ClassTransformerMemberDefinitionContext memberCtx: ctx.members.classTransformerMemberDefinition()) {
                         boolean isAdd = memberCtx.PLUS() != null;
                         String variableId = memberCtx.variableId != null ? memberCtx.variableId.getText() : null;
-                        memberCtx.member.accept(new DejainBaseVisitor<Object>() {
+                        memberCtx.member.accept(new JasyBaseVisitor<Object>() {
                             @Override
-                            public Object visitClassTransformerMemberField(DejainParser.ClassTransformerMemberFieldContext ctx) {
+                            public Object visitClassTransformerMemberField(JasyParser.ClassTransformerMemberFieldContext ctx) {
                                 if(variableId != null) {
                                     String variableName = variableId;
                                     Region r = new Region(ctx);
@@ -198,7 +200,7 @@ public class ASMCompiler {
                             }
                             
                             @Override
-                            public Object visitClassTransformerMemberMethod(DejainParser.ClassTransformerMemberMethodContext ctx) {
+                            public Object visitClassTransformerMemberMethod(JasyParser.ClassTransformerMemberMethodContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
                                 TypeAST returnType = new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText());
@@ -208,11 +210,18 @@ public class ASMCompiler {
                                     .collect(Collectors.toList());
                                 MetaProcessing mp = new MetaProcessing(patternVariables);
                                 
-                                List<jasy.lang.ast.CodeAST> body = null;
+                                CodeAST body;
+//                                List<jasy.lang.ast.CodeAST> body = null;
                                 if(ctx.body.block() != null) {
                                     // TODO: Wrap into meta block, that returns the block quoted
+                                    List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.block().statements(), mp);
+                                    CodeAST bodyBlock = new BlockAST(new Region(ctx.body), statements);
+                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), bodyBlock));
                                     
-                                    body = getStatements(ctx.body.block().statements(), mp);
+//                                    body = getStatements(ctx.body.block().statements(), mp);
+                                } else {
+                                    List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.block().statements(), mp);
+                                    body = new BlockAST(new Region(ctx.body), statements);
                                 }
                                 
                                 MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameterTypes), body);
@@ -353,23 +362,23 @@ public class ASMCompiler {
 //        });
 //    }
 
-    private List<jasy.lang.ast.CodeAST> getStatements(DejainParser.StatementsContext ctx, MetaProcessing mp) {
+    private List<jasy.lang.ast.CodeAST> getStatements(JasyParser.StatementsContext ctx, MetaProcessing mp) {
         return ctx.statement().stream()
             .map(sCtx -> getStatement(sCtx, mp))
             .collect(Collectors.toList());
     }
     
-    private jasy.lang.ast.CodeAST getStatement(DejainParser.StatementContext ctx, MetaProcessing mp) {
-        jasy.lang.ast.CodeAST r = ctx.accept(new DejainBaseVisitor<jasy.lang.ast.CodeAST>() {
+    private jasy.lang.ast.CodeAST getStatement(JasyParser.StatementContext ctx, MetaProcessing mp) {
+        jasy.lang.ast.CodeAST r = ctx.accept(new JasyBaseVisitor<jasy.lang.ast.CodeAST>() {
             @Override
-            public CodeAST visitStatement(DejainParser.StatementContext ctx) {
+            public CodeAST visitStatement(JasyParser.StatementContext ctx) {
                 return ctx.nonDelimitedStatement() != null
                     ? ctx.nonDelimitedStatement().accept(this)
                     : ctx.delimitedStatement().accept(this);
             }
 
             @Override
-            public CodeAST visitDelimitedStatement(DejainParser.DelimitedStatementContext ctx) {
+            public CodeAST visitDelimitedStatement(JasyParser.DelimitedStatementContext ctx) {
                 if(ctx.expression() != null) {
                     ExpressionAST expression = getExpression(ctx.expression(), mp);
                     return new RootExpressionAST(new Region(ctx), expression);
@@ -379,14 +388,14 @@ public class ASMCompiler {
             }
             
             @Override
-            public CodeAST visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
+            public CodeAST visitReturnStatement(JasyParser.ReturnStatementContext ctx) {
                 ExpressionAST expression = getExpression(ctx.expression(), mp);
                 
                 return new ReturnAST(new Region(ctx), expression);
             }
 
             @Override
-            public ExpressionAST visitVariableDeclaration(DejainParser.VariableDeclarationContext ctx) {
+            public ExpressionAST visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
                 String type = ctx.typeQualifier().getText();
                 String name = ctx.identifier().getText();
                 
@@ -404,29 +413,29 @@ public class ASMCompiler {
     }
 
     private ExpressionAST getExpression(ParserRuleContext ctx, MetaProcessing mp) {
-        return ctx.accept(new DejainBaseVisitor<ExpressionAST>() {
+        return ctx.accept(new JasyBaseVisitor<ExpressionAST>() {
             @Override
-            public ExpressionAST visitStringLiteral(DejainParser.StringLiteralContext ctx) {
+            public ExpressionAST visitStringLiteral(JasyParser.StringLiteralContext ctx) {
                 String value = ctx.getText().substring(1, ctx.getText().length() - 1);
                 value = value.replace("\\\\", "\\").replace("\\\"", "\"");
                 return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.String);
             }
 
             @Override
-            public ExpressionAST visitIntegerLiteral(DejainParser.IntegerLiteralContext ctx) {
+            public ExpressionAST visitIntegerLiteral(JasyParser.IntegerLiteralContext ctx) {
                 int value = Integer.parseInt(ctx.getText());
                 return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.Integer);
             }
 
             @Override
-            public ExpressionAST visitLongLiteral(DejainParser.LongLiteralContext ctx) {
+            public ExpressionAST visitLongLiteral(JasyParser.LongLiteralContext ctx) {
                 String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
                 long value = Long.parseLong(valueStr);
                 return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.Long);
             }
 
             @Override
-            public ExpressionAST visitLeafExpression(DejainParser.LeafExpressionContext ctx) {
+            public ExpressionAST visitLeafExpression(JasyParser.LeafExpressionContext ctx) {
                 ExpressionAST result = ctx.getChild(0).accept(this);
                 
                 for(int i = 0; i < ctx.leafExpressionChain().getChildCount(); i++) {
@@ -434,12 +443,12 @@ public class ASMCompiler {
                         ParserRuleContext chainCtx = (ParserRuleContext)ctx.leafExpressionChain().getChild(i);
 
                         switch(chainCtx.getRuleIndex()) {
-                            case DejainParser.RULE_lookup:
+                            case JasyParser.RULE_lookup:
                                 LookupContext lookupCtx = (LookupContext)chainCtx;
                                 String fieldName = lookupCtx.identifier().getText();
                                 result = new FieldGetAST(new Region(chainCtx), result, fieldName);
                                 break;
-                            case DejainParser.RULE_invocation:
+                            case JasyParser.RULE_invocation:
                                 InvocationContext invocationCtx = (InvocationContext)chainCtx;
                                 String methodName = invocationCtx.identifier().getText();
                                 List<ExpressionAST> arguments = invocationCtx.arguments().expression().stream()
@@ -454,7 +463,7 @@ public class ASMCompiler {
             }
 
             @Override
-            public ExpressionAST visitBinarySum(DejainParser.BinarySumContext ctx) {
+            public ExpressionAST visitBinarySum(JasyParser.BinarySumContext ctx) {
                 ExpressionAST result = ctx.first.accept(this);
                 // Derive 
                 
@@ -465,10 +474,10 @@ public class ASMCompiler {
                     int operator;
 
                     switch(ctx.binarySumOperator(i - 1).operator.getType()) {
-                        case DejainLexer.PLUS:
+                        case JasyLexer.PLUS:
                             operator = BinaryExpressionAST.OPERATOR_ADD;
                             break;
-                        case DejainLexer.MINUS:
+                        case JasyLexer.MINUS:
                             operator = BinaryExpressionAST.OPERATOR_SUB;
                             break;
                         default:
@@ -482,7 +491,7 @@ public class ASMCompiler {
             }
             
             @Override
-            public ExpressionAST visitMetaExpression(DejainParser.MetaExpressionContext ctx) {
+            public ExpressionAST visitMetaExpression(JasyParser.MetaExpressionContext ctx) {
                 ArrayList<CodeAST> body = new ArrayList<>();
                 
                 if(ctx.expression() != null) {
@@ -496,7 +505,7 @@ public class ASMCompiler {
             }
 
             @Override
-            public ExpressionAST visitLookup(DejainParser.LookupContext ctx) {
+            public ExpressionAST visitLookup(JasyParser.LookupContext ctx) {
                 String name = ctx.getText();
                 return new LookupAST(new Region(ctx), name);
 //                boolean isVariable = false;
@@ -513,7 +522,7 @@ public class ASMCompiler {
             }
 
             @Override
-            public ExpressionAST visitVariableAssignment(DejainParser.VariableAssignmentContext ctx) {
+            public ExpressionAST visitVariableAssignment(JasyParser.VariableAssignmentContext ctx) {
                 if(ctx.ASSIGN_OP() != null) {
                     String name = ctx.identifier().getText();
                     ExpressionAST value = getExpression(ctx.value, mp);
@@ -527,19 +536,19 @@ public class ASMCompiler {
     
     public ClassTransformer compile(InputStream sourceCode, ArrayList<Message> errorMessages) throws IOException {
         CharStream charStream = new ANTLRInputStream(sourceCode);
-        DejainLexer lexer = new DejainLexer(charStream);
+        JasyLexer lexer = new JasyLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        DejainParser parser = new DejainParser(tokenStream);
+        JasyParser parser = new JasyParser(tokenStream);
         
-        DejainParser.ProgramContext program = parser.program();
+        JasyParser.ProgramContext program = parser.program();
         
         ClassTransformerSequence classTransformers = new ClassTransformerSequence();
         
         validateProgram(program, errorMessages);
         
-        program.accept(new DejainBaseVisitor<Object>() {
+        program.accept(new JasyBaseVisitor<Object>() {
             @Override
-            public Object visitClassTransformer(DejainParser.ClassTransformerContext ctx) {
+            public Object visitClassTransformer(JasyParser.ClassTransformerContext ctx) {
                 CommonClassTransformer transformer = new CommonClassTransformer();
                 
                 List<AnnotationContext> aCtxs = ctx.annotations().annotation().stream().filter(pa -> pa.PLUS() == null).collect(Collectors.toList());
@@ -696,7 +705,7 @@ public class ASMCompiler {
         return classTransformers;
     }
     
-    private String getMethodDescriptor(DejainParser.TypeQualifierContext returnType, DejainParser.ParametersContext paramsCtx) throws ClassNotFoundException {
+    private String getMethodDescriptor(JasyParser.TypeQualifierContext returnType, JasyParser.ParametersContext paramsCtx) throws ClassNotFoundException {
         String returnDescriptor = Type.getDescriptor(classResolver.resolveType(returnType.getText()));
         String parametersDescriptor = paramsCtx.parameter().stream().map(pCtx -> {
             String parameterDescriptor;
@@ -711,18 +720,18 @@ public class ASMCompiler {
         return "(" + parametersDescriptor + ")" + returnDescriptor + "";
     }
     
-    private static int getAccessModifier(DejainParser.AccessModifierContext ctx, DejainParser.ModStaticContext statCtx) {
+    private static int getAccessModifier(JasyParser.AccessModifierContext ctx, JasyParser.ModStaticContext statCtx) {
         int mod = Opcodes.ACC_PRIVATE;
         
         if(ctx != null) {
             switch(((TerminalNode)ctx.getChild(0)).getSymbol().getType()) {
-                case DejainLexer.ACC_MOD_PRIVATE:
+                case JasyLexer.ACC_MOD_PRIVATE:
                     mod = Opcodes.ACC_PRIVATE;
                     break;
-                case DejainLexer.ACC_MOD_PROTECTED:
+                case JasyLexer.ACC_MOD_PROTECTED:
                     mod = Opcodes.ACC_PROTECTED;
                     break;
-                case DejainLexer.ACC_MOD_PUBLIC:
+                case JasyLexer.ACC_MOD_PUBLIC:
                     mod = Opcodes.ACC_PUBLIC;
                     break;
             }
@@ -798,9 +807,9 @@ public class ASMCompiler {
     }
     
     private void validateProgram(ProgramContext ctx, ArrayList<Message> errorMessages) {
-        ctx.accept(new DejainBaseVisitor<Object>() {
+        ctx.accept(new JasyBaseVisitor<Object>() {
             @Override
-            public Object visitClassTransformer(DejainParser.ClassTransformerContext ctx) {
+            public Object visitClassTransformer(JasyParser.ClassTransformerContext ctx) {
                 if(ctx.members != null) {
 //                    for(DejainParser.ClassTransformerMemberContext memberCtx: ctx.members.classTransformerMember()) {
 //                        memberCtx.accept(new DejainBaseVisitor<Object>() {
@@ -849,11 +858,11 @@ public class ASMCompiler {
     }
     
     private void validateMethod(ParserRuleContext ctx, String methodName, Class<?> returnTypeClass, ArrayList<Message> errorMessages) {
-        ctx.accept(new DejainBaseVisitor<Object>() {
+        ctx.accept(new JasyBaseVisitor<Object>() {
             HashMap<String, VariableInfo> locals = new HashMap<>();
 
             @Override
-            public Object visitVariableDeclaration(DejainParser.VariableDeclarationContext ctx) {
+            public Object visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
                 String name = ctx.id.getText();
                 if(locals.containsKey(name))
                     errorMessages.add(new Message(ctx, "Variable " + name + " is already declared in method " + methodName + "."));
@@ -881,12 +890,12 @@ public class ASMCompiler {
             }
 
             @Override
-            public Object visitProceedStatement(DejainParser.ProceedStatementContext ctx) {
+            public Object visitProceedStatement(JasyParser.ProceedStatementContext ctx) {
                 return returnTypeClass;
             }
             
             @Override
-            public Object visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
+            public Object visitReturnStatement(JasyParser.ReturnStatementContext ctx) {
                 Class<?> expressionType = validateExpression(ctx.expression(), errorMessages);
                 if(!returnTypeClass.isAssignableFrom(expressionType))
                     errorMessages.add(new Message(ctx, "" + expressionType + " is not assignable to " + returnTypeClass));
@@ -896,14 +905,14 @@ public class ASMCompiler {
     }
     
     private static Class<?> validateExpression(ParserRuleContext ctx, ArrayList<Message> errorMessages) {
-        return ctx.accept(new DejainBaseVisitor<Class<?>>() {
+        return ctx.accept(new JasyBaseVisitor<Class<?>>() {
             @Override
-            public Class<?> visitStringLiteral(DejainParser.StringLiteralContext ctx) {
+            public Class<?> visitStringLiteral(JasyParser.StringLiteralContext ctx) {
                 return String.class;
             }
 
             @Override
-            public Class<?> visitIntegerLiteral(DejainParser.IntegerLiteralContext ctx) {
+            public Class<?> visitIntegerLiteral(JasyParser.IntegerLiteralContext ctx) {
                 return int.class;
             }
         });
@@ -980,9 +989,9 @@ public class ASMCompiler {
     }
     
     private Class<?> treeToCode(ParserRuleContext ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
-        return ctx.accept(new DejainBaseVisitor<Class<?>>() {
+        return ctx.accept(new JasyBaseVisitor<Class<?>>() {
             @Override
-            public Class<?> visitProceedStatement(DejainParser.ProceedStatementContext ctx) {
+            public Class<?> visitProceedStatement(JasyParser.ProceedStatementContext ctx) {
                 InsnList originalIlCopy = new InsnList();
                 originalIlCopy.add(originalIl);
                 
@@ -1020,7 +1029,7 @@ public class ASMCompiler {
             }
 
             @Override
-            public Class<?> visitVariableDeclaration(DejainParser.VariableDeclarationContext ctx) {
+            public Class<?> visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
                 try {
                     String name = ctx.id.getText();
                     Class<?> type = classResolver.resolveType(ctx.typeQualifier().getText());
@@ -1037,7 +1046,7 @@ public class ASMCompiler {
             }
             
             @Override
-            public Class<?> visitBinarySum(DejainParser.BinarySumContext ctx) {
+            public Class<?> visitBinarySum(JasyParser.BinarySumContext ctx) {
                 if(asExpression) {
                     Class<?> resultType = ctx.first.accept(this);
 
@@ -1049,7 +1058,7 @@ public class ASMCompiler {
                         Class<?> rhsResultType = rhsCtx.accept(this);
 
                         switch(ctx.binarySumOperator(i - 1).operator.getType()) {
-                            case DejainLexer.PLUS:
+                            case JasyLexer.PLUS:
                                 if(lhsResultType.equals(String.class)) {
                                     if(!rhsResultType.equals(String.class))
                                         generator.methodNode.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;", false);
@@ -1076,7 +1085,7 @@ public class ASMCompiler {
                                     }
                                 }
                                 break;
-                            case DejainLexer.MINUS:
+                            case JasyLexer.MINUS:
                                 switch(lhsResultType.getSimpleName()) {
                                     case "short":
                                         generator.methodNode.visitInsn(Opcodes.ISUB);
@@ -1107,7 +1116,7 @@ public class ASMCompiler {
             }
 
             @Override
-            public Class<?> visitLookup(DejainParser.LookupContext ctx) {
+            public Class<?> visitLookup(JasyParser.LookupContext ctx) {
                 String id = ctx.identifier().getText();
                 
                 if(generator.isVariable(id)) {
@@ -1123,7 +1132,7 @@ public class ASMCompiler {
             }
             
             @Override
-            public Class<?> visitStringLiteral(DejainParser.StringLiteralContext ctx) {
+            public Class<?> visitStringLiteral(JasyParser.StringLiteralContext ctx) {
                 String str = ctx.STRING().getText().substring(1, ctx.STRING().getText().length() - 1);
                 generator.methodNode.visitLdcInsn(str);
                 
@@ -1131,7 +1140,7 @@ public class ASMCompiler {
             }
 
             @Override
-            public Class<?> visitIntegerLiteral(DejainParser.IntegerLiteralContext ctx) {
+            public Class<?> visitIntegerLiteral(JasyParser.IntegerLiteralContext ctx) {
                 int i = Integer.parseInt(ctx.INTEGER().getText());
                 generator.methodNode.visitLdcInsn(i);
                 
@@ -1139,7 +1148,7 @@ public class ASMCompiler {
             }
             
             @Override
-            public Class<?> visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
+            public Class<?> visitReturnStatement(JasyParser.ReturnStatementContext ctx) {
                 treeToCode(ctx.expression(), generator, originalIl, true);
                 
 //                Type returnType = Type.getReturnType(generator.methodNode.desc);                    

@@ -15,4 +15,6 @@ public interface CodeVisitor<T> {
     T visitLookup(LookupAST ctx);
     T visitVariableAssignment(VariableAssignmentAST ctx);
     T visitRootExpression(RootExpressionAST ctx);
+    T visitQuote(QuoteAST ctx);
+    T visitBlock(BlockAST ctx);
 }

@@ -42,9 +42,10 @@ import org.objectweb.asm.util.TraceClassVisitor;
 public class MethodAST extends AbstractAST implements MemberAST {
     public boolean isAdd;
     public MethodSelectorAST selector;
-    public List<CodeAST> body;
+    public CodeAST body;
+//    public List<CodeAST> body;
 
-    public MethodAST(Region region, boolean isAdd, MethodSelectorAST selector, List<CodeAST> body) {
+    public MethodAST(Region region, boolean isAdd, MethodSelectorAST selector, CodeAST body) {
         super(region);
         this.isAdd = isAdd;
         this.selector = selector;
@@ -59,8 +60,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<jasy.lang.ASMCompiler.Message> errorMessages) {
         selector.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        body.forEach(s -> 
-            s.resolve(thisClass, expectedResultType, resolver, errorMessages));
+        body.resolve(thisClass, expectedResultType, resolver, errorMessages);
+//        body.forEach(s -> 
+//            s.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
     public void populate(CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<MethodNode>> transformer) {
@@ -103,17 +105,20 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
     }
 
-    public static void toCode(Transformation<ClassNode> c, List<CodeAST> body, MethodCodeGenerator generator) {
+    public static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator) {
         toCode(c, body, generator, new InsnList());
     }
 
-    private static void toCode(Transformation<ClassNode> c, List<CodeAST> body, MethodCodeGenerator generator, InsnList originalIl) {
+    private static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, InsnList originalIl) {
         Hashtable<String, TypeAST> variables = new Hashtable<>();
         
-        body.forEach(ctx -> {
-            PreparedAST pa = toCode(new ClassNodeScope(c.getTarget()), ctx, variables);
-            pa.generate(c, generator, originalIl);
-        });
+        PreparedAST pa = toCode(new ClassNodeScope(c.getTarget()), body, variables);
+        pa.generate(c, generator, originalIl);
+        
+//        body.forEach(ctx -> {
+//            PreparedAST pa = toCode(new ClassNodeScope(c.getTarget()), ctx, variables);
+//            pa.generate(c, generator, originalIl);
+//        });
     }
 
     public static PreparedAST toCode(Scope thisClass, CodeAST ctx, Hashtable<String, TypeAST> variables) {
@@ -138,6 +143,18 @@ public class MethodAST extends AbstractAST implements MemberAST {
 //                ctx.expression.accept(this);
 //                expression.generate(null, null, null, isAdd);
 //                generator.methodNode.returnValue();
+            }
+
+            @Override
+            public PreparedAST visitBlock(BlockAST ctx) {
+                List<PreparedAST> pas = ctx.statements.stream().map(s -> s.accept(this)).collect(Collectors.toList());
+                
+                return new PreparedAST() {
+                    @Override
+                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        pas.forEach(pa -> pa.generate(c, generator, originalIl));
+                    }
+                };
             }
 
             @Override
@@ -278,6 +295,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitRootExpression(RootExpressionAST ctx) {
                 return toExpression(thisClass, ctx.expression, variables, false);
             }
+
+            @Override
+            public PreparedAST visitQuote(QuoteAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
 
@@ -300,6 +322,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
         return expression.accept(new CodeVisitor<PreparedExpressionAST>() {
             @Override
             public PreparedExpressionAST visitReturn(ReturnAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public PreparedExpressionAST visitBlock(BlockAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
 
@@ -764,6 +791,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
             @Override
             public PreparedExpressionAST visitRootExpression(RootExpressionAST ctx) {
                 return ctx.accept(this);
+            }
+
+            @Override
+            public PreparedExpressionAST visitQuote(QuoteAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         });
     }

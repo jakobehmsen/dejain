@@ -1,17 +1,17 @@
 package jasy.lang;
 
-import jasy.lang.antlr4.DejainBaseVisitor;
-import jasy.lang.antlr4.DejainLexer;
-import jasy.lang.antlr4.DejainParser;
-import jasy.lang.antlr4.DejainParser.AnnotationContext;
-import jasy.lang.antlr4.DejainParser.ClassTransformerContext;
-import jasy.lang.antlr4.DejainParser.ClassTransformerMemberContext;
-import jasy.lang.antlr4.DejainParser.ClassTransformerMemberFieldContext;
-import jasy.lang.antlr4.DejainParser.ClassTransformerMemberMethodContext;
-import jasy.lang.antlr4.DejainParser.ExpressionContext;
-import jasy.lang.antlr4.DejainParser.ProgramContext;
-import jasy.lang.antlr4.DejainParser.StatementContext;
-import jasy.lang.antlr4.DejainParser.StatementsContext;
+import jasy.lang.antlr4.JasyBaseVisitor;
+import jasy.lang.antlr4.JasyLexer;
+import jasy.lang.antlr4.JasyParser;
+import jasy.lang.antlr4.JasyParser.AnnotationContext;
+import jasy.lang.antlr4.JasyParser.ClassTransformerContext;
+import jasy.lang.antlr4.JasyParser.ClassTransformerMemberContext;
+import jasy.lang.antlr4.JasyParser.ClassTransformerMemberFieldContext;
+import jasy.lang.antlr4.JasyParser.ClassTransformerMemberMethodContext;
+import jasy.lang.antlr4.JasyParser.ExpressionContext;
+import jasy.lang.antlr4.JasyParser.ProgramContext;
+import jasy.lang.antlr4.JasyParser.StatementContext;
+import jasy.lang.antlr4.JasyParser.StatementsContext;
 import jasy.runtime.javassist.ClassAction;
 import jasy.runtime.javassist.ClassTransformer;
 import jasy.runtime.javassist.ClassTransformerSequence;
@@ -50,9 +50,9 @@ import org.objectweb.asm.tree.MethodNode;
 public class JavassistCompiler {
     public static ClassTransformer compile(InputStream sourceCode) throws IOException {
         CharStream charStream = new ANTLRInputStream(sourceCode);
-        DejainLexer lexer = new DejainLexer(charStream);
+        JasyLexer lexer = new JasyLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        DejainParser parser = new DejainParser(tokenStream);
+        JasyParser parser = new JasyParser(tokenStream);
         
         ProgramContext program = parser.program();
         
@@ -83,7 +83,7 @@ public class JavassistCompiler {
         
         ClassTransformerSequence classTransformers = new ClassTransformerSequence();
         
-        program.accept(new DejainBaseVisitor<Object>() {
+        program.accept(new JasyBaseVisitor<Object>() {
             @Override
             public Object visitClassTransformer(ClassTransformerContext ctx) {
                 CommonClassTransformer transformer = new CommonClassTransformer();
@@ -474,9 +474,9 @@ public class JavassistCompiler {
     }
     
     private static void statementTransform(CharStream source, StatementContext ctx, CodeBuilder codeBuilder) {
-        ctx.accept(new DejainBaseVisitor<Object>() {
+        ctx.accept(new JasyBaseVisitor<Object>() {
             @Override
-            public Object visitTryCatchStatement(DejainParser.TryCatchStatementContext ctx) {
+            public Object visitTryCatchStatement(JasyParser.TryCatchStatementContext ctx) {
                 statementsTransform(source, ctx.tryStatement().statements(), codeBuilder);
                 
                 if(ctx.catchStatement() != null) {
@@ -494,14 +494,14 @@ public class JavassistCompiler {
             }
 
             @Override
-            public Object visitProceedStatement(DejainParser.ProceedStatementContext ctx) {
+            public Object visitProceedStatement(JasyParser.ProceedStatementContext ctx) {
                 codeBuilder.visitProceed();
                 
                 return null;
             }
 
             @Override
-            public Object visitReturnStatement(DejainParser.ReturnStatementContext ctx) {
+            public Object visitReturnStatement(JasyParser.ReturnStatementContext ctx) {
                 String statement = contextAdVerbatim(source, ctx);
                 codeBuilder.visitStatement(statement + ";");
                 codeBuilder.visitReturn();
@@ -510,7 +510,7 @@ public class JavassistCompiler {
             }
 
             @Override
-            public Object visitThrowStatement(DejainParser.ThrowStatementContext ctx) {
+            public Object visitThrowStatement(JasyParser.ThrowStatementContext ctx) {
                 String statement = contextAdVerbatim(source, ctx);
                 codeBuilder.visitStatement(statement + ";");
                 codeBuilder.visitReturn();
@@ -519,7 +519,7 @@ public class JavassistCompiler {
             }
 
             @Override
-            public Object visitIfElseStatement(DejainParser.IfElseStatementContext ctx) {
+            public Object visitIfElseStatement(JasyParser.IfElseStatementContext ctx) {
                 String statement = contextAdVerbatim(source, ctx);
                 codeBuilder.visitStatement(statement + ";");
                 
