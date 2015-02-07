@@ -31,13 +31,15 @@ import jasy.lang.ast.CodeVisitor;
 import jasy.lang.ast.RootExpressionAST;
 import jasy.lang.ast.FieldGetAST;
 import jasy.lang.ast.FieldSetAST;
+import jasy.lang.ast.IntLiteralAST;
 import jasy.lang.ast.InvocationAST;
-import jasy.lang.ast.LiteralDelegateAST;
+import jasy.lang.ast.LongLiteralAST;
 import jasy.lang.ast.LookupAST;
 import jasy.lang.ast.MemberVisitor;
 import jasy.lang.ast.MetaScope;
 import jasy.lang.ast.NameTypeAST;
 import jasy.lang.ast.QuoteAST;
+import jasy.lang.ast.StringLiteralAST;
 import jasy.lang.ast.ThisAST;
 import jasy.lang.ast.TypeAST;
 import jasy.lang.ast.VariableAssignmentAST;
@@ -418,20 +420,20 @@ public class ASMCompiler {
             public ExpressionAST visitStringLiteral(JasyParser.StringLiteralContext ctx) {
                 String value = ctx.getText().substring(1, ctx.getText().length() - 1);
                 value = value.replace("\\\\", "\\").replace("\\\"", "\"");
-                return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.String);
+                return new StringLiteralAST(new Region(ctx), value);
             }
 
             @Override
             public ExpressionAST visitIntegerLiteral(JasyParser.IntegerLiteralContext ctx) {
                 int value = Integer.parseInt(ctx.getText());
-                return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.Integer);
+                return new IntLiteralAST(new Region(ctx), value);
             }
 
             @Override
             public ExpressionAST visitLongLiteral(JasyParser.LongLiteralContext ctx) {
                 String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
                 long value = Long.parseLong(valueStr);
-                return new LiteralAST(new Region(ctx), value, LiteralDelegateAST.Long);
+                return new LongLiteralAST(new Region(ctx), value);
             }
 
             @Override
@@ -492,16 +494,20 @@ public class ASMCompiler {
             
             @Override
             public ExpressionAST visitMetaExpression(JasyParser.MetaExpressionContext ctx) {
-                ArrayList<CodeAST> body = new ArrayList<>();
+//                ArrayList<CodeAST> body = new ArrayList<>();
+                ExpressionAST body = null;
                 
                 if(ctx.expression() != null) {
+                    // only support expressions for now
                     ExpressionAST exprCtx = getExpression(ctx.expression(), mp);
-                    body.add(new ReturnAST(new Region(ctx), exprCtx));
+//                    body.add(new ReturnAST(new Region(ctx), exprCtx));
+                    body = exprCtx;
                 } else {
-                    body.addAll(getStatements(ctx.statements(), mp));
+//                    body.addAll(getStatements(ctx.statements(), mp));
                 }
                 
-                return new MetaExpressionAST(new Region(ctx), ASMCompiler.this, body, mp);
+//                return new MetaExpressionAST(new Region(ctx), ASMCompiler.this, body, mp);
+                return new MetaExpressionAST(new Region(ctx), body);
             }
 
             @Override

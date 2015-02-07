@@ -14,20 +14,20 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
-    public ASMCompiler compiler;
-    public List<CodeAST> body;
-    public Method bodyAsMethod;
-    public TypeAST resultType;
-    public ASMCompiler.MetaProcessing mp;
+//    public ASMCompiler compiler;
+    public ExpressionAST body;
+//    public Method bodyAsMethod;
+//    public TypeAST resultType;
+//    public ASMCompiler.MetaProcessing mp;
 
     // Region and compiler could probably be merged into a single CompilationContext|CompilationUnit thingy
-    public MetaExpressionAST(ASMCompiler.Region region, ASMCompiler compiler, List<CodeAST> body, ASMCompiler.MetaProcessing mp) {
+    public MetaExpressionAST(ASMCompiler.Region region, /*ASMCompiler compiler, */ExpressionAST body/*, ASMCompiler.MetaProcessing mp*/) {
         super(region);
         
-        this.compiler = compiler;
+//        this.compiler = compiler;
         this.body = body;
-        this.bodyAsMethod = bodyAsMethod;
-        this.mp = mp;
+//        this.bodyAsMethod = bodyAsMethod;
+//        this.mp = mp;
     }
     
     public static int getOpcodesVersion() {
@@ -64,8 +64,10 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+        body.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        
 //        // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
-        body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
+//        body.forEach(s -> s.resolve(n, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
 //        List<TypeAST> returnTypes = MethodAST.getReturnType(body);
 //        // Dangerous
 //        Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
@@ -112,9 +114,9 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
     public ExpressionAST convertToExpression(Object value, Class<?> returnType) {
         switch(returnType.getName()) {
             case "java.lang.String":
-                return new LiteralAST<>(getRegion(), (String)value, LiteralDelegateAST.String);
+                return new StringLiteralAST(getRegion(), (String)value);
             case "int":
-                return new LiteralAST<>(getRegion(), (int)value, LiteralDelegateAST.Integer);
+                return new IntLiteralAST(getRegion(), (int)value);
         }
         
         if(value instanceof ExpressionAST)
@@ -138,7 +140,7 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
 
     @Override
     public TypeAST resultType() {
-        return resultType;
+        return null;
     }
 
     @Override
