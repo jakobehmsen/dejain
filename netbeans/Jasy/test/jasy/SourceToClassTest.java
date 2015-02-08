@@ -132,6 +132,9 @@ public class SourceToClassTest {
                 )
             )
         );
+        
+        // [Ljava/lang/Object;
+        // [Ljava/lang/Object;
     }
     
     @Test

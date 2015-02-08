@@ -5,4 +5,10 @@ import org.objectweb.asm.tree.InsnList;
 
 public interface PreparedExpressionAST extends PreparedAST {
     TypeAST resultType();
+
+    default boolean canBeArgumentFor(Class<?> parameterType) {
+        Class<?> argumentType = ((NameTypeAST)resultType()).getType();
+        
+        return parameterType.isAssignableFrom(argumentType);
+    }
 }

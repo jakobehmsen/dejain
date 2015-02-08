@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,8 +80,20 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 return () -> {
                     try {
                         // Invoke code generator code resulting into a CodeAST
-                        Object astGenerator = astGeneratorMethod.getDeclaringClass().newInstance();
-                        CodeAST body = (CodeAST)astGeneratorMethod.invoke(astGeneratorMethod, null);
+                        Class<?> astGeneratorClass = astGeneratorMethod.getDeclaringClass();
+                        Object astGenerator = astGeneratorClass.newInstance();
+                        
+                        for(String fieldName: mp.metaScope.getFieldNames()) {
+                            try {
+                                Field f = astGeneratorClass.getField(fieldName);
+                                Object value = c.getVariableValue(fieldName);
+                                f.set(astGenerator, value);
+                            } catch (NoSuchFieldException ex) {
+                                Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        
+                        CodeAST body = (CodeAST)astGeneratorMethod.invoke(astGenerator, null);
                         // Use the resulting CodeAST in toCode below
                         
                         int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
@@ -612,9 +625,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 Class<?>[] parameterTypes = arguments.stream().map(a -> 
                     ((NameTypeAST)a.resultType()).getType()
                 ).toArray(size -> new Class<?>[size]);
-                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> 
-                    Type.getType(a)).toArray(size -> 
-                    new Type[size]);
+//                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> 
+//                    Type.getType(a)).toArray(size -> 
+//                    new Type[size]);
         
                 java.lang.reflect.Method tmpMethod;
                 Type tmpTargetType = null;
@@ -632,6 +645,14 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 } else {
                     tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)declaringClass).getType(), methodName, parameterTypes);
                 }
+                
+                List<java.lang.reflect.Method> ms;
+                if(target != null) {
+                    ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), false, methodName, arguments);
+                } else {
+                    ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), true, methodName, arguments);
+                }
+                tmpMethod = ms.get(0);
                    
                 Type tmpCastType = null; 
                 if(tmpMethod.getGenericReturnType() instanceof TypeVariable) {
@@ -644,6 +665,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 Type castType = tmpCastType;
                 
                 java.lang.reflect.Method method = tmpMethod;
+                Type[] argumentTypes = Arrays.asList(method.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
                 
                 return new PreparedExpressionAST() {
                     @Override
@@ -677,6 +699,30 @@ public class MethodAST extends AbstractAST implements MemberAST {
                             generator.methodNode.pop();
                     }
                 };
+            }
+            
+            private List<java.lang.reflect.Method> getCompatibleMethodsWith(Class<?> c, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
+                return Arrays.asList(c.getMethods()).stream()
+                    .filter(m -> methodIsCompatibleWith(m, staticOnly, name, arguments))
+                    .collect(Collectors.toList());
+            }
+            
+            private boolean methodIsCompatibleWith(java.lang.reflect.Method m, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
+                if((!staticOnly || Modifier.isStatic(m.getModifiers())) && 
+                    m.getName().equals(name) && 
+                    m.getParameterCount() == arguments.size()) {
+                    for(int i = 0; i < m.getParameterCount(); i++) {
+                        Class<?> pt = m.getParameterTypes()[i];
+                        PreparedExpressionAST a = arguments.get(i);
+                        
+                        if(!parameterTypeIsCompatibleWith(pt, a))
+                            return false;
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
             }
 
             @Override
@@ -938,13 +984,49 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return quotedAST.accept(this);
             }
+            
+            
+            private void myMethod(Object i) {
+                
+            }
+            
+            private void myMethod(String str) {
+                
+            }
 
             @Override
             public PreparedExpressionAST visitNull(NullAST ctx) {
                 return new PreparedExpressionAST() {
+                    // Should be able to tell whi
+                    
+                    public List<TypeAST> bestMatches(List<TypeAST> types) {
+                        // Can be used to resolve method?
+                        // E.g. for the invocation myMethod(null), 
+                        // there are the methods: myMethod(Object obj) and myMethod(String str)
+                        // then the most general matches are returned?
+                        // One match means unambigous resolution
+                        //
+                        // Or the most specific one?
+                        // http://docs.oracle.com/javase/specs/jls/se5.0/html/expressions.html#15.12.2.5
+                        
+                        myMethod(null);
+                        
+                        return null;
+                    }
+                    
+                    public boolean canReturnAs(TypeAST type) {
+                        return true; // If non primitive
+                    }
+
+                    @Override
+                    public boolean canBeArgumentFor(Class<?> parameterType) {
+                        return !parameterType.isPrimitive();
+                    }
+                    
                     @Override
                     public TypeAST resultType() {
-                        return null; // Result type should be expected result in the outer context
+                        return new NameTypeAST(null, Object.class); // Result type should be expected result in the outer context
+//                        return new NameTypeAST(null, void.class);
                     }
 
                     @Override
@@ -1001,13 +1083,43 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         Class<?>[] parameterTypes = arguments.stream().map(a -> 
                             ((NameTypeAST)a.resultType()).getType()).toArray(size -> 
                             new Class<?>[size]);
-                        Type[] argumentTypes = arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor())).toArray(size -> new Type[size]);
+//                        Type[] argumentTypes = arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor())).toArray(size -> new Type[size]);
                         Constructor<?> constructor = ConstructorUtils.getAccessibleConstructor(((NameTypeAST)ctx.c).getType(), parameterTypes);
+                        
+                        List<Constructor<?>> cs = getCompatibleConstructorsWith(((NameTypeAST)ctx.c).getType(), arguments);
+                        constructor = cs.get(0);
+                        Type[] argumentTypes = Arrays.asList(constructor.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
                         
                         Method mConstructor = new Method("<init>", Type.VOID_TYPE, argumentTypes);
                         generator.methodNode.invokeConstructor(Type.getType(ctx.c.getDescriptor()), mConstructor);
                     }
                 };
+            }
+            
+            private List<Constructor<?>> getCompatibleConstructorsWith(Class<?> c, List<PreparedExpressionAST> arguments) {
+                return Arrays.asList(c.getConstructors()).stream()
+                    .filter(cons -> constructorIsCompatibleWith(cons, arguments))
+                    .collect(Collectors.toList());
+            }
+            
+            private boolean constructorIsCompatibleWith(Constructor<?> cons, List<PreparedExpressionAST> arguments) {
+                if(cons.getParameterCount() == arguments.size()) {
+                    for(int i = 0; i < cons.getParameterCount(); i++) {
+                        Class<?> pt = cons.getParameterTypes()[i];
+                        PreparedExpressionAST a = arguments.get(i);
+                        
+                        if(!parameterTypeIsCompatibleWith(pt, a))
+                            return false;
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            private boolean parameterTypeIsCompatibleWith(Class<?> pt, PreparedExpressionAST a) {
+                return a.canBeArgumentFor(pt);
             }
 
             @Override
@@ -1087,9 +1199,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
             
             private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
                 List<ExpressionAST> expressionList = expressions.stream().map(a -> a.accept(this)).collect(Collectors.toList());
-                ExpressionAST quotedExpressionsAsArray = new TypecastAST(null, 
-                    new ArrayAST(null, new NameTypeAST(null, ExpressionAST.class), expressionList),
-                    NameTypeAST.fromDescriptor("[Ljava.lang.Object;"));
+//                ExpressionAST quotedExpressionsAsArray = new TypecastAST(null, 
+//                    new ArrayAST(null, new NameTypeAST(null, ExpressionAST.class), expressionList),
+//                    NameTypeAST.fromDescriptor("[Ljava.lang.Object;"));
+                ExpressionAST quotedExpressionsAsArray = 
+                    new ArrayAST(null, new NameTypeAST(null, CodeAST.class), expressionList);
                 return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
             }
 

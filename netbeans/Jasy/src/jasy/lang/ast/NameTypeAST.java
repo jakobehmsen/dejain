@@ -140,8 +140,8 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     
     @Override
     public String getDescriptor(String thisClassName) {
-//        return Type.getDescriptor(c);
-        return descriptor != null ? descriptor : Type.getDescriptor(c);
+        return Type.getDescriptor(c);
+//        return descriptor != null ? descriptor : Type.getDescriptor(c);
     }
 
     @Override
