@@ -44,14 +44,16 @@ import org.objectweb.asm.util.TraceClassVisitor;
 public class MethodAST extends AbstractAST implements MemberAST {
     public boolean isAdd;
     public MethodSelectorAST selector;
-    public CodeAST body;
+    public CodeAST body; // AST generator body
+    public ASMCompiler.MetaProcessing mp;
 //    public List<CodeAST> body;
 
-    public MethodAST(Region region, boolean isAdd, MethodSelectorAST selector, CodeAST body) {
+    public MethodAST(Region region, boolean isAdd, MethodSelectorAST selector, CodeAST body, ASMCompiler.MetaProcessing mp) {
         super(region);
         this.isAdd = isAdd;
         this.selector = selector;
         this.body = body;
+        this.mp = mp;
     }
 
     @Override
@@ -71,40 +73,148 @@ public class MethodAST extends AbstractAST implements MemberAST {
         if(!isAdd) {
             selector.populate(transformer);
         } else {
+            java.lang.reflect.Method astGeneratorMethod = createASTGeneratorMethod();
+            
             classTransformer.addTransformer(c -> {
                 return () -> {
-                    int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
-                    String methodName = selector.name;
-                    Type[] argumentTypes = selector.parameterTypes.stream()
-                        .map(x -> Type.getType(x.getDescriptor(c.getTarget().name)))
-                        .toArray(size -> new Type[size]);
-                    String methodDescriptor = Type.getMethodDescriptor(
-                        Type.getType(selector.returnType.getDescriptor(c.getTarget().name)), 
-                        argumentTypes);
+                    try {
+                        // Invoke code generator code resulting into a CodeAST
+                        Object astGenerator = astGeneratorMethod.getDeclaringClass().newInstance();
+                        CodeAST body = (CodeAST)astGeneratorMethod.invoke(astGeneratorMethod, null);
+                        // Use the resulting CodeAST in toCode below
+                        
+                        int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
+                        String methodName = selector.name;
+                        Type[] argumentTypes = selector.parameterTypes.stream()
+                            .map(x -> Type.getType(x.getDescriptor(c.getTarget().name)))
+                            .toArray(size -> new Type[size]);
+                        String methodDescriptor = Type.getMethodDescriptor(
+                            Type.getType(selector.returnType.getDescriptor(c.getTarget().name)), 
+                            argumentTypes);
+
+                        MethodNode methodNode = new MethodNode(methodAccess, methodName, methodDescriptor, null, null);
+                        GeneratorAdapter generatorAdapter = new GeneratorAdapter(methodNode, methodAccess, methodName, methodDescriptor);
+                        MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType);
+
+                        methodNode.visitCode();
+                        generator.start();
+                        toCode(c, body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
+                        generator.end();
+                        methodNode.visitEnd();
+
+                        OptionalInt existingMethodIndex =
+                            IntStream.range(0, c.getTarget().methods.size())
+                            .filter(i -> 
+                                ((MethodNode)c.getTarget().methods.get(i)).name.equals(methodName) && 
+                                ((MethodNode)c.getTarget().methods.get(i)).desc.equals(methodDescriptor))
+                            .findFirst();
+                        if(existingMethodIndex.isPresent())
+                            c.getTarget().methods.remove(existingMethodIndex.getAsInt());
+
+                        c.getTarget().methods.add(methodNode);
+                        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     
-                    MethodNode methodNode = new MethodNode(methodAccess, methodName, methodDescriptor, null, null);
-                    GeneratorAdapter generatorAdapter = new GeneratorAdapter(methodNode, methodAccess, methodName, methodDescriptor);
-                    MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType);
-
-                    methodNode.visitCode();
-                    generator.start();
-                    toCode(c, body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
-                    generator.end();
-                    methodNode.visitEnd();
-
-                    OptionalInt existingMethodIndex =
-                        IntStream.range(0, c.getTarget().methods.size())
-                        .filter(i -> 
-                            ((MethodNode)c.getTarget().methods.get(i)).name.equals(methodName) && 
-                            ((MethodNode)c.getTarget().methods.get(i)).desc.equals(methodDescriptor))
-                        .findFirst();
-                    if(existingMethodIndex.isPresent())
-                        c.getTarget().methods.remove(existingMethodIndex.getAsInt());
-
-                    c.getTarget().methods.add(methodNode);
+//                    int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
+//                    String methodName = selector.name;
+//                    Type[] argumentTypes = selector.parameterTypes.stream()
+//                        .map(x -> Type.getType(x.getDescriptor(c.getTarget().name)))
+//                        .toArray(size -> new Type[size]);
+//                    String methodDescriptor = Type.getMethodDescriptor(
+//                        Type.getType(selector.returnType.getDescriptor(c.getTarget().name)), 
+//                        argumentTypes);
+//                    
+//                    MethodNode methodNode = new MethodNode(methodAccess, methodName, methodDescriptor, null, null);
+//                    GeneratorAdapter generatorAdapter = new GeneratorAdapter(methodNode, methodAccess, methodName, methodDescriptor);
+//                    MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType);
+//
+//                    methodNode.visitCode();
+//                    generator.start();
+//                    toCode(c, body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
+//                    generator.end();
+//                    methodNode.visitEnd();
+//
+//                    OptionalInt existingMethodIndex =
+//                        IntStream.range(0, c.getTarget().methods.size())
+//                        .filter(i -> 
+//                            ((MethodNode)c.getTarget().methods.get(i)).name.equals(methodName) && 
+//                            ((MethodNode)c.getTarget().methods.get(i)).desc.equals(methodDescriptor))
+//                        .findFirst();
+//                    if(existingMethodIndex.isPresent())
+//                        c.getTarget().methods.remove(existingMethodIndex.getAsInt());
+//
+//                    c.getTarget().methods.add(methodNode);
                 };
             });
         }
+    }
+
+    private java.lang.reflect.Method createASTGeneratorMethod() {
+        // Compile code generator code as method
+        // Use old meta expression as template
+        // Where to associate this method?
+        
+        
+        
+        
+        
+        
+        
+        // 1) Generate code to generate code
+        ClassNode metaObjectClassNode = new ClassNode(Opcodes.ASM5);
+        
+        mp.metaScope.addFields(metaObjectClassNode);
+        
+        Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
+        PreparedAST pbody = toCode(mp.metaScope, body, metaVariables);
+        TypeAST returnType = pbody.returns();
+        
+        Class<?> returnTypeClass = ((NameTypeAST)returnType).getType();
+        
+        metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
+        metaObjectClassNode.access = Opcodes.ACC_PUBLIC;
+        metaObjectClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
+        metaObjectClassNode.superName = "java/lang/Object";
+        MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
+        metaObjectClassNode.methods.add(generatorMethod);
+        
+        MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        defaultConstructor.visitCode();
+        defaultConstructor.visitVarInsn(Opcodes.ALOAD, 0);
+        defaultConstructor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        defaultConstructor.visitInsn(Opcodes.RETURN);
+        defaultConstructor.visitMaxs(1,1);
+        defaultConstructor.visitEnd();
+        metaObjectClassNode.methods.add(defaultConstructor);
+        
+        GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
+        MethodCodeGenerator metaCodeGenerator = new MethodCodeGenerator(generatorAdapter, null);
+        metaCodeGenerator.start();
+        pbody.generate(new Transformation<>(metaObjectClassNode), metaCodeGenerator, new InsnList());
+        metaCodeGenerator.end();
+        generatorMethod.visitEnd();
+        
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        metaObjectClassNode.accept(cw);
+        
+        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
+        metaObjectClassNode.accept(traceClassVisitor);
+        CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), false, new PrintWriter(System.out));
+        
+        SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
+        Class<?> metaObjectClass = classLoader.loadClass();
+        java.lang.reflect.Method bodyAsMethodTmp = null;
+        
+        try {
+            bodyAsMethodTmp = metaObjectClass.getMethod("generator", null);
+        } catch (NoSuchMethodException | SecurityException ex) {
+            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        mp.generatorCount++;
+        
+        return bodyAsMethodTmp;
     }
 
     public static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator) {
@@ -317,6 +427,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitNull(NullAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public PreparedAST visitTypecast(TypecastAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
 
@@ -497,7 +612,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 Class<?>[] parameterTypes = arguments.stream().map(a -> 
                     ((NameTypeAST)a.resultType()).getType()
                 ).toArray(size -> new Class<?>[size]);
-                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> Type.getType(a)).toArray(size -> new Type[size]);
+                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> 
+                    Type.getType(a)).toArray(size -> 
+                    new Type[size]);
         
                 java.lang.reflect.Method tmpMethod;
                 Type tmpTargetType = null;
@@ -878,14 +995,35 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         generator.methodNode.newInstance(Type.getType(ctx.c.getDescriptor()));
                         generator.methodNode.dup();
                         
-                        arguments.forEach(a -> a.generate(c, generator, originalIl));
+                        arguments.forEach(a -> 
+                            a.generate(c, generator, originalIl));
                         
-                        Class<?>[] parameterTypes = arguments.stream().map(a -> ((NameTypeAST)a.resultType()).getType()).toArray(size -> new Class<?>[size]);
+                        Class<?>[] parameterTypes = arguments.stream().map(a -> 
+                            ((NameTypeAST)a.resultType()).getType()).toArray(size -> 
+                            new Class<?>[size]);
                         Type[] argumentTypes = arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor())).toArray(size -> new Type[size]);
                         Constructor<?> constructor = ConstructorUtils.getAccessibleConstructor(((NameTypeAST)ctx.c).getType(), parameterTypes);
                         
                         Method mConstructor = new Method("<init>", Type.VOID_TYPE, argumentTypes);
                         generator.methodNode.invokeConstructor(Type.getType(ctx.c.getDescriptor()), mConstructor);
+                    }
+                };
+            }
+
+            @Override
+            public PreparedExpressionAST visitTypecast(TypecastAST ctx) {
+                PreparedExpressionAST expression = ctx.expression.accept(this);
+                
+                return new PreparedExpressionAST() {
+                    @Override
+                    public TypeAST resultType() {
+                        return ctx.type;
+                    }
+
+                    @Override
+                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        expression.generate(c, generator, originalIl);
+                        generator.methodNode.checkCast(Type.getType(ctx.type.getDescriptor()));
                     }
                 };
             }
@@ -898,17 +1036,17 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public ExpressionAST visitReturn(ReturnAST ctx) {
                 ExpressionAST quotedExpression = ctx.expression.accept(this);
                 
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, ReturnAST.class), Arrays.asList(null, quotedExpression));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, ReturnAST.class), Arrays.asList(new NullAST(null), quotedExpression));
             }
 
             @Override
             public ExpressionAST visitStringLiteral(StringLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, StringLiteralAST.class), Arrays.asList(null, new StringLiteralAST(null, ctx.value)));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, StringLiteralAST.class), Arrays.asList(new NullAST(null), new StringLiteralAST(null, ctx.value)));
             }
 
             @Override
             public ExpressionAST visitIntLiteral(IntLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(null, new LongLiteralAST(null, ctx.value)));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
             }
 
             @Override
@@ -916,7 +1054,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 ExpressionAST quotedLhs = ctx.lhs.accept(this);
                 ExpressionAST quotedRhs = ctx.rhs.accept(this);
                 
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), Arrays.asList(null, quotedLhs, quotedRhs));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), Arrays.asList(new NullAST(null), quotedLhs, quotedRhs));
             }
 
             @Override
@@ -948,8 +1086,10 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
             
             private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
-                List<ExpressionAST> expressionList = expressions.stream().map(a -> ctx.accept(this)).collect(Collectors.toList());
-                ExpressionAST quotedExpressionsAsArray = new ArrayAST(null, new NameTypeAST(null, ExpressionAST.class), expressionList);
+                List<ExpressionAST> expressionList = expressions.stream().map(a -> a.accept(this)).collect(Collectors.toList());
+                ExpressionAST quotedExpressionsAsArray = new TypecastAST(null, 
+                    new ArrayAST(null, new NameTypeAST(null, ExpressionAST.class), expressionList),
+                    NameTypeAST.fromDescriptor("[Ljava.lang.Object;"));
                 return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
             }
 
@@ -967,7 +1107,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitLongLiteral(LongLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(null, new LongLiteralAST(null, ctx.value)));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
             }
 
             @Override
@@ -982,7 +1122,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitThis(ThisAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, ThisAST.class), Arrays.<ExpressionAST>asList(null));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, ThisAST.class), Arrays.<ExpressionAST>asList(new NullAST(null)));
             }
 
             @Override
@@ -1003,7 +1143,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, VariableDeclarationAST.class), 
-                    Arrays.asList(null, quotedName, quotedType, quotedValue));
+                    Arrays.asList(new NullAST(null), quotedName, quotedType, quotedValue));
             }
 
             @Override
@@ -1012,7 +1152,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, LookupAST.class), 
-                    Arrays.asList(null, quotedName));
+                    Arrays.asList(new NullAST(null), quotedName));
             }
 
             @Override
@@ -1022,7 +1162,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, VariableAssignmentAST.class), 
-                    Arrays.asList(null, quotedName, quotedValue));
+                    Arrays.asList(new NullAST(null), quotedName, quotedValue));
             }
 
             @Override
@@ -1031,7 +1171,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, RootExpressionAST.class), 
-                    Arrays.asList(null, quotedExpression));
+                    Arrays.asList(new NullAST(null), quotedExpression));
             }
 
             @Override
@@ -1045,7 +1185,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, BlockAST.class), 
-                    Arrays.asList(null, quotedStatements));
+                    Arrays.asList(new NullAST(null), quotedStatements));
             }
 
             @Override
@@ -1055,7 +1195,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, NewAST.class), 
-                    Arrays.asList(null, quotedC, quotedArguments));
+                    Arrays.asList(new NullAST(null), quotedC, quotedArguments));
             }
 
             @Override
@@ -1065,14 +1205,23 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, ArrayAST.class), 
-                    Arrays.asList(null, quotedType, quotedElements));
+                    Arrays.asList(new NullAST(null), quotedType, quotedElements));
             }
 
             @Override
             public ExpressionAST visitNull(NullAST ctx) {
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, NullAST.class), 
-                    Arrays.<ExpressionAST>asList(null));
+                    Arrays.<ExpressionAST>asList(new NullAST(null)));
+            }
+
+            @Override
+            public ExpressionAST visitTypecast(TypecastAST ctx) {
+                ExpressionAST quotedExpression = ctx.expression.accept(this);
+                
+                return new NewAST(
+                    ctx.getRegion(), new NameTypeAST(null, TypecastAST.class), 
+                    Arrays.asList(new NullAST(null), quotedExpression));
             }
         });
     }

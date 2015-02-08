@@ -138,6 +138,7 @@ public class ASMCompiler {
         
         Hashtable<String, TypeAST> patternVariables = new Hashtable<>();
         MetaScope metaScope = new MetaScope(patternVariables);
+        MetaProcessing mp = new MetaProcessing(patternVariables);
         
         program.accept(new JasyBaseVisitor<Object>() {
             @Override
@@ -210,7 +211,6 @@ public class ASMCompiler {
                                 List<TypeAST> parameterTypes = ctx.parameters().parameter().stream()
                                     .map(pCtx -> new NameTypeAST(new Region(ctx), pCtx.typeQualifier().getText()))
                                     .collect(Collectors.toList());
-                                MetaProcessing mp = new MetaProcessing(patternVariables);
                                 
                                 CodeAST body;
 //                                List<jasy.lang.ast.CodeAST> body = null;
@@ -226,7 +226,7 @@ public class ASMCompiler {
                                     body = new BlockAST(new Region(ctx.body), statements);
                                 }
                                 
-                                MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameterTypes), body);
+                                MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameterTypes), body, mp);
                                 
                                 members.add(method);
                                 

@@ -30,7 +30,10 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         i.name = Type.getType(descriptor).getClassName();
         i.descriptor = descriptor;
         try {
-            i.c = Class.forName(i.name);
+            if(descriptor.startsWith("["))
+                i.c = Class.forName(descriptor.replace("/", "."));
+            else
+                i.c = Class.forName(i.name);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
         }

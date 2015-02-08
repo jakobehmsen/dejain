@@ -19,5 +19,6 @@ public interface CodeVisitor<T> {
     T visitBlock(BlockAST ctx);
     T visitNew(NewAST ctx);
     T visitArray(ArrayAST ctx);
-   T visitNull(NullAST ctx);
+    T visitNull(NullAST ctx);
+    T visitTypecast(TypecastAST ctx);
 }
