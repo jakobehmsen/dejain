@@ -94,6 +94,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         }
                         
                         CodeAST body = (CodeAST)astGeneratorMethod.invoke(astGenerator, null);
+                        
                         // Use the resulting CodeAST in toCode below
                         
                         int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
