@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.function.BiPredicate;
@@ -755,8 +756,8 @@ public class SourceToClassTest {
                 byte[] cacheBytesCache = classBytesCacheMap.get().get(name);
                 
                 if(cacheBytesCache == null) {
-                    String s = new java.io.File("build\\test\\classes\\" + name.replace(".", "\\") + ".class").getCanonicalFile().toString();
-                    InputStream classStream = new FileInputStream("build\\test\\classes\\" + name.replace(".", "\\") + ".class"); //classUrl.openStream();
+                    String s = new java.io.File("build/test/classes/" + name.replace(".", "/") + ".class").getCanonicalFile().toString();
+                    InputStream classStream = new FileInputStream("build/test/classes/" + name.replace(".", "/") + ".class"); //classUrl.openStream();
                     ClassReader classReader = new ClassReader(classStream);
                     ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
                     classReader.accept(classWriter, 0);
