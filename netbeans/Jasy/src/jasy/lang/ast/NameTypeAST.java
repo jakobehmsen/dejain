@@ -15,6 +15,7 @@ import javassist.bytecode.SignatureAttribute.TypeParameter;
 import org.objectweb.asm.Type;
 
 public class NameTypeAST extends AbstractAST implements TypeAST {
+    public boolean isArray;
     public String name;
     public String descriptor;
     private Class<?> c;
@@ -29,29 +30,37 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         NameTypeAST i = new NameTypeAST(null, "");
         i.name = Type.getType(descriptor).getClassName();
         i.descriptor = descriptor;
-        try {
-            if(descriptor.startsWith("["))
-                i.c = Class.forName(descriptor.replace("/", "."));
-            else
-                i.c = Class.forName(i.name);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        i.isArray = descriptor.startsWith("[");
+        
+        if(!i.isArray)
+            i.name = Type.getType(descriptor).getClassName();
+        else
+            i.name = Type.getType(descriptor.substring(1)).getClassName();
+        
+//        try {
+//            if(descriptor.startsWith("["))
+//                i.c = Class.forName(descriptor.replace("/", "."));
+//            else
+//                i.c = Class.forName(i.name);
+//        } catch (ClassNotFoundException ex) {
+//            Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         i.typeParameters = typeParameters;
-        if(typeParameters.length > 0) {
-            TypeVariable[] tvs = i.c.getTypeParameters();
-            for(int j = 0; j < tvs.length; j++) {
-                String name = tvs[j].getName();
-                String tname = tvs[j].getTypeName();
-                TypeAST arg = typeParameters[j];
-                
-                i.typeVariableNameToTypeMap.put(name, arg);
-            }
-        }
+//        if(typeParameters.length > 0) {
+//            TypeVariable[] tvs = i.c.getTypeParameters();
+//            for(int j = 0; j < tvs.length; j++) {
+//                String name = tvs[j].getName();
+//                String tname = tvs[j].getTypeName();
+//                TypeAST arg = typeParameters[j];
+//                
+//                i.typeVariableNameToTypeMap.put(name, arg);
+//            }
+//        }
         return i;
     }
 
     public NameTypeAST(Region region, String name) {
+        // Should be deprecated
         super(region);
         this.name = name;
 //        descriptor = getDescriptorFromName(name);
@@ -104,9 +113,41 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         try {
 //            name = resolver.resolveClassName(name);
-            c = resolver.resolveType(name);
+//            c = resolver.resolveType(name);
+            
+            name = resolver.resolveClassName(name);
+                
+            if(isArray) {
+                // name represent element name
+                c = Class.forName(descriptor);
+            } else {
+                switch(name) {
+                    case "boolean": c = boolean.class; break;
+                    case "byte": c = byte.class; break;
+                    case "short": c = short.class; break;
+                    case "int": c = int.class; break;
+                    case "long": c = long.class; break;
+                    case "float": c = float.class; break;
+                    case "double": c = double.class; break;
+                    default: c = Class.forName(name);
+                }
+                
+//                c = Class.forName(name);
+            }
+            
+            if(typeParameters!= null && typeParameters.length > 0) {
+                TypeVariable[] tvs = c.getTypeParameters();
+                for(int j = 0; j < tvs.length; j++) {
+                    String name = tvs[j].getName();
+                    String tname = tvs[j].getTypeName();
+                    TypeAST arg = typeParameters[j];
+
+                    typeVariableNameToTypeMap.put(name, arg);
+                }
+            }
+            
             name = c.getName().replace(".", "/");
-            descriptor = getDescriptorFromName(name);
+//            descriptor = getDescriptorFromName(name);
         } catch (ClassNotFoundException ex) {
             errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve type " + name + "."));
         }
@@ -140,6 +181,8 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     
     @Override
     public String getDescriptor(String thisClassName) {
+        if(c == null)
+            thisClassName.toString();
         return Type.getDescriptor(c);
 //        return descriptor != null ? descriptor : Type.getDescriptor(c);
     }

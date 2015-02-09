@@ -21,4 +21,5 @@ public interface CodeVisitor<T> {
     T visitArray(ArrayAST ctx);
     T visitNull(NullAST ctx);
     T visitTypecast(TypecastAST ctx);
+    T visitGetClass(GetClassAST ctx);
 }

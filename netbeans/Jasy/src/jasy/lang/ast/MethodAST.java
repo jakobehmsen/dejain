@@ -446,6 +446,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitTypecast(TypecastAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public PreparedAST visitGetClass(GetClassAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
 
@@ -502,6 +507,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                     @Override
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        System.out.println("visitIntLiteral");
                         if(asExpression)
                             generator.methodNode.push(ctx.value);
                     }
@@ -741,6 +747,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                     @Override
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        System.out.println("visitLongLiteral");
                         if(asExpression)
                             generator.methodNode.push(ctx.value);
                     }
@@ -1044,7 +1051,15 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 return new PreparedExpressionAST() {
                     @Override
                     public TypeAST resultType() {
-                        return NameTypeAST.fromDescriptor("[" + ctx.type.getDescriptor());
+                        try {
+                            //                        return NameTypeAST.fromDescriptor("[" + ctx.type.getDescriptor());
+                            String desc = ctx.type.getDescriptor();
+                            Class arrayClass = Class.forName("[" + desc.replace("/", "."));
+                            return new NameTypeAST(null, arrayClass);
+                        } catch (ClassNotFoundException ex) {
+                            Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
+                            return null;
+                        }
                     }
 
                     @Override
@@ -1140,6 +1155,22 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     }
                 };
             }
+
+            @Override
+            public PreparedExpressionAST visitGetClass(GetClassAST ctx) {
+                return new PreparedExpressionAST() {
+                    @Override
+                    public TypeAST resultType() {
+                        // Should be generic
+                        return new NameTypeAST(null, Class.class);
+                    }
+
+                    @Override
+                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        generator.methodNode.push(Type.getType(ctx.t.getDescriptor()));
+                    }
+                };
+            }
         });
     }
     
@@ -1159,7 +1190,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitIntLiteral(IntLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, IntLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
             }
 
             @Override
@@ -1173,8 +1204,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
             @Override
             public ExpressionAST visitInvocation(InvocationAST ctx) {
                 ExpressionAST quotedTarget = ctx.target != null ? ctx.target.accept(this) : new NullAST(null);
-                ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? quote(ctx.declaringClass) : new NullAST(null);
-                ExpressionAST quotedMethodName = quote(ctx.methodName);
+                ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
+                ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
                 ExpressionAST quotedArguments = quote(ctx.arguments);
                         
                 // Arrays.asList(new ExpressionAST[]{arg0, arg1, ..., argN-1, argN});
@@ -1183,19 +1214,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     ctx.getRegion(), 
                     new NameTypeAST(null, BinaryExpressionAST.class), 
                     Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, null));
-            }
-            
-            private ExpressionAST quote(ExpressionAST expression) {
-                return expression.accept(this);
-            }
-            
-            private ExpressionAST quote(String str) {
-                return new StringLiteralAST(null, str);
-            }
-            
-            private ExpressionAST quote(TypeAST type) {
-//                return new NewAST(ctx.getRegion(), new NameTypeAST(null, NameTypeAST.class), Arrays.asList(null, quotedLhs, quotedRhs));
-                return new InvocationAST(null, null, new NameTypeAST(null, NameTypeAST.class), "fromDescriptor", Arrays.asList(quote(type.getDescriptor())), null);
             }
             
             private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
@@ -1210,10 +1228,10 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitFieldSet(FieldSetAST ctx) {
-                ExpressionAST quotedTarget = quote(ctx.target);
-                ExpressionAST quotedDeclaringClass = quote(ctx.target);
-                ExpressionAST quotedFieldName = quote(ctx.fieldName);
-                ExpressionAST quotedValue = quote(ctx.value);
+                ExpressionAST quotedTarget = ctx.target.accept(this);
+                ExpressionAST quotedDeclaringClass = MethodAST.quote(ctx.declaringClass);
+                ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
+                ExpressionAST quotedValue = ctx.value.accept(this);
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), 
@@ -1243,7 +1261,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             @Override
             public ExpressionAST visitFieldGet(FieldGetAST ctx) {
                 ExpressionAST quotedTarget = ctx.target.accept(this);
-                ExpressionAST quotedFieldName = quote(ctx.fieldName);
+                ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), 
@@ -1252,8 +1270,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitVariableDeclaration(VariableDeclarationAST ctx) {
-                ExpressionAST quotedName = quote(ctx.name);
-                ExpressionAST quotedType = quote(ctx.type);
+                ExpressionAST quotedName = MethodAST.quote(ctx.name);
+                ExpressionAST quotedType = MethodAST.quote(ctx.type);
                 ExpressionAST quotedValue = ctx.value.accept(this);
                 
                 return new NewAST(
@@ -1263,7 +1281,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitLookup(LookupAST ctx) {
-                ExpressionAST quotedName = quote(ctx.name);
+                ExpressionAST quotedName = MethodAST.quote(ctx.name);
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, LookupAST.class), 
@@ -1272,7 +1290,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
-                ExpressionAST quotedName = quote(ctx.name);
+                ExpressionAST quotedName = MethodAST.quote(ctx.name);
                 ExpressionAST quotedValue = ctx.value.accept(this);
                 
                 return new NewAST(
@@ -1305,7 +1323,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitNew(NewAST ctx) {
-                ExpressionAST quotedC = quote(ctx.c);
+                ExpressionAST quotedC = MethodAST.quote(ctx.c);
                 ExpressionAST quotedArguments = quote(ctx.arguments);
                 
                 return new NewAST(
@@ -1315,7 +1333,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitArray(ArrayAST ctx) {
-                ExpressionAST quotedType = quote(ctx.type);
+                ExpressionAST quotedType = MethodAST.quote(ctx.type);
                 ExpressionAST quotedElements = quote(ctx.elements);
                 
                 return new NewAST(
@@ -1338,7 +1356,63 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     ctx.getRegion(), new NameTypeAST(null, TypecastAST.class), 
                     Arrays.asList(new NullAST(null), quotedExpression));
             }
+
+            @Override
+            public ExpressionAST visitGetClass(GetClassAST ctx) {
+                ExpressionAST quotedType = MethodAST.quote(ctx.t);
+                
+                return new NewAST(
+                    ctx.getRegion(), new NameTypeAST(null, GetClassAST.class), 
+                    Arrays.asList(new NullAST(null), quotedType));
+            }
         });
+    }
+
+    private static ExpressionAST quote(String str) {
+        return new StringLiteralAST(null, str);
+    }
+            
+    private static ExpressionAST quote(TypeAST type) {
+//                return new NewAST(ctx.getRegion(), new NameTypeAST(null, NameTypeAST.class), Arrays.asList(null, quotedLhs, quotedRhs));
+        // Type must be resolved!!!
+        // Call other constructor?
+//        ExpressionAST quotedType = ((NameTypeAST)type).isArray;
+        
+        ExpressionAST classForName;
+        
+        String className;
+        
+        classForName = new GetClassAST(null, type);
+        
+//        if(!((NameTypeAST)type).isArray) {
+//            // Region region, ExpressionAST target, TypeAST declaringClass, String methodName, List<ExpressionAST> arguments, TypeAST resultType
+//            
+//            className = ((NameTypeAST)type).getType().getName();
+//            
+//            switch(className) {
+//                case "boolean":
+//                case "byte":
+//                case "short":
+//                case "int":
+//                case "long":
+//                case "float":
+//                case "double":
+//                    classForName = new GetClassAST(null, type); break;
+//                default:
+//                    classForName = new InvocationAST(null, null, new NameTypeAST(null, Class.class), "forName", Arrays.asList(quote(className)), null);
+//            }
+//            
+////            classForName = new InvocationAST(null, null, new NameTypeAST(null, Class.class), "forName", Arrays.asList(quote(((NameTypeAST)type).getDescriptor())), null);
+//        } else {
+//            className = ((NameTypeAST)type).getDescriptor();
+//        classForName = new InvocationAST(null, null, new NameTypeAST(null, Class.class), "forName", Arrays.asList(quote(className)), null);
+////            classForName = new InvocationAST(null, null, new NameTypeAST(null, Class.class), "forName", Arrays.asList(quote(((NameTypeAST)type).getType().getName())), null);
+//        }
+        
+        
+        return new NewAST(null, new NameTypeAST(null, NameTypeAST.class), Arrays.asList(new NullAST(null), classForName));
+
+//        return new InvocationAST(null, null, new NameTypeAST(null, NameTypeAST.class), "fromDescriptor", Arrays.asList(quote(type.getDescriptor())), null);
     }
     
     public static class MethodCodeGenerator {

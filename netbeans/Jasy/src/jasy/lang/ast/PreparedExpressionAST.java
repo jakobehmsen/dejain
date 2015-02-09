@@ -7,7 +7,8 @@ public interface PreparedExpressionAST extends PreparedAST {
     TypeAST resultType();
 
     default boolean canBeArgumentFor(Class<?> parameterType) {
-        Class<?> argumentType = ((NameTypeAST)resultType()).getType();
+        TypeAST resultType = resultType();
+        Class<?> argumentType = ((NameTypeAST)resultType).getType();
         
         return parameterType.isAssignableFrom(argumentType);
     }

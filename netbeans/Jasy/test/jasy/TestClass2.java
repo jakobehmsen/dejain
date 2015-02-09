@@ -10,5 +10,7 @@ package jasy;
  * @author Jakob
  */
 public class TestClass2 {
-    
+    public static Class<?> getC() {
+        return Object.class;
+    }
 }
