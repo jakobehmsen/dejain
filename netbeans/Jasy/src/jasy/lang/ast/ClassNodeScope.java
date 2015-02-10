@@ -2,6 +2,8 @@ package jasy.lang.ast;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -18,9 +20,24 @@ public class ClassNodeScope implements Scope {
         Optional<FieldNode> field = ((List<FieldNode>)c.fields).stream().filter(f -> f.name.equals(fieldName)).findFirst();
 //        FieldNode f2 = field.get();
         
-        Type t = Type.getType(field.get().desc);
-//        t.getClassName()
-        return field.map(f -> 
-            NameTypeAST.fromDescriptor(field.get().desc)).orElse(null);
+        if(field.isPresent()) {
+            try {
+                Type t = Type.getType(field.get().desc);
+                Class<?> c = Class.forName(t.getClassName());
+                return new NameTypeAST(null, c);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ClassNodeScope.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return null;
+        
+//        Type t = Type.getType(field.get().desc);
+////        t.getClassName()
+//        return field.map(f -> 
+//            NameTypeAST.fromDescriptor(field.get().desc)).orElse(null);
+////        t.getClassName()
+//        return field.map(f -> 
+//            NameTypeAST.fromDescriptor(field.get().desc)).orElse(null);
     }
 }
