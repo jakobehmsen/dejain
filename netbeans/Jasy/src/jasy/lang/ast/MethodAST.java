@@ -469,132 +469,143 @@ public class MethodAST extends AbstractAST implements MemberAST {
         return toExpression(thisClass, expression, variables, true);
     }
     
-    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables, boolean asExpression) {
-        return expression.accept(new CodeVisitor<PreparedExpressionAST>() {
-            @Override
-            public PreparedExpressionAST visitReturn(ReturnAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
+    private static class CodeToExpression implements CodeVisitor<PreparedExpressionAST> {
+        private Scope thisClass; 
+        private ExpressionAST expression; 
+        private Hashtable<String, TypeAST> variables; 
+        private boolean asExpression;
 
-            @Override
-            public PreparedExpressionAST visitBlock(BlockAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
+        public CodeToExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables, boolean asExpression) {
+            this.thisClass = thisClass;
+            this.expression = expression;
+            this.variables = variables;
+            this.asExpression = asExpression;
+        }
+        
+        @Override
+        public PreparedExpressionAST visitReturn(ReturnAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
 
-            @Override
-            public PreparedExpressionAST visitStringLiteral(StringLiteralAST ctx) {
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return new NameTypeAST(ctx.getRegion(), String.class);
-                    }
+        @Override
+        public PreparedExpressionAST visitBlock(BlockAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
 
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        if(asExpression)
-                            generator.methodNode.push(ctx.value);
-                    }
-                };
-            }
-
-            @Override
-            public PreparedExpressionAST visitIntLiteral(IntLiteralAST ctx) {
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return new NameTypeAST(ctx.getRegion(), int.class);
-                    }
-
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        System.out.println("visitIntLiteral");
-                        if(asExpression)
-                            generator.methodNode.push(ctx.value);
-                    }
-                };
-            }
-
-            @Override
-            public PreparedExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
-                PreparedExpressionAST lhsTmp = ctx.lhs.accept(this);             
-                PreparedExpressionAST rhsTmp = ctx.rhs.accept(this);
-                
-                TypeAST resultType;
-                
-                if(lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;") || rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;")) {
-                    switch(ctx.operator) {
-                        case OPERATOR_ADD:
-                            if(!lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
-                                lhsTmp = expressionAsString(lhsTmp);
-                            if(!rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
-                                rhsTmp = expressionAsString(rhsTmp);
-                            resultType = new NameTypeAST(ctx.getRegion(), String.class);
-                            break;
-                        default:
-                            resultType = null;
-//                            errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
-                            break;
-                    }
-                } else if(lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int")) {
-                    resultType = new NameTypeAST(ctx.getRegion(), int.class);
-                } else
-                    resultType = null;
-                
-                PreparedExpressionAST lhs = lhsTmp;             
-                PreparedExpressionAST rhs = rhsTmp;
-                
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return resultType;
-                    }
-
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        lhs.generate(c, generator, originalIl);
-                        rhs.generate(c, generator, originalIl);
-                        
-                        switch(resultType().getSimpleName(c.getTarget().name)) {
-                            case "String":
-                                generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
-                                break;
-                            case "short":
-                                generator.methodNode.visitInsn(Opcodes.IADD);
-                                break;
-                            case "int":
-                                generator.methodNode.visitInsn(Opcodes.IADD);
-                                break;
-                            case "long":
-                                generator.methodNode.visitInsn(Opcodes.LADD);
-                                break;
-                            case "float":
-                                generator.methodNode.visitInsn(Opcodes.FADD);
-                                break;
-                            case "double":
-                                generator.methodNode.visitInsn(Opcodes.DADD);
-                                break;
-                        }
-                    }
-                };
-            }
-            
-            private PreparedExpressionAST expressionAsString(PreparedExpressionAST ctx) {
-                switch(ctx.resultType().getSimpleName()) {
-                    case "int":
-                        return createInvocation(null, new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
-//                        return new InvocationAST(ctx.getRegion(), null, new NameTypeAST(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), new NameTypeAST(ctx.getRegion(), String.class));
-                    default:
-                        return createInvocation(ctx, null, "toString", Collections.emptyList());
-//                        return new InvocationAST(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), new NameTypeAST(ctx.getRegion(), String.class));
+        @Override
+        public PreparedExpressionAST visitStringLiteral(StringLiteralAST ctx) {
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return new NameTypeAST(ctx.getRegion(), String.class);
                 }
-            }
 
-            @Override
-            public PreparedExpressionAST visitInvocation(InvocationAST ctx) {
-                PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
-                
-                List<PreparedExpressionAST> arguments = ctx.arguments.stream().map(a -> a.accept(this)).collect(Collectors.toList());
-                return createInvocation(target, ctx.declaringClass, ctx.methodName, arguments);
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    if(asExpression)
+                        generator.methodNode.push(ctx.value);
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitIntLiteral(IntLiteralAST ctx) {
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return new NameTypeAST(ctx.getRegion(), int.class);
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    System.out.println("visitIntLiteral");
+                    if(asExpression)
+                        generator.methodNode.push(ctx.value);
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
+            PreparedExpressionAST lhsTmp = ctx.lhs.accept(this);             
+            PreparedExpressionAST rhsTmp = ctx.rhs.accept(this);
+
+            TypeAST resultType;
+
+            if(lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;") || rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;")) {
+                switch(ctx.operator) {
+                    case OPERATOR_ADD:
+                        if(!lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
+                            lhsTmp = expressionAsString(lhsTmp);
+                        if(!rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
+                            rhsTmp = expressionAsString(rhsTmp);
+                        resultType = new NameTypeAST(ctx.getRegion(), String.class);
+                        break;
+                    default:
+                        resultType = null;
+//                            errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
+                        break;
+                }
+            } else if(lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int")) {
+                resultType = new NameTypeAST(ctx.getRegion(), int.class);
+            } else
+                resultType = null;
+
+            PreparedExpressionAST lhs = lhsTmp;             
+            PreparedExpressionAST rhs = rhsTmp;
+
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return resultType;
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    lhs.generate(c, generator, originalIl);
+                    rhs.generate(c, generator, originalIl);
+
+                    switch(resultType().getSimpleName(c.getTarget().name)) {
+                        case "String":
+                            generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
+                            break;
+                        case "short":
+                            generator.methodNode.visitInsn(Opcodes.IADD);
+                            break;
+                        case "int":
+                            generator.methodNode.visitInsn(Opcodes.IADD);
+                            break;
+                        case "long":
+                            generator.methodNode.visitInsn(Opcodes.LADD);
+                            break;
+                        case "float":
+                            generator.methodNode.visitInsn(Opcodes.FADD);
+                            break;
+                        case "double":
+                            generator.methodNode.visitInsn(Opcodes.DADD);
+                            break;
+                    }
+                }
+            };
+        }
+
+        private PreparedExpressionAST expressionAsString(PreparedExpressionAST ctx) {
+            switch(ctx.resultType().getSimpleName()) {
+                case "int":
+                    return createInvocation(null, new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
+//                        return new InvocationAST(ctx.getRegion(), null, new NameTypeAST(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), new NameTypeAST(ctx.getRegion(), String.class));
+                default:
+                    return createInvocation(ctx, null, "toString", Collections.emptyList());
+//                        return new InvocationAST(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), new NameTypeAST(ctx.getRegion(), String.class));
+            }
+        }
+
+        @Override
+        public PreparedExpressionAST visitInvocation(InvocationAST ctx) {
+            PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+
+            List<PreparedExpressionAST> arguments = ctx.arguments.stream().map(a -> a.accept(this)).collect(Collectors.toList());
+            return createInvocation(target, ctx.declaringClass, ctx.methodName, arguments);
 //                Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
 //                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> Type.getType(a)).toArray(size -> new Type[size]);
 //        
@@ -626,145 +637,145 @@ public class MethodAST extends AbstractAST implements MemberAST {
 //                            generator.methodNode.pop();
 //                    }
 //                };
-            }
-            
-            private PreparedExpressionAST createInvocation(PreparedExpressionAST target, TypeAST declaringClass, String methodName, List<PreparedExpressionAST> arguments) {
-                Class<?>[] parameterTypes = arguments.stream().map(a -> 
-                    ((NameTypeAST)a.resultType()).getType()
-                ).toArray(size -> new Class<?>[size]);
+        }
+
+        private PreparedExpressionAST createInvocation(PreparedExpressionAST target, TypeAST declaringClass, String methodName, List<PreparedExpressionAST> arguments) {
+            Class<?>[] parameterTypes = arguments.stream().map(a -> 
+                ((NameTypeAST)a.resultType()).getType()
+            ).toArray(size -> new Class<?>[size]);
 //                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> 
 //                    Type.getType(a)).toArray(size -> 
 //                    new Type[size]);
-        
-                java.lang.reflect.Method tmpMethod;
-                Type tmpTargetType = null;
 
-                if(target != null) {
+            java.lang.reflect.Method tmpMethod;
+            Type tmpTargetType = null;
+
+            if(target != null) {
+                // Generalize getAccessibleMethod
+                tmpTargetType = Type.getType(target.resultType().getDescriptor());
+                tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)target.resultType()).getType(), methodName, parameterTypes);
+
+                if(tmpMethod == null) {
                     // Generalize getAccessibleMethod
-                    tmpTargetType = Type.getType(target.resultType().getDescriptor());
-                    tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)target.resultType()).getType(), methodName, parameterTypes);
-                    
-                    if(tmpMethod == null) {
-                        // Generalize getAccessibleMethod
-                        tmpTargetType = Type.getType(Object.class);
-                        tmpMethod = MethodUtils.getAccessibleMethod(Object.class, methodName, parameterTypes);
-                    }
-                } else {
-                    tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)declaringClass).getType(), methodName, parameterTypes);
+                    tmpTargetType = Type.getType(Object.class);
+                    tmpMethod = MethodUtils.getAccessibleMethod(Object.class, methodName, parameterTypes);
                 }
-                
-                List<java.lang.reflect.Method> ms;
-                if(target != null) {
-                    ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), false, methodName, arguments);
-                } else {
-                    ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), true, methodName, arguments);
+            } else {
+                tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)declaringClass).getType(), methodName, parameterTypes);
+            }
+
+            List<java.lang.reflect.Method> ms;
+            if(target != null) {
+                ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), false, methodName, arguments);
+            } else {
+                ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), true, methodName, arguments);
+            }
+            tmpMethod = ms.get(0);
+
+            Type tmpCastType = null; 
+            if(tmpMethod.getGenericReturnType() instanceof TypeVariable) {
+                TypeVariable rtv = (TypeVariable)tmpMethod.getGenericReturnType();
+                TypeAST typeArgument = target.resultType().getTypeArgument(rtv.getName());
+                tmpCastType = Type.getType(typeArgument.getDescriptor());
+            }
+
+            Type targetType = tmpTargetType;
+            Type castType = tmpCastType;
+
+            java.lang.reflect.Method method = tmpMethod;
+            Type[] argumentTypes = Arrays.asList(method.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
+
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return castType == null ? new NameTypeAST(null, method.getReturnType()) : NameTypeAST.fromDescriptor(castType.getDescriptor());
                 }
-                tmpMethod = ms.get(0);
-                   
-                Type tmpCastType = null; 
-                if(tmpMethod.getGenericReturnType() instanceof TypeVariable) {
-                    TypeVariable rtv = (TypeVariable)tmpMethod.getGenericReturnType();
-                    TypeAST typeArgument = target.resultType().getTypeArgument(rtv.getName());
-                    tmpCastType = Type.getType(typeArgument.getDescriptor());
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    if(target != null)
+                        target.generate(c, generator, originalIl);
+
+                    arguments.forEach(a -> 
+                        a.generate(c, generator, originalIl));
+
+                    Type returnType = /*castType != null ? castType : */Type.getType(method.getReturnType());
+                    Method asmMethod = new Method(methodName, returnType, argumentTypes);
+                    if(target != null) {
+                        if(method.getDeclaringClass().isInterface())
+                            generator.methodNode.invokeInterface(targetType, asmMethod);
+                        else
+                            generator.methodNode.invokeVirtual(targetType, asmMethod);
+                    } else
+                        generator.methodNode.invokeStatic(Type.getType(declaringClass.getDescriptor()), asmMethod);
+
+                    if(asExpression && castType != null) {
+                        generator.methodNode.checkCast(castType);
+                    }
+
+                    if(!asExpression && method.getReturnType() != Void.class)
+                        generator.methodNode.pop();
                 }
-                
-                Type targetType = tmpTargetType;
-                Type castType = tmpCastType;
-                
-                java.lang.reflect.Method method = tmpMethod;
-                Type[] argumentTypes = Arrays.asList(method.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
-                
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return castType == null ? new NameTypeAST(null, method.getReturnType()) : NameTypeAST.fromDescriptor(castType.getDescriptor());
-                    }
+            };
+        }
 
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        if(target != null)
-                            target.generate(c, generator, originalIl);
-                        
-                        arguments.forEach(a -> 
-                            a.generate(c, generator, originalIl));
-                        
-                        Type returnType = /*castType != null ? castType : */Type.getType(method.getReturnType());
-                        Method asmMethod = new Method(methodName, returnType, argumentTypes);
-                        if(target != null) {
-                            if(method.getDeclaringClass().isInterface())
-                                generator.methodNode.invokeInterface(targetType, asmMethod);
-                            else
-                                generator.methodNode.invokeVirtual(targetType, asmMethod);
-                        } else
-                            generator.methodNode.invokeStatic(Type.getType(declaringClass.getDescriptor()), asmMethod);
-                        
-                        if(asExpression && castType != null) {
-                            generator.methodNode.checkCast(castType);
-                        }
-                        
-                        if(!asExpression && method.getReturnType() != Void.class)
-                            generator.methodNode.pop();
-                    }
-                };
-            }
-            
-            private List<java.lang.reflect.Method> getCompatibleMethodsWith(Class<?> c, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
-                return Arrays.asList(c.getMethods()).stream()
-                    .filter(m -> methodIsCompatibleWith(m, staticOnly, name, arguments))
-                    .collect(Collectors.toList());
-            }
-            
-            private boolean methodIsCompatibleWith(java.lang.reflect.Method m, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
-                if((!staticOnly || Modifier.isStatic(m.getModifiers())) && 
-                    m.getName().equals(name) && 
-                    m.getParameterCount() == arguments.size()) {
-                    for(int i = 0; i < m.getParameterCount(); i++) {
-                        Class<?> pt = m.getParameterTypes()[i];
-                        PreparedExpressionAST a = arguments.get(i);
-                        
-                        if(!parameterTypeIsCompatibleWith(pt, a))
-                            return false;
-                    }
-                    
-                    return true;
+        private List<java.lang.reflect.Method> getCompatibleMethodsWith(Class<?> c, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
+            return Arrays.asList(c.getMethods()).stream()
+                .filter(m -> methodIsCompatibleWith(m, staticOnly, name, arguments))
+                .collect(Collectors.toList());
+        }
+
+        private boolean methodIsCompatibleWith(java.lang.reflect.Method m, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
+            if((!staticOnly || Modifier.isStatic(m.getModifiers())) && 
+                m.getName().equals(name) && 
+                m.getParameterCount() == arguments.size()) {
+                for(int i = 0; i < m.getParameterCount(); i++) {
+                    Class<?> pt = m.getParameterTypes()[i];
+                    PreparedExpressionAST a = arguments.get(i);
+
+                    if(!parameterTypeIsCompatibleWith(pt, a))
+                        return false;
                 }
-                
-                return false;
+
+                return true;
             }
 
-            @Override
-            public PreparedExpressionAST visitFieldSet(FieldSetAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
+            return false;
+        }
 
-            @Override
-            public PreparedExpressionAST visitLongLiteral(LongLiteralAST ctx) {
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return new NameTypeAST(ctx.getRegion(), long.class);
-                    }
+        @Override
+        public PreparedExpressionAST visitFieldSet(FieldSetAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
 
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        System.out.println("visitLongLiteral");
-                        if(asExpression)
-                            generator.methodNode.push(ctx.value);
-                    }
-                };
-            }
+        @Override
+        public PreparedExpressionAST visitLongLiteral(LongLiteralAST ctx) {
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return new NameTypeAST(ctx.getRegion(), long.class);
+                }
 
-            @Override
-            public PreparedExpressionAST visitMeta(MetaExpressionAST ctx) {
-                // Doesn't make sense here?... Ony within quoted asts, right?
-                
-                // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    System.out.println("visitLongLiteral");
+                    if(asExpression)
+                        generator.methodNode.push(ctx.value);
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitMeta(MetaExpressionAST ctx) {
+            // Doesn't make sense here?... Ony within quoted asts, right?
+
+            // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
 //                ctx.body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
 //                ctx.body.stream().collect(Collectors.toList())
 
-                
-                
-                
+
+
+
 //                // 1) Generate code to generate code
 //                ClassNode metaObjectClassNode = new ClassNode(Opcodes.ASM5);
 //
@@ -865,108 +876,108 @@ public class MethodAST extends AbstractAST implements MemberAST {
 ////                Class<?> generatorClass2 = ctx.bodyAsMethod.getDeclaringClass();
 //                
 //                
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
 
-            @Override
-            public PreparedExpressionAST visitThis(ThisAST ctx) {
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return new ThisTypeAST(ctx.getRegion(), thisClass);
-                    }
-
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        generator.methodNode.loadThis();
-                    }
-                };
-            }
-
-            @Override
-            public PreparedExpressionAST visitFieldGet(FieldGetAST ctx) {
-                PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
-                TypeAST fieldType = target != null ? target.resultType().getFieldType(ctx.fieldName) : null /*from declared class instead*/;
-                
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return fieldType;
-                    }
-
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        if(asExpression) {
-                            target.generate(c, generator, originalIl);
-                            generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), ctx.fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
-                        }
-                    }
-                };
-            }
-
-            @Override
-            public PreparedExpressionAST visitVariableDeclaration(VariableDeclarationAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedExpressionAST visitLookup(LookupAST ctx) {
-                if(variables.containsKey(ctx.name)) {
-                    TypeAST resultType = variables.get(ctx.name);
-                    return new PreparedExpressionAST() {
-                        @Override
-                        public TypeAST resultType() {
-                            return resultType;
-                        }
-
-                        @Override
-                        public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                            int ordinal = generator.getVariableIndex(ctx.name);
-                            
-                            switch(resultType.getSimpleName()) {
-                                case "int":
-                                    generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
-                                    break;
-                                default:
-                                    generator.methodNode.visitVarInsn(Opcodes.ALOAD, ordinal);
-                                    break;
-                            }
-                        }
-                    };
-                } else {
-                    return 
-                        new FieldGetAST(ctx.getRegion(), new ThisAST(ctx.getRegion()), ctx.name)
-                        .accept(this);
+        @Override
+        public PreparedExpressionAST visitThis(ThisAST ctx) {
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return new ThisTypeAST(ctx.getRegion(), thisClass);
                 }
-            }
 
-            @Override
-            public PreparedExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
-                PreparedExpressionAST value = getAsExpression(ctx.value);
-                
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    generator.methodNode.loadThis();
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitFieldGet(FieldGetAST ctx) {
+            PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+            TypeAST fieldType = target != null ? target.resultType().getFieldType(ctx.fieldName) : null /*from declared class instead*/;
+
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return fieldType;
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    if(asExpression) {
+                        target.generate(c, generator, originalIl);
+                        generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), ctx.fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
+                    }
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitVariableDeclaration(VariableDeclarationAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedExpressionAST visitLookup(LookupAST ctx) {
+            if(variables.containsKey(ctx.name)) {
+                TypeAST resultType = variables.get(ctx.name);
                 return new PreparedExpressionAST() {
                     @Override
                     public TypeAST resultType() {
-                        return value.resultType();
+                        return resultType;
                     }
 
                     @Override
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        value.generate(c, generator, originalIl);
-                        
-                        if(asExpression)
-                            generator.methodNode.dup();
-                        
-                        int index = generator.getVariableIndex(ctx.name);
-                        TypeAST type = generator.getVariableType(ctx.name);
-                        appendStore(generator, index, type);
+                        int ordinal = generator.getVariableIndex(ctx.name);
+
+                        switch(resultType.getSimpleName()) {
+                            case "int":
+                                generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
+                                break;
+                            default:
+                                generator.methodNode.visitVarInsn(Opcodes.ALOAD, ordinal);
+                                break;
+                        }
                     }
                 };
+            } else {
+                return 
+                    new FieldGetAST(ctx.getRegion(), new ThisAST(ctx.getRegion()), ctx.name)
+                    .accept(this);
             }
-            
-            private PreparedExpressionAST getAsExpression(ExpressionAST ctx) {
-                return toExpression(thisClass, ctx, variables, true);
-                
+        }
+
+        @Override
+        public PreparedExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
+            PreparedExpressionAST value = getAsExpression(ctx.value);
+
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return value.resultType();
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    value.generate(c, generator, originalIl);
+
+                    if(asExpression)
+                        generator.methodNode.dup();
+
+                    int index = generator.getVariableIndex(ctx.name);
+                    TypeAST type = generator.getVariableType(ctx.name);
+                    appendStore(generator, index, type);
+                }
+            };
+        }
+
+        private PreparedExpressionAST getAsExpression(ExpressionAST ctx) {
+            return toExpression(thisClass, ctx, variables, true);
+
 //                boolean changedAsExpression = false;
 //                if(!asExpression) {
 //                    changedAsExpression = true;
@@ -979,199 +990,908 @@ public class MethodAST extends AbstractAST implements MemberAST {
 //                    asExpression = false;
 //                
 //                return expression;
-            }
+        }
 
-            @Override
-            public PreparedExpressionAST visitRootExpression(RootExpressionAST ctx) {
-                return ctx.accept(this);
-            }
+        @Override
+        public PreparedExpressionAST visitRootExpression(RootExpressionAST ctx) {
+            return ctx.accept(this);
+        }
 
-            @Override
-            public PreparedExpressionAST visitQuote(QuoteAST ctx) {
-                ExpressionAST quotedAST = quote(thisClass, ctx.ast, variables);
-                
-                return quotedAST.accept(this);
-            }
-            
-            
-            private void myMethod(Object i) {
-                
-            }
-            
-            private void myMethod(String str) {
-                
-            }
+        @Override
+        public PreparedExpressionAST visitQuote(QuoteAST ctx) {
+            ExpressionAST quotedAST = quote(thisClass, ctx.ast, variables);
 
-            @Override
-            public PreparedExpressionAST visitNull(NullAST ctx) {
-                return new PreparedExpressionAST() {
-                    // Should be able to tell whi
-                    
-                    public List<TypeAST> bestMatches(List<TypeAST> types) {
-                        // Can be used to resolve method?
-                        // E.g. for the invocation myMethod(null), 
-                        // there are the methods: myMethod(Object obj) and myMethod(String str)
-                        // then the most general matches are returned?
-                        // One match means unambigous resolution
-                        //
-                        // Or the most specific one?
-                        // http://docs.oracle.com/javase/specs/jls/se5.0/html/expressions.html#15.12.2.5
-                        
-                        myMethod(null);
-                        
+            return quotedAST.accept(this);
+        }
+
+
+        private void myMethod(Object i) {
+
+        }
+
+        private void myMethod(String str) {
+
+        }
+
+        @Override
+        public PreparedExpressionAST visitNull(NullAST ctx) {
+            return new PreparedExpressionAST() {
+                // Should be able to tell whi
+
+                public List<TypeAST> bestMatches(List<TypeAST> types) {
+                    // Can be used to resolve method?
+                    // E.g. for the invocation myMethod(null), 
+                    // there are the methods: myMethod(Object obj) and myMethod(String str)
+                    // then the most general matches are returned?
+                    // One match means unambigous resolution
+                    //
+                    // Or the most specific one?
+                    // http://docs.oracle.com/javase/specs/jls/se5.0/html/expressions.html#15.12.2.5
+
+                    myMethod(null);
+
+                    return null;
+                }
+
+                public boolean canReturnAs(TypeAST type) {
+                    return true; // If non primitive
+                }
+
+                @Override
+                public boolean canBeArgumentFor(Class<?> parameterType) {
+                    return !parameterType.isPrimitive();
+                }
+
+                @Override
+                public TypeAST resultType() {
+                    return new NameTypeAST(null, Object.class); // Result type should be expected result in the outer context
+//                        return new NameTypeAST(null, void.class);
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    generator.methodNode.visitInsn(Opcodes.ACONST_NULL);
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitArray(ArrayAST ctx) {
+            List<PreparedExpressionAST> elements = ctx.elements.stream().map(e -> e.accept(this)).collect(Collectors.toList());
+
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    try {
+                        //                        return NameTypeAST.fromDescriptor("[" + ctx.type.getDescriptor());
+                        String desc = ctx.type.getDescriptor();
+                        Class arrayClass = Class.forName("[" + desc.replace("/", "."));
+                        return new NameTypeAST(null, arrayClass);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
                         return null;
                     }
-                    
-                    public boolean canReturnAs(TypeAST type) {
-                        return true; // If non primitive
-                    }
-
-                    @Override
-                    public boolean canBeArgumentFor(Class<?> parameterType) {
-                        return !parameterType.isPrimitive();
-                    }
-                    
-                    @Override
-                    public TypeAST resultType() {
-                        return new NameTypeAST(null, Object.class); // Result type should be expected result in the outer context
-//                        return new NameTypeAST(null, void.class);
-                    }
-
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        generator.methodNode.visitInsn(Opcodes.ACONST_NULL);
-                    }
-                };
-            }
-
-            @Override
-            public PreparedExpressionAST visitArray(ArrayAST ctx) {
-                List<PreparedExpressionAST> elements = ctx.elements.stream().map(e -> e.accept(this)).collect(Collectors.toList());
-                
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        try {
-                            //                        return NameTypeAST.fromDescriptor("[" + ctx.type.getDescriptor());
-                            String desc = ctx.type.getDescriptor();
-                            Class arrayClass = Class.forName("[" + desc.replace("/", "."));
-                            return new NameTypeAST(null, arrayClass);
-                        } catch (ClassNotFoundException ex) {
-                            Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        generator.methodNode.push(ctx.elements.size());
-                        generator.methodNode.newArray(Type.getType(ctx.type.getDescriptor()));
-                        
-                        for(int i = 0; i < elements.size(); i++) {
-                            generator.methodNode.dup();
-                            generator.methodNode.push(i);
-                            PreparedExpressionAST e = elements.get(i);
-                            e.generate(c, generator, originalIl);
-                            generator.methodNode.arrayStore(Type.getType(ctx.type.getDescriptor()));
-                        }
-                    }
-                };
-            }
-
-            @Override
-            public PreparedExpressionAST visitNew(NewAST ctx) {
-                List<PreparedExpressionAST> arguments = ctx.arguments.stream().map(e -> e.accept(this)).collect(Collectors.toList());
-                
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return ctx.c;
-                    }
-
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        generator.methodNode.newInstance(Type.getType(ctx.c.getDescriptor()));
-                        generator.methodNode.dup();
-                        
-                        arguments.forEach(a -> 
-                            a.generate(c, generator, originalIl));
-                        
-                        Class<?>[] parameterTypes = arguments.stream().map(a -> 
-                            ((NameTypeAST)a.resultType()).getType()).toArray(size -> 
-                            new Class<?>[size]);
-//                        Type[] argumentTypes = arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor())).toArray(size -> new Type[size]);
-                        Constructor<?> constructor = ConstructorUtils.getAccessibleConstructor(((NameTypeAST)ctx.c).getType(), parameterTypes);
-                        
-                        List<Constructor<?>> cs = getCompatibleConstructorsWith(((NameTypeAST)ctx.c).getType(), arguments);
-                        constructor = cs.get(0);
-                        Type[] argumentTypes = Arrays.asList(constructor.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
-                        
-                        Method mConstructor = new Method("<init>", Type.VOID_TYPE, argumentTypes);
-                        generator.methodNode.invokeConstructor(Type.getType(ctx.c.getDescriptor()), mConstructor);
-                    }
-                };
-            }
-            
-            private List<Constructor<?>> getCompatibleConstructorsWith(Class<?> c, List<PreparedExpressionAST> arguments) {
-                return Arrays.asList(c.getConstructors()).stream()
-                    .filter(cons -> constructorIsCompatibleWith(cons, arguments))
-                    .collect(Collectors.toList());
-            }
-            
-            private boolean constructorIsCompatibleWith(Constructor<?> cons, List<PreparedExpressionAST> arguments) {
-                if(cons.getParameterCount() == arguments.size()) {
-                    for(int i = 0; i < cons.getParameterCount(); i++) {
-                        Class<?> pt = cons.getParameterTypes()[i];
-                        PreparedExpressionAST a = arguments.get(i);
-                        
-                        if(!parameterTypeIsCompatibleWith(pt, a))
-                            return false;
-                    }
-                    
-                    return true;
                 }
-                
-                return false;
-            }
-            
-            private boolean parameterTypeIsCompatibleWith(Class<?> pt, PreparedExpressionAST a) {
-                return a.canBeArgumentFor(pt);
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    generator.methodNode.push(ctx.elements.size());
+                    generator.methodNode.newArray(Type.getType(ctx.type.getDescriptor()));
+
+                    for(int i = 0; i < elements.size(); i++) {
+                        generator.methodNode.dup();
+                        generator.methodNode.push(i);
+                        PreparedExpressionAST e = elements.get(i);
+                        e.generate(c, generator, originalIl);
+                        generator.methodNode.arrayStore(Type.getType(ctx.type.getDescriptor()));
+                    }
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitNew(NewAST ctx) {
+            List<PreparedExpressionAST> arguments = ctx.arguments.stream().map(e -> e.accept(this)).collect(Collectors.toList());
+
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return ctx.c;
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    generator.methodNode.newInstance(Type.getType(ctx.c.getDescriptor()));
+                    generator.methodNode.dup();
+
+                    arguments.forEach(a -> 
+                        a.generate(c, generator, originalIl));
+
+                    Class<?>[] parameterTypes = arguments.stream().map(a -> 
+                        ((NameTypeAST)a.resultType()).getType()).toArray(size -> 
+                        new Class<?>[size]);
+//                        Type[] argumentTypes = arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor())).toArray(size -> new Type[size]);
+                    Constructor<?> constructor = ConstructorUtils.getAccessibleConstructor(((NameTypeAST)ctx.c).getType(), parameterTypes);
+
+                    List<Constructor<?>> cs = getCompatibleConstructorsWith(((NameTypeAST)ctx.c).getType(), arguments);
+                    if(cs.size() == 0) {
+                        cs = getCompatibleConstructorsWith(((NameTypeAST)ctx.c).getType(), arguments);
+                    }
+                    constructor = cs.get(0);
+                    Type[] argumentTypes = Arrays.asList(constructor.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
+
+                    Method mConstructor = new Method("<init>", Type.VOID_TYPE, argumentTypes);
+                    generator.methodNode.invokeConstructor(Type.getType(ctx.c.getDescriptor()), mConstructor);
+                }
+            };
+        }
+
+        private List<Constructor<?>> getCompatibleConstructorsWith(Class<?> c, List<PreparedExpressionAST> arguments) {
+            return Arrays.asList(c.getConstructors()).stream()
+                .filter(cons -> constructorIsCompatibleWith(cons, arguments))
+                .collect(Collectors.toList());
+        }
+
+        private boolean constructorIsCompatibleWith(Constructor<?> cons, List<PreparedExpressionAST> arguments) {
+            if(cons.getParameterCount() == arguments.size()) {
+                for(int i = 0; i < cons.getParameterCount(); i++) {
+                    Class<?> pt = cons.getParameterTypes()[i];
+                    PreparedExpressionAST a = arguments.get(i);
+
+                    if(!parameterTypeIsCompatibleWith(pt, a))
+                        return false;
+                }
+
+                return true;
             }
 
-            @Override
-            public PreparedExpressionAST visitTypecast(TypecastAST ctx) {
-                PreparedExpressionAST expression = ctx.expression.accept(this);
-                
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        return ctx.type;
-                    }
+            return false;
+        }
 
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        expression.generate(c, generator, originalIl);
-                        generator.methodNode.checkCast(Type.getType(ctx.type.getDescriptor()));
-                    }
-                };
-            }
+        private boolean parameterTypeIsCompatibleWith(Class<?> pt, PreparedExpressionAST a) {
+            return a.canBeArgumentFor(pt);
+        }
 
-            @Override
-            public PreparedExpressionAST visitGetClass(GetClassAST ctx) {
-                return new PreparedExpressionAST() {
-                    @Override
-                    public TypeAST resultType() {
-                        // Should be generic
-                        return new NameTypeAST(null, Class.class);
-                    }
+        @Override
+        public PreparedExpressionAST visitTypecast(TypecastAST ctx) {
+            PreparedExpressionAST expression = ctx.expression.accept(this);
 
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        generator.methodNode.push(Type.getType(ctx.t.getDescriptor()));
-                    }
-                };
-            }
-        });
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return ctx.type;
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    expression.generate(c, generator, originalIl);
+                    generator.methodNode.checkCast(Type.getType(ctx.type.getDescriptor()));
+                }
+            };
+        }
+
+        @Override
+        public PreparedExpressionAST visitGetClass(GetClassAST ctx) {
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    // Should be generic
+                    return new NameTypeAST(null, Class.class);
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    generator.methodNode.push(Type.getType(ctx.t.getDescriptor()));
+                }
+            };
+        }
+    }
+    
+    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables, boolean asExpression) {
+        return expression.accept(new CodeToExpression(thisClass, expression, variables, asExpression));
+        
+//        return expression.accept(new CodeVisitor<PreparedExpressionAST>() {
+//            @Override
+//            public PreparedExpressionAST visitReturn(ReturnAST ctx) {
+//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitBlock(BlockAST ctx) {
+//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitStringLiteral(StringLiteralAST ctx) {
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return new NameTypeAST(ctx.getRegion(), String.class);
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        if(asExpression)
+//                            generator.methodNode.push(ctx.value);
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitIntLiteral(IntLiteralAST ctx) {
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return new NameTypeAST(ctx.getRegion(), int.class);
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        System.out.println("visitIntLiteral");
+//                        if(asExpression)
+//                            generator.methodNode.push(ctx.value);
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
+//                PreparedExpressionAST lhsTmp = ctx.lhs.accept(this);             
+//                PreparedExpressionAST rhsTmp = ctx.rhs.accept(this);
+//                
+//                TypeAST resultType;
+//                
+//                if(lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;") || rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;")) {
+//                    switch(ctx.operator) {
+//                        case OPERATOR_ADD:
+//                            if(!lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
+//                                lhsTmp = expressionAsString(lhsTmp);
+//                            if(!rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
+//                                rhsTmp = expressionAsString(rhsTmp);
+//                            resultType = new NameTypeAST(ctx.getRegion(), String.class);
+//                            break;
+//                        default:
+//                            resultType = null;
+////                            errorMessages.add(new ASMCompiler.Message(getRegion(), "Bad operand types for binary operator '" + getOperatorString() + "'"));
+//                            break;
+//                    }
+//                } else if(lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int")) {
+//                    resultType = new NameTypeAST(ctx.getRegion(), int.class);
+//                } else
+//                    resultType = null;
+//                
+//                PreparedExpressionAST lhs = lhsTmp;             
+//                PreparedExpressionAST rhs = rhsTmp;
+//                
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return resultType;
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        lhs.generate(c, generator, originalIl);
+//                        rhs.generate(c, generator, originalIl);
+//                        
+//                        switch(resultType().getSimpleName(c.getTarget().name)) {
+//                            case "String":
+//                                generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
+//                                break;
+//                            case "short":
+//                                generator.methodNode.visitInsn(Opcodes.IADD);
+//                                break;
+//                            case "int":
+//                                generator.methodNode.visitInsn(Opcodes.IADD);
+//                                break;
+//                            case "long":
+//                                generator.methodNode.visitInsn(Opcodes.LADD);
+//                                break;
+//                            case "float":
+//                                generator.methodNode.visitInsn(Opcodes.FADD);
+//                                break;
+//                            case "double":
+//                                generator.methodNode.visitInsn(Opcodes.DADD);
+//                                break;
+//                        }
+//                    }
+//                };
+//            }
+//            
+//            private PreparedExpressionAST expressionAsString(PreparedExpressionAST ctx) {
+//                switch(ctx.resultType().getSimpleName()) {
+//                    case "int":
+//                        return createInvocation(null, new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
+////                        return new InvocationAST(ctx.getRegion(), null, new NameTypeAST(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), new NameTypeAST(ctx.getRegion(), String.class));
+//                    default:
+//                        return createInvocation(ctx, null, "toString", Collections.emptyList());
+////                        return new InvocationAST(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), new NameTypeAST(ctx.getRegion(), String.class));
+//                }
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitInvocation(InvocationAST ctx) {
+//                PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+//                
+//                List<PreparedExpressionAST> arguments = ctx.arguments.stream().map(a -> a.accept(this)).collect(Collectors.toList());
+//                return createInvocation(target, ctx.declaringClass, ctx.methodName, arguments);
+////                Class<?>[] parameterTypes = arguments.stream().map(a -> a.resultType()).toArray(size -> new Class<?>[size]);
+////                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> Type.getType(a)).toArray(size -> new Type[size]);
+////        
+////                java.lang.reflect.Method method;
+////
+////                if(target != null) {
+////                    // Generalize getAccessibleMethod
+////                    method = MethodUtils.getAccessibleMethod(((NameTypeAST)target.resultType()).getType(), ctx.methodName, parameterTypes);
+////                } else {
+////                    method = MethodUtils.getAccessibleMethod(((NameTypeAST)ctx.declaringClass).getType(), ctx.methodName, parameterTypes);
+////                }
+////                
+////                return new PreparedExpressionAST() {
+////                    @Override
+////                    public TypeAST resultType() {
+////                        return new NameTypeAST(ctx.getRegion(), method.getReturnType());
+////                    }
+////
+////                    @Override
+////                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+////                        arguments.forEach(a -> a.generate(c, generator, originalIl));
+////                        Method asmMethod = new Method(ctx.methodName, Type.VOID_TYPE, argumentTypes);
+////                        if(target != null)
+////                            generator.methodNode.invokeVirtual(Type.getType(target.resultType().getDescriptor()), asmMethod);
+////                        else
+////                            generator.methodNode.invokeStatic(Type.getType(ctx.declaringClass.getDescriptor()), asmMethod);
+////                        
+////                        if(!asExpression && method.getReturnType() != Void.class)
+////                            generator.methodNode.pop();
+////                    }
+////                };
+//            }
+//            
+//            private PreparedExpressionAST createInvocation(PreparedExpressionAST target, TypeAST declaringClass, String methodName, List<PreparedExpressionAST> arguments) {
+//                Class<?>[] parameterTypes = arguments.stream().map(a -> 
+//                    ((NameTypeAST)a.resultType()).getType()
+//                ).toArray(size -> new Class<?>[size]);
+////                Type[] argumentTypes = Arrays.asList(parameterTypes).stream().map(a -> 
+////                    Type.getType(a)).toArray(size -> 
+////                    new Type[size]);
+//        
+//                java.lang.reflect.Method tmpMethod;
+//                Type tmpTargetType = null;
+//
+//                if(target != null) {
+//                    // Generalize getAccessibleMethod
+//                    tmpTargetType = Type.getType(target.resultType().getDescriptor());
+//                    tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)target.resultType()).getType(), methodName, parameterTypes);
+//                    
+//                    if(tmpMethod == null) {
+//                        // Generalize getAccessibleMethod
+//                        tmpTargetType = Type.getType(Object.class);
+//                        tmpMethod = MethodUtils.getAccessibleMethod(Object.class, methodName, parameterTypes);
+//                    }
+//                } else {
+//                    tmpMethod = MethodUtils.getAccessibleMethod(((NameTypeAST)declaringClass).getType(), methodName, parameterTypes);
+//                }
+//                
+//                List<java.lang.reflect.Method> ms;
+//                if(target != null) {
+//                    ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), false, methodName, arguments);
+//                } else {
+//                    ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), true, methodName, arguments);
+//                }
+//                tmpMethod = ms.get(0);
+//                   
+//                Type tmpCastType = null; 
+//                if(tmpMethod.getGenericReturnType() instanceof TypeVariable) {
+//                    TypeVariable rtv = (TypeVariable)tmpMethod.getGenericReturnType();
+//                    TypeAST typeArgument = target.resultType().getTypeArgument(rtv.getName());
+//                    tmpCastType = Type.getType(typeArgument.getDescriptor());
+//                }
+//                
+//                Type targetType = tmpTargetType;
+//                Type castType = tmpCastType;
+//                
+//                java.lang.reflect.Method method = tmpMethod;
+//                Type[] argumentTypes = Arrays.asList(method.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
+//                
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return castType == null ? new NameTypeAST(null, method.getReturnType()) : NameTypeAST.fromDescriptor(castType.getDescriptor());
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        if(target != null)
+//                            target.generate(c, generator, originalIl);
+//                        
+//                        arguments.forEach(a -> 
+//                            a.generate(c, generator, originalIl));
+//                        
+//                        Type returnType = /*castType != null ? castType : */Type.getType(method.getReturnType());
+//                        Method asmMethod = new Method(methodName, returnType, argumentTypes);
+//                        if(target != null) {
+//                            if(method.getDeclaringClass().isInterface())
+//                                generator.methodNode.invokeInterface(targetType, asmMethod);
+//                            else
+//                                generator.methodNode.invokeVirtual(targetType, asmMethod);
+//                        } else
+//                            generator.methodNode.invokeStatic(Type.getType(declaringClass.getDescriptor()), asmMethod);
+//                        
+//                        if(asExpression && castType != null) {
+//                            generator.methodNode.checkCast(castType);
+//                        }
+//                        
+//                        if(!asExpression && method.getReturnType() != Void.class)
+//                            generator.methodNode.pop();
+//                    }
+//                };
+//            }
+//            
+//            private List<java.lang.reflect.Method> getCompatibleMethodsWith(Class<?> c, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
+//                return Arrays.asList(c.getMethods()).stream()
+//                    .filter(m -> methodIsCompatibleWith(m, staticOnly, name, arguments))
+//                    .collect(Collectors.toList());
+//            }
+//            
+//            private boolean methodIsCompatibleWith(java.lang.reflect.Method m, boolean staticOnly, String name, List<PreparedExpressionAST> arguments) {
+//                if((!staticOnly || Modifier.isStatic(m.getModifiers())) && 
+//                    m.getName().equals(name) && 
+//                    m.getParameterCount() == arguments.size()) {
+//                    for(int i = 0; i < m.getParameterCount(); i++) {
+//                        Class<?> pt = m.getParameterTypes()[i];
+//                        PreparedExpressionAST a = arguments.get(i);
+//                        
+//                        if(!parameterTypeIsCompatibleWith(pt, a))
+//                            return false;
+//                    }
+//                    
+//                    return true;
+//                }
+//                
+//                return false;
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitFieldSet(FieldSetAST ctx) {
+//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitLongLiteral(LongLiteralAST ctx) {
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return new NameTypeAST(ctx.getRegion(), long.class);
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        System.out.println("visitLongLiteral");
+//                        if(asExpression)
+//                            generator.methodNode.push(ctx.value);
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitMeta(MetaExpressionAST ctx) {
+//                // Doesn't make sense here?... Ony within quoted asts, right?
+//                
+//                // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
+////                ctx.body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
+////                ctx.body.stream().collect(Collectors.toList())
+//
+//                
+//                
+//                
+////                // 1) Generate code to generate code
+////                ClassNode metaObjectClassNode = new ClassNode(Opcodes.ASM5);
+////
+////                ctx.mp.metaScope.addFields(metaObjectClassNode);
+////                
+////                Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
+////                List<PreparedAST> body = ((List<CodeAST>)ctx.body).stream().map(c -> 
+//////                    toCode(new ClassNodeScope(metaObjectClassNode), c)).collect(Collectors.toList());
+////                    toCode(ctx.mp.metaScope, c, metaVariables)).collect(Collectors.toList());
+////                List<TypeAST> returnTypes = body.stream().map(c -> 
+////                    c.returns()).filter(r -> r != null).collect(Collectors.toList());
+////                Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
+////                
+////                metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
+////                metaObjectClassNode.access = Opcodes.ACC_PUBLIC;
+////                metaObjectClassNode.name = "dejain/generator/ASMGenerator" + ctx.mp.generatorCount;
+////                metaObjectClassNode.superName = "java/lang/Object";
+////                MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
+////                metaObjectClassNode.methods.add(generatorMethod);
+////
+////                MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+////                defaultConstructor.visitCode();
+////                defaultConstructor.visitVarInsn(Opcodes.ALOAD, 0);
+////                defaultConstructor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+////                defaultConstructor.visitInsn(Opcodes.RETURN);
+////                defaultConstructor.visitMaxs(1,1);
+////                defaultConstructor.visitEnd();
+////                metaObjectClassNode.methods.add(defaultConstructor);
+////
+////                GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
+//////                MethodAST.toCode(new Transformation<>(generatorClassNode), body, new MethodAST.MethodCodeGenerator(generatorAdapter, null));
+////                MethodCodeGenerator metaCodeGenerator = new MethodCodeGenerator(generatorAdapter, null);
+////                metaCodeGenerator.start();
+////                body.forEach(c -> 
+////                    c.generate(new Transformation<>(metaObjectClassNode), metaCodeGenerator, new InsnList()));
+////                metaCodeGenerator.end();
+////                generatorMethod.visitEnd();
+////
+////                ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+////                metaObjectClassNode.accept(cw);
+////                
+////                TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
+////                metaObjectClassNode.accept(traceClassVisitor);
+////                CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), false, new PrintWriter(System.out));
+////                
+////                SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
+////                Class<?> metaObjectClass = classLoader.loadClass();
+////                java.lang.reflect.Method bodyAsMethodTmp = null;
+////                
+////                try {
+////                    bodyAsMethodTmp = metaObjectClass.getMethod("generator", null);
+////                } catch (NoSuchMethodException | SecurityException ex) {
+////                    Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
+////                }
+////                
+////                java.lang.reflect.Method bodyAsMethod = bodyAsMethodTmp;
+////
+////                ctx.mp.generatorCount++;
+////
+//////                resultType = new NameTypeAST(getRegion(), resultType(bodyAsMethod.getReturnType()));
+////                
+////                TypeAST resultType = returnTypes.get(0);
+////                
+////                return new PreparedExpressionAST() {
+////                    @Override
+////                    public TypeAST resultType() {
+////                        return resultType;
+////                    }
+////
+////                    @Override
+////                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+////                        try {
+////                            Object metaObject = metaObjectClass.newInstance();
+////
+////                            // 2) Evaluate the generated code which result in a String
+////                            for(String fieldName: ctx.mp.metaScope.getFieldNames()) {
+////                                try {
+////                                    Field f = metaObjectClass.getField(fieldName);
+////                                    Object value = c.getVariableValue(fieldName);
+////                                    f.set(metaObject, value);
+////                                } catch (NoSuchFieldException ex) {
+////                                    Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
+////                                }
+////                            }
+////
+////                            // Expression is derived pr transformation
+////                            Object astValue = bodyAsMethod.invoke(metaObject, null);
+////                            ExpressionAST generatedExpression = ctx.convertToExpression(astValue, bodyAsMethod.getReturnType());
+////                            PreparedAST preparedGeneratedExpression = toExpression(thisClass, generatedExpression, variables, true);
+////                            preparedGeneratedExpression.generate(c, generator, originalIl);
+//////                            generatedExpression.accept(this);
+////                        } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+////                            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
+////                        }
+////                    }
+////                };
+////                
+//////                Class<?> generatorClass2 = ctx.bodyAsMethod.getDeclaringClass();
+////                
+////                
+//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitThis(ThisAST ctx) {
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return new ThisTypeAST(ctx.getRegion(), thisClass);
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        generator.methodNode.loadThis();
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitFieldGet(FieldGetAST ctx) {
+//                PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+//                TypeAST fieldType = target != null ? target.resultType().getFieldType(ctx.fieldName) : null /*from declared class instead*/;
+//                
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return fieldType;
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        if(asExpression) {
+//                            target.generate(c, generator, originalIl);
+//                            generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), ctx.fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
+//                        }
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitVariableDeclaration(VariableDeclarationAST ctx) {
+//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitLookup(LookupAST ctx) {
+//                if(variables.containsKey(ctx.name)) {
+//                    TypeAST resultType = variables.get(ctx.name);
+//                    return new PreparedExpressionAST() {
+//                        @Override
+//                        public TypeAST resultType() {
+//                            return resultType;
+//                        }
+//
+//                        @Override
+//                        public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                            int ordinal = generator.getVariableIndex(ctx.name);
+//                            
+//                            switch(resultType.getSimpleName()) {
+//                                case "int":
+//                                    generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
+//                                    break;
+//                                default:
+//                                    generator.methodNode.visitVarInsn(Opcodes.ALOAD, ordinal);
+//                                    break;
+//                            }
+//                        }
+//                    };
+//                } else {
+//                    return 
+//                        new FieldGetAST(ctx.getRegion(), new ThisAST(ctx.getRegion()), ctx.name)
+//                        .accept(this);
+//                }
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
+//                PreparedExpressionAST value = getAsExpression(ctx.value);
+//                
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return value.resultType();
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        value.generate(c, generator, originalIl);
+//                        
+//                        if(asExpression)
+//                            generator.methodNode.dup();
+//                        
+//                        int index = generator.getVariableIndex(ctx.name);
+//                        TypeAST type = generator.getVariableType(ctx.name);
+//                        appendStore(generator, index, type);
+//                    }
+//                };
+//            }
+//            
+//            private PreparedExpressionAST getAsExpression(ExpressionAST ctx) {
+//                return toExpression(thisClass, ctx, variables, true);
+//                
+////                boolean changedAsExpression = false;
+////                if(!asExpression) {
+////                    changedAsExpression = true;
+////                    asExpression = true;
+////                }
+////                
+////                PreparedExpressionAST expression = ctx.accept(this);
+////                
+////                if(changedAsExpression)
+////                    asExpression = false;
+////                
+////                return expression;
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitRootExpression(RootExpressionAST ctx) {
+//                return ctx.accept(this);
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitQuote(QuoteAST ctx) {
+//                ExpressionAST quotedAST = quote(thisClass, ctx.ast, variables);
+//                
+//                return quotedAST.accept(this);
+//            }
+//            
+//            
+//            private void myMethod(Object i) {
+//                
+//            }
+//            
+//            private void myMethod(String str) {
+//                
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitNull(NullAST ctx) {
+//                return new PreparedExpressionAST() {
+//                    // Should be able to tell whi
+//                    
+//                    public List<TypeAST> bestMatches(List<TypeAST> types) {
+//                        // Can be used to resolve method?
+//                        // E.g. for the invocation myMethod(null), 
+//                        // there are the methods: myMethod(Object obj) and myMethod(String str)
+//                        // then the most general matches are returned?
+//                        // One match means unambigous resolution
+//                        //
+//                        // Or the most specific one?
+//                        // http://docs.oracle.com/javase/specs/jls/se5.0/html/expressions.html#15.12.2.5
+//                        
+//                        myMethod(null);
+//                        
+//                        return null;
+//                    }
+//                    
+//                    public boolean canReturnAs(TypeAST type) {
+//                        return true; // If non primitive
+//                    }
+//
+//                    @Override
+//                    public boolean canBeArgumentFor(Class<?> parameterType) {
+//                        return !parameterType.isPrimitive();
+//                    }
+//                    
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return new NameTypeAST(null, Object.class); // Result type should be expected result in the outer context
+////                        return new NameTypeAST(null, void.class);
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        generator.methodNode.visitInsn(Opcodes.ACONST_NULL);
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitArray(ArrayAST ctx) {
+//                List<PreparedExpressionAST> elements = ctx.elements.stream().map(e -> e.accept(this)).collect(Collectors.toList());
+//                
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        try {
+//                            //                        return NameTypeAST.fromDescriptor("[" + ctx.type.getDescriptor());
+//                            String desc = ctx.type.getDescriptor();
+//                            Class arrayClass = Class.forName("[" + desc.replace("/", "."));
+//                            return new NameTypeAST(null, arrayClass);
+//                        } catch (ClassNotFoundException ex) {
+//                            Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
+//                            return null;
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        generator.methodNode.push(ctx.elements.size());
+//                        generator.methodNode.newArray(Type.getType(ctx.type.getDescriptor()));
+//                        
+//                        for(int i = 0; i < elements.size(); i++) {
+//                            generator.methodNode.dup();
+//                            generator.methodNode.push(i);
+//                            PreparedExpressionAST e = elements.get(i);
+//                            e.generate(c, generator, originalIl);
+//                            generator.methodNode.arrayStore(Type.getType(ctx.type.getDescriptor()));
+//                        }
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitNew(NewAST ctx) {
+//                List<PreparedExpressionAST> arguments = ctx.arguments.stream().map(e -> e.accept(this)).collect(Collectors.toList());
+//                
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return ctx.c;
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        generator.methodNode.newInstance(Type.getType(ctx.c.getDescriptor()));
+//                        generator.methodNode.dup();
+//                        
+//                        arguments.forEach(a -> 
+//                            a.generate(c, generator, originalIl));
+//                        
+//                        Class<?>[] parameterTypes = arguments.stream().map(a -> 
+//                            ((NameTypeAST)a.resultType()).getType()).toArray(size -> 
+//                            new Class<?>[size]);
+////                        Type[] argumentTypes = arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor())).toArray(size -> new Type[size]);
+//                        Constructor<?> constructor = ConstructorUtils.getAccessibleConstructor(((NameTypeAST)ctx.c).getType(), parameterTypes);
+//                        
+//                        List<Constructor<?>> cs = getCompatibleConstructorsWith(((NameTypeAST)ctx.c).getType(), arguments);
+//                        constructor = cs.get(0);
+//                        Type[] argumentTypes = Arrays.asList(constructor.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
+//                        
+//                        Method mConstructor = new Method("<init>", Type.VOID_TYPE, argumentTypes);
+//                        generator.methodNode.invokeConstructor(Type.getType(ctx.c.getDescriptor()), mConstructor);
+//                    }
+//                };
+//            }
+//            
+//            private List<Constructor<?>> getCompatibleConstructorsWith(Class<?> c, List<PreparedExpressionAST> arguments) {
+//                return Arrays.asList(c.getConstructors()).stream()
+//                    .filter(cons -> constructorIsCompatibleWith(cons, arguments))
+//                    .collect(Collectors.toList());
+//            }
+//            
+//            private boolean constructorIsCompatibleWith(Constructor<?> cons, List<PreparedExpressionAST> arguments) {
+//                if(cons.getParameterCount() == arguments.size()) {
+//                    for(int i = 0; i < cons.getParameterCount(); i++) {
+//                        Class<?> pt = cons.getParameterTypes()[i];
+//                        PreparedExpressionAST a = arguments.get(i);
+//                        
+//                        if(!parameterTypeIsCompatibleWith(pt, a))
+//                            return false;
+//                    }
+//                    
+//                    return true;
+//                }
+//                
+//                return false;
+//            }
+//            
+//            private boolean parameterTypeIsCompatibleWith(Class<?> pt, PreparedExpressionAST a) {
+//                return a.canBeArgumentFor(pt);
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitTypecast(TypecastAST ctx) {
+//                PreparedExpressionAST expression = ctx.expression.accept(this);
+//                
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        return ctx.type;
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        expression.generate(c, generator, originalIl);
+//                        generator.methodNode.checkCast(Type.getType(ctx.type.getDescriptor()));
+//                    }
+//                };
+//            }
+//
+//            @Override
+//            public PreparedExpressionAST visitGetClass(GetClassAST ctx) {
+//                return new PreparedExpressionAST() {
+//                    @Override
+//                    public TypeAST resultType() {
+//                        // Should be generic
+//                        return new NameTypeAST(null, Class.class);
+//                    }
+//
+//                    @Override
+//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        generator.methodNode.push(Type.getType(ctx.t.getDescriptor()));
+//                    }
+//                };
+//            }
+//        });
     }
     
     public static ExpressionAST quote(Scope thisClass, CodeAST ctx, Hashtable<String, TypeAST> variables) {
@@ -1190,7 +1910,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitIntLiteral(IntLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, IntLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
+                return new NewAST(ctx.getRegion(), new NameTypeAST(null, IntLiteralAST.class), Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.value)));
             }
 
             @Override
