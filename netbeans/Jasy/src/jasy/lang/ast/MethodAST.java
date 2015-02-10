@@ -666,21 +666,24 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             List<java.lang.reflect.Method> ms;
             if(target != null) {
-                ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), false, methodName, arguments);
+                ms = getCompatibleMethodsWith(((NameTypeAST)target.resultType()).getType(), false, methodName, arguments);
             } else {
                 ms = getCompatibleMethodsWith(((NameTypeAST)declaringClass).getType(), true, methodName, arguments);
             }
             tmpMethod = ms.get(0);
 
-            Type tmpCastType = null; 
+//            Type tmpCastType = null;
+            TypeAST tmpCastType = null;
             if(tmpMethod.getGenericReturnType() instanceof TypeVariable) {
                 TypeVariable rtv = (TypeVariable)tmpMethod.getGenericReturnType();
                 TypeAST typeArgument = target.resultType().getTypeArgument(rtv.getName());
-                tmpCastType = Type.getType(typeArgument.getDescriptor());
+//                tmpCastType = Type.getType(typeArgument.getDescriptor());
+                tmpCastType = typeArgument;
             }
 
             Type targetType = tmpTargetType;
-            Type castType = tmpCastType;
+//            Type castType = tmpCastType;
+            TypeAST castType = tmpCastType;
 
             java.lang.reflect.Method method = tmpMethod;
             Type[] argumentTypes = Arrays.asList(method.getParameterTypes()).stream().map(pt -> Type.getType(pt)).toArray(size -> new Type[size]);
@@ -688,7 +691,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             return new PreparedExpressionAST() {
                 @Override
                 public TypeAST resultType() {
-                    return castType == null ? new NameTypeAST(null, method.getReturnType()) : NameTypeAST.fromDescriptor(castType.getDescriptor());
+                    return castType == null ? new NameTypeAST(null, method.getReturnType()) : castType;
                 }
 
                 @Override
@@ -710,7 +713,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         generator.methodNode.invokeStatic(Type.getType(declaringClass.getDescriptor()), asmMethod);
 
                     if(asExpression && castType != null) {
-                        generator.methodNode.checkCast(castType);
+                        generator.methodNode.checkCast(Type.getType(castType.getDescriptor()));
                     }
 
                     if(!asExpression && method.getReturnType() != Void.class)
