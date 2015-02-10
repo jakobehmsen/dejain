@@ -204,7 +204,8 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
             } else
                 fieldTypeDescriptor = Type.getType(field.getType()).getDescriptor();
 //            return new NameTypeAST(getRegion(), field.getType());
-            return NameTypeAST.fromDescriptor(Type.getType(field.getType()).getDescriptor());
+//            return NameTypeAST.fromDescriptor(Type.getType(field.getType()).getDescriptor());
+            return new NameTypeAST(null, field.getType());
         } catch (NoSuchFieldException | SecurityException ex) {
             Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
         }
