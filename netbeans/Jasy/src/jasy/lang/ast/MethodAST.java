@@ -773,16 +773,20 @@ public class MethodAST extends AbstractAST implements MemberAST {
             TypeAST resultTypeRaw = expressionRaw.resultType();
             
             if(!ExpressionAST.class.isAssignableFrom(((NameTypeAST)resultTypeRaw).getType())) {
+                Class<?> literalClass;
+                
                 switch(resultTypeRaw.getSimpleName()) {
-                    case "String": {
-                        resultTypeRaw = new NameTypeAST(null, ExpressionAST.class);
-                        expressionRaw = new NewAST(
-                            null, new NameTypeAST(null, StringLiteralAST.class), 
-                            Arrays.asList(new NullAST(null), ctx.body)
-                        ).accept(this);
-                        break;
-                    }
+                    case "String": literalClass = StringLiteralAST.class; break;
+                    case "int": literalClass = IntLiteralAST.class; break;
+                    case "long": literalClass = LongLiteralAST.class; break;
+                    default: literalClass = null;
                 }
+                
+                resultTypeRaw = new NameTypeAST(null, ExpressionAST.class);
+                expressionRaw = new NewAST(
+                    null, new NameTypeAST(null, literalClass), 
+                    Arrays.asList(new NullAST(null), ctx.body)
+                ).accept(this);
             }
             
             PreparedExpressionAST expression = expressionRaw;
