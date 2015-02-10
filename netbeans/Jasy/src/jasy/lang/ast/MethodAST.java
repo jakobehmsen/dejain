@@ -1918,7 +1918,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 ExpressionAST quotedLhs = ctx.lhs.accept(this);
                 ExpressionAST quotedRhs = ctx.rhs.accept(this);
                 
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), Arrays.asList(new NullAST(null), quotedLhs, quotedRhs));
+                return new NewAST(
+                    ctx.getRegion(), 
+                    new NameTypeAST(null, BinaryExpressionAST.class), 
+                    Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.operator), quotedLhs, quotedRhs)
+                );
             }
 
             @Override
