@@ -104,9 +104,15 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     }
 
     public NameTypeAST(Region region, Class<?> c) {
+        this(region, c, new TypeAST[0]);
+    }
+
+    public NameTypeAST(Region region, Class<?> c, TypeAST[] typeParameters) {
         super(region);
         this.name = c.getName();
         this.c = c;
+        this.typeParameters = typeParameters;
+        processTypeParameters();
     }
 
     @Override
@@ -135,21 +141,25 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
 //                c = Class.forName(name);
             }
             
-            if(typeParameters!= null && typeParameters.length > 0) {
-                TypeVariable[] tvs = c.getTypeParameters();
-                for(int j = 0; j < tvs.length; j++) {
-                    String name = tvs[j].getName();
-                    String tname = tvs[j].getTypeName();
-                    TypeAST arg = typeParameters[j];
-
-                    typeVariableNameToTypeMap.put(name, arg);
-                }
-            }
+            processTypeParameters();
             
             name = c.getName().replace(".", "/");
 //            descriptor = getDescriptorFromName(name);
         } catch (ClassNotFoundException ex) {
             errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve type " + name + "."));
+        }
+    }
+    
+    private void processTypeParameters() {
+        if(typeParameters!= null && typeParameters.length > 0) {
+            TypeVariable[] tvs = c.getTypeParameters();
+            for(int j = 0; j < tvs.length; j++) {
+                String name = tvs[j].getName();
+                String tname = tvs[j].getTypeName();
+                TypeAST arg = typeParameters[j];
+
+                typeVariableNameToTypeMap.put(name, arg);
+            }
         }
     }
 
