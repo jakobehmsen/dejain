@@ -457,10 +457,8 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() {\n" +
-            "        return ${\n" +
-            "            int i = " + expectedResult + ";\n" +
-            "            return i;\n" +
-            "        };\n" +
+            "        ${int i = " + expectedResult + ";}\n" + 
+            "        return $i;\n" +
             "    }\n" +
             "}\n";
         

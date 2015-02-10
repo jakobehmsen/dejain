@@ -145,6 +145,6 @@ public class MetaExpressionAST<T> extends AbstractAST implements ExpressionAST {
 
     @Override
     public <T> T accept(CodeVisitor<T> visitor) {
-        return visitor.visitMeta(this);
+        return visitor.visitMetaExpression(this);
     }
 }

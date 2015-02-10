@@ -284,6 +284,18 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
 
             @Override
+            public PreparedAST visitMetaCode(MetaCodeAST ctx) {
+                PreparedAST body = ctx.body.accept(this);
+                
+                return new PreparedAST() {
+                    @Override
+                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        body.generate(c, generator, originalIl);
+                    }
+                };
+            }
+
+            @Override
             public PreparedAST visitStringLiteral(StringLiteralAST ctx) {
                 throw new UnsupportedOperationException();
             }
@@ -347,7 +359,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
 
             @Override
-            public PreparedAST visitMeta(MetaExpressionAST ctx) {
+            public PreparedAST visitMetaExpression(MetaExpressionAST ctx) {
 //                
 //                Class<?> generatorClass2 = ctx.bodyAsMethod.getDeclaringClass();
 //                try {
@@ -485,6 +497,24 @@ public class MethodAST extends AbstractAST implements MemberAST {
         @Override
         public PreparedExpressionAST visitReturn(ReturnAST ctx) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedExpressionAST visitMetaCode(MetaCodeAST ctx) {
+            PreparedAST body = toCode(thisClass, ctx.body, variables);
+            
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    // After execution, leaves the stack as it was pre execution
+                    return new NameTypeAST(null, void.class);
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    body.generate(c, generator, originalIl);
+                }
+            };
         }
 
         @Override
@@ -769,7 +799,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
 
         @Override
-        public PreparedExpressionAST visitMeta(MetaExpressionAST ctx) {
+        public PreparedExpressionAST visitMetaExpression(MetaExpressionAST ctx) {
             // Assumed, body is an expression
             PreparedExpressionAST expressionRaw = toExpression(thisClass, ctx.body, variables, asExpression);
             
@@ -1099,6 +1129,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
         @Override
         public PreparedExpressionAST visitArray(ArrayAST ctx) {
+            // Support for meta code
+            // Meta code is should leave the stack as it was
             List<PreparedExpressionAST> elements = ctx.elements.stream().map(e -> e.accept(this)).collect(Collectors.toList());
 
             return new PreparedExpressionAST() {
@@ -1117,15 +1149,25 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                 @Override
                 public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                    generator.methodNode.push(ctx.elements.size());
+                    int length = (int)elements.stream().filter(e -> ((NameTypeAST)e.resultType()).getType() != void.class).count();
+                    generator.methodNode.push(length);
                     generator.methodNode.newArray(Type.getType(ctx.type.getDescriptor()));
 
+                    int arrayIndex = 0;
                     for(int i = 0; i < elements.size(); i++) {
-                        generator.methodNode.dup();
-                        generator.methodNode.push(i);
                         PreparedExpressionAST e = elements.get(i);
+                        
+                        if(((NameTypeAST)e.resultType()).getType() != void.class) {
+                            generator.methodNode.dup();
+                            generator.methodNode.push(arrayIndex);
+                            arrayIndex++;
+                        }
+                        
                         e.generate(c, generator, originalIl);
-                        generator.methodNode.arrayStore(Type.getType(ctx.type.getDescriptor()));
+                        
+                        if(((NameTypeAST)e.resultType()).getType() != void.class) {
+                            generator.methodNode.arrayStore(Type.getType(ctx.type.getDescriptor()));
+                        }
                     }
                 }
             };
@@ -1243,6 +1285,17 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
 
             @Override
+            public ExpressionAST visitMetaCode(MetaCodeAST ctx) {
+                // Return NullExpression
+                
+//                ExpressionAST quotedBody = ctx.body.accept(this);
+//                
+//                return new NewAST(ctx.getRegion(), new NameTypeAST(null, MetaCodeAST.class), Arrays.asList(new NullAST(null), quotedBody));
+                
+                return ctx;
+            }
+
+            @Override
             public ExpressionAST visitStringLiteral(StringLiteralAST ctx) {
                 return new NewAST(ctx.getRegion(), new NameTypeAST(null, StringLiteralAST.class), Arrays.asList(new NullAST(null), new StringLiteralAST(null, ctx.value)));
             }
@@ -1281,9 +1334,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
             
             private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
                 List<ExpressionAST> expressionList = expressions.stream().map(a -> a.accept(this)).collect(Collectors.toList());
-//                ExpressionAST quotedExpressionsAsArray = new TypecastAST(null, 
-//                    new ArrayAST(null, new NameTypeAST(null, ExpressionAST.class), expressionList),
-//                    NameTypeAST.fromDescriptor("[Ljava.lang.Object;"));
                 ExpressionAST quotedExpressionsAsArray = 
                     new ArrayAST(null, new NameTypeAST(null, CodeAST.class), expressionList);
                 return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
@@ -1307,7 +1357,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             }
 
             @Override
-            public ExpressionAST visitMeta(MetaExpressionAST ctx) {
+            public ExpressionAST visitMetaExpression(MetaExpressionAST ctx) {
                 // Should just return body in executed form.
                 // Body should be an ExpressionAST.
                 

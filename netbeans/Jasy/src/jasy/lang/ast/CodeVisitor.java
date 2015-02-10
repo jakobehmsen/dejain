@@ -8,7 +8,7 @@ public interface CodeVisitor<T> {
     T visitBinaryExpression(BinaryExpressionAST ctx);
     T visitInvocation(InvocationAST ctx);
     T visitFieldSet(FieldSetAST ctx);
-    T visitMeta(MetaExpressionAST ctx);
+    T visitMetaExpression(MetaExpressionAST ctx);
     T visitThis(ThisAST ctx);
     T visitFieldGet(FieldGetAST ctx);
     T visitVariableDeclaration(VariableDeclarationAST ctx);
@@ -22,4 +22,5 @@ public interface CodeVisitor<T> {
     T visitNull(NullAST ctx);
     T visitTypecast(TypecastAST ctx);
     T visitGetClass(GetClassAST ctx);
+    T visitMetaCode(MetaCodeAST ctx);
 }

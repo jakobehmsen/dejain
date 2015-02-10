@@ -36,6 +36,7 @@ import jasy.lang.ast.InvocationAST;
 import jasy.lang.ast.LongLiteralAST;
 import jasy.lang.ast.LookupAST;
 import jasy.lang.ast.MemberVisitor;
+import jasy.lang.ast.MetaCodeAST;
 import jasy.lang.ast.MetaScope;
 import jasy.lang.ast.NameTypeAST;
 import jasy.lang.ast.QuoteAST;
@@ -375,9 +376,14 @@ public class ASMCompiler {
         jasy.lang.ast.CodeAST r = ctx.accept(new JasyBaseVisitor<jasy.lang.ast.CodeAST>() {
             @Override
             public CodeAST visitStatement(JasyParser.StatementContext ctx) {
-                return ctx.nonDelimitedStatement() != null
-                    ? ctx.nonDelimitedStatement().accept(this)
-                    : ctx.delimitedStatement().accept(this);
+                if(ctx.nonDelimitedStatement() != null)
+                    return ctx.nonDelimitedStatement().accept(this);
+                if(ctx.delimitedStatement() != null)
+                    return ctx.delimitedStatement().accept(this);
+                if(ctx.metaBlock() != null)
+                    return ctx.metaBlock().accept(this);
+                
+                return null;
             }
 
             @Override
@@ -409,6 +415,13 @@ public class ASMCompiler {
                     value = null;
                 
                 return new VariableDeclarationAST(new Region(ctx), name, new NameTypeAST(new Region(ctx.typeQualifier()), type), value);
+            }
+
+            @Override
+            public CodeAST visitMetaBlock(JasyParser.MetaBlockContext ctx) {
+                List<CodeAST> statements = getStatements(ctx.statements(), mp);
+                
+                return new MetaCodeAST(null, new BlockAST(null, statements));
             }
         });
         
@@ -504,6 +517,7 @@ public class ASMCompiler {
 //                    body.add(new ReturnAST(new Region(ctx), exprCtx));
                     body = exprCtx;
                 } else {
+                    // Not possible; only expressions are supported here!!!
 //                    body.addAll(getStatements(ctx.statements(), mp));
                 }
                 
