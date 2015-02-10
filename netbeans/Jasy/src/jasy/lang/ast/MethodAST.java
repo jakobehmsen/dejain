@@ -1394,7 +1394,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public ExpressionAST visitVariableDeclaration(VariableDeclarationAST ctx) {
                 ExpressionAST quotedName = MethodAST.quote(ctx.name);
                 ExpressionAST quotedType = MethodAST.quote(ctx.type);
-                ExpressionAST quotedValue = ctx.value.accept(this);
+                ExpressionAST quotedValue = ctx.value != null ? ctx.value.accept(this) : new NullAST(null);
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, VariableDeclarationAST.class), 
