@@ -182,9 +182,12 @@ public class MethodAST extends AbstractAST implements MemberAST {
         
         Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
         PreparedAST pbody = toCode(mp.metaScope, body, metaVariables);
-        TypeAST returnType = pbody.returns();
+        ArrayList<TypeAST> returnTypes = new ArrayList<>();
+        pbody.returns(returnTypes);
+        // Must return CodeAST
+        TypeAST returnType = returnTypes.get(0);
         
-        Class<?> returnTypeClass = ((NameTypeAST)returnType).getType();
+        Class<?> returnTypeClass = CodeAST.class;//((NameTypeAST)returnType).getType();
         
         metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
         metaObjectClassNode.access = Opcodes.ACC_PUBLIC;
@@ -261,8 +264,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     }
 
                     @Override
-                    public TypeAST returns() {
-                        return expression.resultType();
+                    public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
+                        returnTypes.add(expression.resultType());
                     }
                 };
                 
@@ -279,6 +282,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     @Override
                     public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
                         pas.forEach(pa -> pa.generate(c, generator, originalIl));
+                    }
+
+                    @Override
+                    public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
+                        pas.forEach(pa -> pa.returns(returnTypes));
                     }
                 };
             }
