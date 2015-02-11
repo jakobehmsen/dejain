@@ -11,6 +11,7 @@ import jasy.lang.antlr4.JasyParser;
 import jasy.lang.antlr4.JasyParser.AnnotationContext;
 import jasy.lang.antlr4.JasyParser.InvocationContext;
 import jasy.lang.antlr4.JasyParser.LookupContext;
+import jasy.lang.antlr4.JasyParser.MetaBlockContext;
 import jasy.lang.antlr4.JasyParser.ProgramContext;
 import jasy.lang.antlr4.JasyParser.StatementContext;
 import jasy.lang.ast.BinaryExpressionAST;
@@ -224,7 +225,7 @@ public class ASMCompiler {
                                     
 //                                    body = getStatements(ctx.body.block().statements(), mp);
                                 } else {
-                                    List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.block().statements(), mp);
+                                    List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.metaBlock().statements(), mp);
                                     body = new BlockAST(new Region(ctx.body), statements);
                                 }
                                 
@@ -261,110 +262,6 @@ public class ASMCompiler {
             metaScope = new MetaScope(patternVariables);
         }
     }
-    
-//    private void processMeta(ModuleContext ctx) {
-//        MetaProcessing mp = new MetaProcessing();
-//        
-//        ctx.classes.forEach(c -> {
-//            c.members.forEach(m -> {
-//                m.accept(new MemberVisitor() {
-//                    @Override
-//                    public void visitMethod(MethodContext ctx) {
-//                        processMeta(ctx.body, mp);
-//                    }
-//
-//                    @Override
-//                    public void visitField(FieldContext ctx) {
-//                        if(ctx.value != null)
-//                            processMeta(ctx.value, mp);
-//                    }
-//                });
-//            });
-//        });
-//    }
-//    
-//    private void processMeta(List<CodeContext> codeCtxs, MetaProcessing mp) {
-//        codeCtxs.forEach(c -> processMeta(c, mp));
-//    }
-//    
-//    private void processMeta(CodeContext ctx, MetaProcessing mp) {
-//        ctx.accept(new CodeVisitor() {
-//            @Override
-//            public void visitReturn(ReturnContext ctx) {
-//                ctx.expression.accept(this);
-//            }
-//
-//            @Override
-//            public void visitStringLiteral(LiteralContext<String> ctx) { }
-//
-//            @Override
-//            public void visitIntegerLiteral(LiteralContext<Integer> ctx) { }
-//
-//            @Override
-//            public void visitBinaryExpression(BinaryExpressionContext ctx) {
-//                ctx.lhs.accept(this);
-//                ctx.rhs.accept(this);
-//            }
-//
-//            @Override
-//            public void visitInvocation(InvocationContext ctx) {
-//                ctx.target.accept(this);
-//                ctx.arguments.forEach(a -> a.accept(this));
-//            }
-//
-//            @Override
-//            public void visitFieldSet(FieldSetContext ctx) {
-//                ctx.target.accept(this);
-//                ctx.value.accept(this);
-//            }
-//
-//            @Override
-//            public void visitLongLiteral(LiteralContext<Long> ctx) { }
-//
-//            @Override
-//            public void visitMeta(MetaContext ctx) {
-//                ArrayList<Message> metaErrorMessages = new ArrayList<>();
-//                
-//                ctx.body.forEach(s -> s.resolve(null, classResolver, metaErrorMessages));
-//                
-//                // 1) Generate code to generate code
-//                ClassNode generatorClassNode = new ClassNode(Opcodes.ASM5);
-//                generatorClassNode.version = Opcodes.V1_8;
-//                generatorClassNode.access = Opcodes.ACC_PUBLIC;
-//                generatorClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
-//                generatorClassNode.superName = "java/lang/Object";
-//                MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, "generator", Type.getMethodDescriptor(Type.getType(String.class)), null, new String[]{});
-//                generatorClassNode.methods.add(generatorMethod);
-//                
-//                GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
-//                MethodContext.toCode("Generator", ctx.body, new MethodContext.MethodCodeGenerator(generatorAdapter, null));
-//                
-//                SingleClassLoader classLoader = new SingleClassLoader(generatorClassNode);
-//                Class<?> generatorClass2 = classLoader.loadClass();
-//                
-//                try {
-//                    // 2) Evaluate the generated code which result in a String
-//                    Method m = generatorClass2.getMethod("generator", null);
-//                    String str = (String)m.invoke(null, null);
-//                    str.toString();
-//                    // 3) Parse that String into an expression which the MetaContext now is proxy of.
-//                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-//                    Logger.getLogger(ASMCompiler.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//                
-//                mp.generatorCount++;
-//                
-//            }
-//
-//            @Override
-//            public void visitThis(ThisContext ctx) { }
-//
-//            @Override
-//            public void visitFieldGet(FieldGetContext ctx) {
-//                ctx.target.accept(this);
-//            }
-//        });
-//    }
 
     private List<jasy.lang.ast.CodeAST> getStatements(JasyParser.StatementsContext ctx, MetaProcessing mp) {
         return ctx.statement().stream()
@@ -372,7 +269,7 @@ public class ASMCompiler {
             .collect(Collectors.toList());
     }
     
-    private jasy.lang.ast.CodeAST getStatement(JasyParser.StatementContext ctx, MetaProcessing mp) {
+    private jasy.lang.ast.CodeAST getStatement(ParserRuleContext ctx, MetaProcessing mp) {
         jasy.lang.ast.CodeAST r = ctx.accept(new JasyBaseVisitor<jasy.lang.ast.CodeAST>() {
             @Override
             public CodeAST visitStatement(JasyParser.StatementContext ctx) {
@@ -551,6 +448,20 @@ public class ASMCompiler {
                     return new VariableAssignmentAST(new Region(ctx), name, value);
                 } else
                     return ctx.binarySum().accept(this);
+            }
+
+            @Override
+            public ExpressionAST visitQuotedExpression(JasyParser.QuotedExpressionContext ctx) {
+                CodeAST code = null;
+                
+                if(ctx.delimitedStatement() != null)
+                    code = getStatement(ctx.delimitedStatement(), mp);
+                else if(ctx.nonDelimitedStatement() != null)
+                    code = getStatement(ctx.nonDelimitedStatement(), mp);
+                else if(ctx.expression() != null)
+                    code = getExpression(ctx.expression(), mp);
+                
+                return new QuoteAST(new Region(ctx), code);
             }
         });
     }
