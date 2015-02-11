@@ -536,6 +536,31 @@ public class SourceToClassTest {
     }
     
     @Test
+    
+    public void testAllClassesAddMethodReturnValueOfSumOfSharedMetaVariables() throws IOException {
+        int i1 = 5;
+        int i2 = 7;
+        int expectedResult = i1 + i2;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() ${\n" +
+            "        int i1 = " + i1 + ";\n" +
+            "        int i2 = " + i2 + ";\n" +
+            "        return #return $i1 + i2;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodReturnSumOfVariable() throws IOException {
         int i1 = 5;
         int i2 = 7;
