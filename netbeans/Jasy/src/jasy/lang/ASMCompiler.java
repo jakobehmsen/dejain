@@ -466,7 +466,10 @@ public class ASMCompiler {
                     code = getStatement(ctx.delimitedStatement(), mp);
                 else if(ctx.nonDelimitedStatement() != null)
                     code = getStatement(ctx.nonDelimitedStatement(), mp);
-                else if(ctx.expression() != null)
+                else if(ctx.block() != null) {
+                    List<CodeAST> statements = getStatements(ctx.block().statements(), mp);
+                    code = new BlockAST(new Region(ctx.block()), statements);
+                } else if(ctx.expression() != null)
                     code = getExpression(ctx.expression(), mp);
                 
                 return new QuoteAST(new Region(ctx), code);
