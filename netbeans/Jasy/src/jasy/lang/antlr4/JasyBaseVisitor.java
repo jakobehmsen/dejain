@@ -1,4 +1,4 @@
-// Generated from C:\github\dejain\netbeans\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
+// Generated from C:\github\jasy\netbeans\Jasy\src\jasy\lang\antlr4\Jasy.g4 by ANTLR 4.1
 package jasy.lang.antlr4;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
@@ -243,6 +243,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitStatement(@NotNull JasyParser.StatementContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitInjectStatement(@NotNull JasyParser.InjectStatementContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

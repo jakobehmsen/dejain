@@ -1,4 +1,4 @@
-// Generated from C:\github\dejain\netbeans\Dejain\src\dejain\lang\antlr4\Dejain.g4 by ANTLR 4.1
+// Generated from C:\github\jasy\netbeans\Jasy\src\jasy\lang\antlr4\Jasy.g4 by ANTLR 4.1
 package jasy.lang.antlr4;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
@@ -12,350 +12,357 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#variableAssignment}.
+	 * Visit a parse tree produced by {@link JasyParser#variableAssignment}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitVariableAssignment(@NotNull JasyParser.VariableAssignmentContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#nonDelimitedStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#nonDelimitedStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitNonDelimitedStatement(@NotNull JasyParser.NonDelimitedStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#annotations}.
+	 * Visit a parse tree produced by {@link JasyParser#annotations}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitAnnotations(@NotNull JasyParser.AnnotationsContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#binarySum}.
+	 * Visit a parse tree produced by {@link JasyParser#binarySum}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitBinarySum(@NotNull JasyParser.BinarySumContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#program}.
+	 * Visit a parse tree produced by {@link JasyParser#program}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitProgram(@NotNull JasyParser.ProgramContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#binarySumOperator}.
+	 * Visit a parse tree produced by {@link JasyParser#binarySumOperator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitBinarySumOperator(@NotNull JasyParser.BinarySumOperatorContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMember}.
+	 * Visit a parse tree produced by {@link JasyParser#classTransformerMember}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMember(@NotNull JasyParser.ClassTransformerMemberContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#block}.
+	 * Visit a parse tree produced by {@link JasyParser#block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitBlock(@NotNull JasyParser.BlockContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#booleanLiteral}.
+	 * Visit a parse tree produced by {@link JasyParser#booleanLiteral}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitBooleanLiteral(@NotNull JasyParser.BooleanLiteralContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#identifier}.
+	 * Visit a parse tree produced by {@link JasyParser#identifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIdentifier(@NotNull JasyParser.IdentifierContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#catchStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#catchStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitCatchStatement(@NotNull JasyParser.CatchStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#metaBlock}.
+	 * Visit a parse tree produced by {@link JasyParser#metaBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitMetaBlock(@NotNull JasyParser.MetaBlockContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#ifTrueBlock}.
+	 * Visit a parse tree produced by {@link JasyParser#ifTrueBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIfTrueBlock(@NotNull JasyParser.IfTrueBlockContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#invocation}.
+	 * Visit a parse tree produced by {@link JasyParser#invocation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitInvocation(@NotNull JasyParser.InvocationContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#stringLiteral}.
+	 * Visit a parse tree produced by {@link JasyParser#stringLiteral}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitStringLiteral(@NotNull JasyParser.StringLiteralContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMembers}.
+	 * Visit a parse tree produced by {@link JasyParser#classTransformerMembers}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMembers(@NotNull JasyParser.ClassTransformerMembersContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#parameters}.
+	 * Visit a parse tree produced by {@link JasyParser#parameters}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitParameters(@NotNull JasyParser.ParametersContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#delimitedStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#delimitedStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitDelimitedStatement(@NotNull JasyParser.DelimitedStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#ifFalseBlock}.
+	 * Visit a parse tree produced by {@link JasyParser#ifFalseBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIfFalseBlock(@NotNull JasyParser.IfFalseBlockContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#tryStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#tryStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTryStatement(@NotNull JasyParser.TryStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#statements}.
+	 * Visit a parse tree produced by {@link JasyParser#statements}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitStatements(@NotNull JasyParser.StatementsContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#returnStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#returnStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitReturnStatement(@NotNull JasyParser.ReturnStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#tryCatchStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#tryCatchStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTryCatchStatement(@NotNull JasyParser.TryCatchStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#quotedExpression}.
+	 * Visit a parse tree produced by {@link JasyParser#quotedExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitQuotedExpression(@NotNull JasyParser.QuotedExpressionContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#literal}.
+	 * Visit a parse tree produced by {@link JasyParser#literal}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitLiteral(@NotNull JasyParser.LiteralContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#accessModifier}.
+	 * Visit a parse tree produced by {@link JasyParser#accessModifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitAccessModifier(@NotNull JasyParser.AccessModifierContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#thisResult}.
+	 * Visit a parse tree produced by {@link JasyParser#thisResult}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitThisResult(@NotNull JasyParser.ThisResultContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#parameter}.
+	 * Visit a parse tree produced by {@link JasyParser#parameter}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitParameter(@NotNull JasyParser.ParameterContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#statement}.
+	 * Visit a parse tree produced by {@link JasyParser#statement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitStatement(@NotNull JasyParser.StatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberDefinition}.
+	 * Visit a parse tree produced by {@link JasyParser#injectStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInjectStatement(@NotNull JasyParser.InjectStatementContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberDefinition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMemberDefinition(@NotNull JasyParser.ClassTransformerMemberDefinitionContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#annotation}.
+	 * Visit a parse tree produced by {@link JasyParser#annotation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitAnnotation(@NotNull JasyParser.AnnotationContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#lookup}.
+	 * Visit a parse tree produced by {@link JasyParser#lookup}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitLookup(@NotNull JasyParser.LookupContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#expression}.
+	 * Visit a parse tree produced by {@link JasyParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExpression(@NotNull JasyParser.ExpressionContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#leafExpressionChain}.
+	 * Visit a parse tree produced by {@link JasyParser#leafExpressionChain}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitLeafExpressionChain(@NotNull JasyParser.LeafExpressionChainContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#throwStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#throwStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitThrowStatement(@NotNull JasyParser.ThrowStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformer}.
+	 * Visit a parse tree produced by {@link JasyParser#classTransformer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitClassTransformer(@NotNull JasyParser.ClassTransformerContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#proceedStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#proceedStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitProceedStatement(@NotNull JasyParser.ProceedStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#ifElseStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#ifElseStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIfElseStatement(@NotNull JasyParser.IfElseStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#leafExpression}.
+	 * Visit a parse tree produced by {@link JasyParser#leafExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitLeafExpression(@NotNull JasyParser.LeafExpressionContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#metaExpression}.
+	 * Visit a parse tree produced by {@link JasyParser#metaExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitMetaExpression(@NotNull JasyParser.MetaExpressionContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberMethodBlody}.
+	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberMethodBlody}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMemberMethodBlody(@NotNull JasyParser.ClassTransformerMemberMethodBlodyContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#variableDeclaration}.
+	 * Visit a parse tree produced by {@link JasyParser#variableDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitVariableDeclaration(@NotNull JasyParser.VariableDeclarationContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#finallyStatement}.
+	 * Visit a parse tree produced by {@link JasyParser#finallyStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitFinallyStatement(@NotNull JasyParser.FinallyStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberMethod}.
+	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberMethod}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMemberMethod(@NotNull JasyParser.ClassTransformerMemberMethodContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#modStatic}.
+	 * Visit a parse tree produced by {@link JasyParser#modStatic}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitModStatic(@NotNull JasyParser.ModStaticContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#integerLiteral}.
+	 * Visit a parse tree produced by {@link JasyParser#integerLiteral}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIntegerLiteral(@NotNull JasyParser.IntegerLiteralContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#arguments}.
+	 * Visit a parse tree produced by {@link JasyParser#arguments}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitArguments(@NotNull JasyParser.ArgumentsContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#classTransformerMemberField}.
+	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberField}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMemberField(@NotNull JasyParser.ClassTransformerMemberFieldContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#typeQualifier}.
+	 * Visit a parse tree produced by {@link JasyParser#typeQualifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTypeQualifier(@NotNull JasyParser.TypeQualifierContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link DejainParser#longLiteral}.
+	 * Visit a parse tree produced by {@link JasyParser#longLiteral}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */

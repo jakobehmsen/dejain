@@ -39,7 +39,7 @@ statement: metaBlock | nonDelimitedStatement | delimitedStatement SEMI_COLON;
 nonDelimitedStatement: tryCatchStatement | ifElseStatement;
 proceedStatement: ELLIPSES;
 metaExpression: DOLLAR (expression | OPEN_BRA statements CLOSE_BRA);
-quotedExpression: HASH (expression | nonDelimitedStatement | delimitedStatement);
+quotedExpression: HASH (expression | nonDelimitedStatement | delimitedStatement | block);
 tryCatchStatement: 
     tryStatement ((catchStatement finallyStatement?) | finallyStatement);
 tryStatement: KW_TRY OPEN_BRA statements CLOSE_BRA;
@@ -54,10 +54,12 @@ ifTrueBlock:
     OPEN_BRA statement* CLOSE_BRA | statement;
 ifFalseBlock: KW_ELSE (OPEN_BRA statement* CLOSE_BRA | statement);
 delimitedStatement: 
-    returnStatement | throwStatement | variableDeclaration | expression;
+    returnStatement | throwStatement | variableDeclaration | 
+    injectStatement | expression;
 variableDeclaration: typeQualifier id=identifier (ASSIGN_OP value=expression)?;
 returnStatement: KW_RETURN expression;
 throwStatement: KW_THROW expression;
+injectStatement: HAT expression;
 literal: stringLiteral | integerLiteral | longLiteral | booleanLiteral;
 stringLiteral: STRING;
 integerLiteral: INTEGER;
@@ -77,6 +79,7 @@ ELLIPSES: '...';
 COMMA: ',';
 OPEN_PAR: '(';
 CLOSE_PAR: ')';
+HAT: '^';
 AT: '@';
 DOLLAR: '$';
 HASH: '#';
