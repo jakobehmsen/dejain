@@ -82,6 +82,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitIdentifier(@NotNull JasyParser.IdentifierContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#binaryRelational}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinaryRelational(@NotNull JasyParser.BinaryRelationalContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#catchStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -194,6 +201,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitLiteral(@NotNull JasyParser.LiteralContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#binaryMult}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinaryMult(@NotNull JasyParser.BinaryMultContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#accessModifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -304,6 +318,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitMetaExpression(@NotNull JasyParser.MetaExpressionContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#binaryMultOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinaryMultOperator(@NotNull JasyParser.BinaryMultOperatorContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberMethodBlody}.

@@ -98,6 +98,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitBinaryRelational(@NotNull JasyParser.BinaryRelationalContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitCatchStatement(@NotNull JasyParser.CatchStatementContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -226,6 +234,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitBinaryMult(@NotNull JasyParser.BinaryMultContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitAccessModifier(@NotNull JasyParser.AccessModifierContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -347,6 +363,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitMetaExpression(@NotNull JasyParser.MetaExpressionContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitBinaryMultOperator(@NotNull JasyParser.BinaryMultOperatorContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

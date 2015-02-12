@@ -388,9 +388,9 @@ public class ASMCompiler {
                 ExpressionAST result = ctx.first.accept(this);
                 // Derive 
                 
-                for(int i = 1; i < ctx.leafExpression().size(); i++) {
+                for(int i = 1; i < ctx.binaryMult().size(); i++) {
                     ExpressionAST lhs = result;
-                    ExpressionAST rhs = ctx.leafExpression(i).accept(this);
+                    ExpressionAST rhs = ctx.binaryMult(i).accept(this);
 
                     int operator;
 
@@ -455,7 +455,7 @@ public class ASMCompiler {
 
                     return new VariableAssignmentAST(new Region(ctx), name, value);
                 } else
-                    return ctx.binarySum().accept(this);
+                    return ctx.binaryRelational().accept(this);
             }
 
             @Override

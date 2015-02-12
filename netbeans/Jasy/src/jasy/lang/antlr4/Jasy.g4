@@ -22,7 +22,9 @@ block: OPEN_BRA statements CLOSE_BRA;
 parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
 expression: variableAssignment;
-variableAssignment: identifier ASSIGN_OP value=variableAssignment | binarySum;
+variableAssignment: identifier ASSIGN_OP value=variableAssignment | binaryRelational;
+binaryRelational: 
+    first=binarySum (operator=(LT | LTE | GT | GTE) rest=binarySum)*;
 binarySum: first=binaryMult (binarySumOperator rest=binaryMult)*;
 binaryMult: first=leafExpression (binaryMultOperator rest=leafExpression)*;
 leafExpression: 
@@ -94,6 +96,10 @@ PLUS: '+';
 MINUS: '-';
 MULT: '*';
 DIV: '/';
+LT: '<';
+LTE: '<=';
+GT: '>';
+GTE: '>=';
 ASSIGN_OP: '=';
 REPLACE_OP: '=>';
 KW_THIS_RESULT: 'thisResult';
