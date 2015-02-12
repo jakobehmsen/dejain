@@ -29,11 +29,10 @@
 <a id="welcome-to-the-project-page-of-jasy" class="anchor" href="#welcome-to-the-project-page-of-jasy" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction to Jasy</h3>
 
 <p>
-Jasy is a declarative Java bytecode instrumentation language with a syntax leaning towards Java. 
-Its imagined applications lie within model driven development by using POJOs as models.
+Jasy is a declarative Java bytecode instrumentation language with a syntax leaning towards Java. The instrumentation is either expressed in a declarative style or an imperative style using code interpolation.
 </p>
 
-<p>Take a look below to see how easy it is to add an extra field and override the toString method of all classes being loaded:</p>
+<p>Using the declarative style, an example is shown where an extra field is added and the toString method is overridden for all classes being transformed:</p>
 
 <pre><code>class {
     +private String extraField = "Hello World!";
@@ -49,8 +48,8 @@ Its imagined applications lie within model driven development by using POJOs as 
 <a id="code-interpolation" class="anchor" href="#code-interpolation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Code Interpolation</h3>
 
 <p>
-There are limitations to instrumentation based only on code ad verbatim.
-To overcome this, Jasy supports interpolation of explicitly generated code. 
+There are limitations to instrumentation based only on the declarative style in Jasy.
+To overcome this, Jasy supports interpolation of imperatively generated code. 
 This code is represented by ASTs, where these ASTs may be implictly converted from non-AST values (e.g. Strings and ints) into their corresponding AST represention.
 </p>
 
@@ -89,6 +88,8 @@ In some cases, it is practical to generate statements - perhaps even in a varyin
     }
 }
 </code></pre>
+
+<p>A <code>^...</code> statement interpolates the result of <code>...</code> at its respective location. A <code>#...</code> returns <code>...</code> as its respective AST representation (except for any embedded <code>$...</code> blocks or expressions.).</p>
 
 <p>For example, the following class</p>
 
