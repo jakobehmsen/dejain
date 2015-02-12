@@ -1,4 +1,4 @@
-grammar Dejain;
+grammar Jasy;
 
 program: classTransformer*;
 classTransformer:
