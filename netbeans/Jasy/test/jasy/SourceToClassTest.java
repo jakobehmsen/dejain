@@ -544,7 +544,7 @@ public class SourceToClassTest {
             "    +public int getValue() {\n" +
             "        int i = " + expectedResult + ";\n" +
             "        ${\n" +
-            "            #return i;\n" +
+            "            ^#return i;\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
