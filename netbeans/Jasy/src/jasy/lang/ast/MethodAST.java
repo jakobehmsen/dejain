@@ -1102,7 +1102,10 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
         @Override
         public PreparedExpressionAST visitNew(NewAST ctx) {
-            List<PreparedExpressionAST> arguments = ctx.arguments.stream().map(e -> e.accept(this)).collect(Collectors.toList());
+            List<PreparedExpressionAST> arguments = ctx.arguments.stream()
+//                .map(e -> e.accept(this))
+                .map(e -> getAsExpression(e))
+                .collect(Collectors.toList());
 
             return new PreparedExpressionAST() {
                 @Override
@@ -1133,6 +1136,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                     Method mConstructor = new Method("<init>", Type.VOID_TYPE, argumentTypes);
                     generator.methodNode.invokeConstructor(Type.getType(ctx.c.getDescriptor()), mConstructor);
+                    
+                    if(!asExpression)
+                        generator.methodNode.pop();
                 }
             };
         }
@@ -1397,7 +1403,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 
                 List<InjectAST> injectStatements = ctx.statements.stream()
                     .map(s -> s.accept(this))
-                    .map(s -> new InjectAST(null, s))
+                    .map(s -> 
+                        new InjectAST(null, s))
                     .collect(Collectors.toList());
                 
                 InjectionBlockAST statementInjectorBlock = new InjectionBlockAST(null, injectStatements);
