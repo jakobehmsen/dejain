@@ -32,6 +32,7 @@ import jasy.lang.ast.CodeVisitor;
 import jasy.lang.ast.RootExpressionAST;
 import jasy.lang.ast.FieldGetAST;
 import jasy.lang.ast.FieldSetAST;
+import jasy.lang.ast.InjectAST;
 import jasy.lang.ast.IntLiteralAST;
 import jasy.lang.ast.InvocationAST;
 import jasy.lang.ast.LongLiteralAST;
@@ -462,6 +463,13 @@ public class ASMCompiler {
                     code = getExpression(ctx.expression(), mp);
                 
                 return new QuoteAST(new Region(ctx), code);
+            }
+
+            @Override
+            public ExpressionAST visitInjectStatement(JasyParser.InjectStatementContext ctx) {
+                ExpressionAST expression = getExpression(ctx.expression(), mp);
+                
+                return new InjectAST(new Region(ctx), expression);
             }
         });
     }

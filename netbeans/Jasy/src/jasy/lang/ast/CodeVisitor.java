@@ -23,4 +23,5 @@ public interface CodeVisitor<T> {
     T visitTypecast(TypecastAST ctx);
     T visitGetClass(GetClassAST ctx);
     T visitMetaCode(MetaCodeAST ctx);
+    T visitInject(InjectAST ctx);
 }

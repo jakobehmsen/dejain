@@ -471,6 +471,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitGetClass(GetClassAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public PreparedAST visitInject(InjectAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
 
@@ -846,117 +851,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     }
                 }
             };
-            
-            // Doesn't make sense here?... Ony within quoted asts, right?
-
-            // expectedResultType should for body should a type pattern including String, int, ...rest primitive types..., ExpressionAST
-//                ctx.body.forEach(s -> s.resolve(mp.metaScope, new NameTypeAST(getRegion(), ExpressionAST.class), resolver, errorMessages));
-//                ctx.body.stream().collect(Collectors.toList())
-
-
-
-
-//                // 1) Generate code to generate code
-//                ClassNode metaObjectClassNode = new ClassNode(Opcodes.ASM5);
-//
-//                ctx.mp.metaScope.addFields(metaObjectClassNode);
-//                
-//                Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
-//                List<PreparedAST> body = ((List<CodeAST>)ctx.body).stream().map(c -> 
-////                    toCode(new ClassNodeScope(metaObjectClassNode), c)).collect(Collectors.toList());
-//                    toCode(ctx.mp.metaScope, c, metaVariables)).collect(Collectors.toList());
-//                List<TypeAST> returnTypes = body.stream().map(c -> 
-//                    c.returns()).filter(r -> r != null).collect(Collectors.toList());
-//                Class<?> returnTypeClass = ((NameTypeAST)returnTypes.get(0)).getType();
-//                
-//                metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
-//                metaObjectClassNode.access = Opcodes.ACC_PUBLIC;
-//                metaObjectClassNode.name = "dejain/generator/ASMGenerator" + ctx.mp.generatorCount;
-//                metaObjectClassNode.superName = "java/lang/Object";
-//                MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
-//                metaObjectClassNode.methods.add(generatorMethod);
-//
-//                MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
-//                defaultConstructor.visitCode();
-//                defaultConstructor.visitVarInsn(Opcodes.ALOAD, 0);
-//                defaultConstructor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-//                defaultConstructor.visitInsn(Opcodes.RETURN);
-//                defaultConstructor.visitMaxs(1,1);
-//                defaultConstructor.visitEnd();
-//                metaObjectClassNode.methods.add(defaultConstructor);
-//
-//                GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
-////                MethodAST.toCode(new Transformation<>(generatorClassNode), body, new MethodAST.MethodCodeGenerator(generatorAdapter, null));
-//                MethodCodeGenerator metaCodeGenerator = new MethodCodeGenerator(generatorAdapter, null);
-//                metaCodeGenerator.start();
-//                body.forEach(c -> 
-//                    c.generate(new Transformation<>(metaObjectClassNode), metaCodeGenerator, new InsnList()));
-//                metaCodeGenerator.end();
-//                generatorMethod.visitEnd();
-//
-//                ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-//                metaObjectClassNode.accept(cw);
-//                
-//                TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
-//                metaObjectClassNode.accept(traceClassVisitor);
-//                CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), false, new PrintWriter(System.out));
-//                
-//                SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
-//                Class<?> metaObjectClass = classLoader.loadClass();
-//                java.lang.reflect.Method bodyAsMethodTmp = null;
-//                
-//                try {
-//                    bodyAsMethodTmp = metaObjectClass.getMethod("generator", null);
-//                } catch (NoSuchMethodException | SecurityException ex) {
-//                    Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//                
-//                java.lang.reflect.Method bodyAsMethod = bodyAsMethodTmp;
-//
-//                ctx.mp.generatorCount++;
-//
-////                resultType = new NameTypeAST(getRegion(), resultType(bodyAsMethod.getReturnType()));
-//                
-//                TypeAST resultType = returnTypes.get(0);
-//                
-//                return new PreparedExpressionAST() {
-//                    @Override
-//                    public TypeAST resultType() {
-//                        return resultType;
-//                    }
-//
-//                    @Override
-//                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-//                        try {
-//                            Object metaObject = metaObjectClass.newInstance();
-//
-//                            // 2) Evaluate the generated code which result in a String
-//                            for(String fieldName: ctx.mp.metaScope.getFieldNames()) {
-//                                try {
-//                                    Field f = metaObjectClass.getField(fieldName);
-//                                    Object value = c.getVariableValue(fieldName);
-//                                    f.set(metaObject, value);
-//                                } catch (NoSuchFieldException ex) {
-//                                    Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
-//                                }
-//                            }
-//
-//                            // Expression is derived pr transformation
-//                            Object astValue = bodyAsMethod.invoke(metaObject, null);
-//                            ExpressionAST generatedExpression = ctx.convertToExpression(astValue, bodyAsMethod.getReturnType());
-//                            PreparedAST preparedGeneratedExpression = toExpression(thisClass, generatedExpression, variables, true);
-//                            preparedGeneratedExpression.generate(c, generator, originalIl);
-////                            generatedExpression.accept(this);
-//                        } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-//                            Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
-//                        }
-//                    }
-//                };
-//                
-////                Class<?> generatorClass2 = ctx.bodyAsMethod.getDeclaringClass();
-//                
-//                
-//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
@@ -1084,15 +978,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
             return quotedAST.accept(this);
         }
 
-
-        private void myMethod(Object i) {
-
-        }
-
-        private void myMethod(String str) {
-
-        }
-
         @Override
         public PreparedExpressionAST visitNull(NullAST ctx) {
             return new PreparedExpressionAST() {
@@ -1107,8 +992,6 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     //
                     // Or the most specific one?
                     // http://docs.oracle.com/javase/specs/jls/se5.0/html/expressions.html#15.12.2.5
-
-                    myMethod(null);
 
                     return null;
                 }
@@ -1276,6 +1159,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     generator.methodNode.push(Type.getType(ctx.t.getDescriptor()));
                 }
             };
+        }
+
+        @Override
+        public PreparedExpressionAST visitInject(InjectAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
     
@@ -1494,6 +1382,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, GetClassAST.class), 
                     Arrays.asList(new NullAST(null), quotedType));
+            }
+
+            @Override
+            public ExpressionAST visitInject(InjectAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         });
     }
