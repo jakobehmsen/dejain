@@ -559,15 +559,101 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodGenerateQuotedBlock() throws IOException {
+    public void testAllClassesAddMethodWhichGenerateQuotedBlock() throws IOException {
         int expectedResult = 5;
         
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
             "        return #{\n" +
-            "           int i = " + expectedResult + ";\n" +
-            "           return i;\n" +
+            "            int i = " + expectedResult + ";\n" +
+            "            return i;\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWhichGenerateQuotedBlockWithInjection() throws IOException {
+        int expectedResult = 5;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() ${\n" +
+            "        return #{\n" +
+            "            int i;\n" +
+            "            ${^#i = " + expectedResult + ";}\n" +
+            "            return i;\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWhichGenerateQuotedBlockWithInjections() throws IOException {
+        int i1 = 5;
+        int i2 = 7;
+        int expectedResult = i1 + i2;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() ${\n" +
+            "        return #{\n" +
+            "            int i1;\n" +
+            "            int i2;\n" +
+            "            ${\n" +
+            "                ^#i1 = " + i1 + ";\n" +
+            "                ^#i2 = " + i2 + ";\n" +
+            "            }\n" +
+            "            return i1 + i2;\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWhichGenerateQuotedBlockWithBlockInjected() throws IOException {
+        int i1 = 5;
+        int i2 = 7;
+        int expectedResult = i1 + i2;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() ${\n" +
+            "        return #{\n" +
+            "            int i1;\n" +
+            "            int i2;\n" +
+            "            ${\n" +
+            "                ^#{\n" +
+            "                    i1 = " + i1 + ";\n" +
+            "                    i2 = " + i2 + ";\n" +
+            "                };\n" +
+            "            }\n" +
+            "            return i1 + i2;\n" +
             "        };\n" +
             "    }\n" +
             "}\n";
