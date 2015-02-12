@@ -23,13 +23,15 @@ parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
 expression: variableAssignment;
 variableAssignment: identifier ASSIGN_OP value=variableAssignment | binarySum;
-binarySum: first=leafExpression (binarySumOperator rest=leafExpression)*;
+binarySum: first=binaryMult (binarySumOperator rest=binaryMult)*;
+binaryMult: first=leafExpression (binaryMultOperator rest=leafExpression)*;
 leafExpression: 
     (invocation | literal | lookup | thisResult | proceedStatement | 
     metaExpression | quotedExpression | OPEN_PAR expression CLOSE_PAR) 
     leafExpressionChain;
 leafExpressionChain: (DOT (lookup|invocation))*;
 binarySumOperator: operator=(PLUS | MINUS);
+binaryMultOperator: operator=(MULT | DIV);
 thisResult: KW_THIS_RESULT;
 invocation: identifier OPEN_PAR arguments CLOSE_PAR;
 arguments: (expression (COMMA expression)*)?;
@@ -90,6 +92,8 @@ DOLLAR: '$';
 HASH: '#';
 PLUS: '+';
 MINUS: '-';
+MULT: '*';
+DIV: '/';
 ASSIGN_OP: '=';
 REPLACE_OP: '=>';
 KW_THIS_RESULT: 'thisResult';
