@@ -559,6 +559,29 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodGenerateQuotedBlock() throws IOException {
+        int expectedResult = 5;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() ${\n" +
+            "        return #{\n" +
+            "           int i = " + expectedResult + ";\n" +
+            "           return i;\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodReturnValueOfSumOfSharedMetaVariables() throws IOException {
         int i1 = 5;
         int i2 = 7;
