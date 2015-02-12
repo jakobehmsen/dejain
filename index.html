@@ -79,10 +79,11 @@ In some cases, it is practical to generate statements - perhaps even in a varyin
 
     +public String getDescription() {
         StringBuilder descriptionBuilder = new StringBuilder();
-		
-        $fields.stream().map(f -> 
-            #descriptionBuilder.append($f.name + " = " + $f.value)
-        );
+	
+        ${
+            for(Field f: fields)
+                ^#descriptionBuilder.append($f.name + " = " + $f.value);
+        }
 		
         return descriptionBuilder.toString();
     }
