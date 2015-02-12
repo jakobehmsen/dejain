@@ -606,6 +606,28 @@ public class SourceToClassTest {
         );
     }
     
+    @Test
+    public void testAllClassesAddMethodWithInjection() throws IOException {
+        int expectedResult = 5;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() {\n" +
+            "        int i;\n" +
+            "        ${^#i = " + expectedResult + ";}\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
     private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {

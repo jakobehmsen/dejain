@@ -302,7 +302,7 @@ public class ASMCompiler {
             }
 
             @Override
-            public ExpressionAST visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
+            public CodeAST visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
                 String type = ctx.typeQualifier().getText();
                 String name = ctx.identifier().getText();
                 
@@ -320,6 +320,13 @@ public class ASMCompiler {
                 List<CodeAST> statements = getStatements(ctx.statements(), mp);
                 
                 return new MetaCodeAST(null, new BlockAST(null, statements));
+            }
+
+            @Override
+            public CodeAST visitInjectStatement(JasyParser.InjectStatementContext ctx) {
+                ExpressionAST expression = getExpression(ctx.expression(), mp);
+                
+                return new InjectAST(new Region(ctx), expression);
             }
         });
         
@@ -463,13 +470,6 @@ public class ASMCompiler {
                     code = getExpression(ctx.expression(), mp);
                 
                 return new QuoteAST(new Region(ctx), code);
-            }
-
-            @Override
-            public ExpressionAST visitInjectStatement(JasyParser.InjectStatementContext ctx) {
-                ExpressionAST expression = getExpression(ctx.expression(), mp);
-                
-                return new InjectAST(new Region(ctx), expression);
             }
         });
     }

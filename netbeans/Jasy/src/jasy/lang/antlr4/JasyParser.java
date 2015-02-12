@@ -1,4 +1,4 @@
-// Generated from C:\github\jasy\netbeans\Jasy\src\jasy\lang\antlr4\Jasy.g4 by ANTLR 4.1
+// Generated from /home/jakob/github/jasy/netbeans/Jasy/src/jasy/lang/antlr4/Jasy.g4 by ANTLR 4.1
 package jasy.lang.antlr4;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;

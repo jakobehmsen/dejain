@@ -276,7 +276,13 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public PreparedAST visitBlock(BlockAST ctx) {
-                List<PreparedAST> pas = ctx.statements.stream().map(s -> s.accept(this)).collect(Collectors.toList());
+                List<PreparedAST> pas = ctx.statements.stream()
+                    .map(s -> {
+                        if(s instanceof ExpressionAST)
+                            return new RootExpressionAST(null, (ExpressionAST)s);
+                        return s;
+                    })
+                    .map(s -> s.accept(this)).collect(Collectors.toList());
                 
                 return new PreparedAST() {
                     @Override
@@ -474,6 +480,36 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public PreparedAST visitInject(InjectAST ctx) {
+                // A list for the statements of the immediate outer block being
+                // built is assumed to be on the top of the stack.
+                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, variables, true);
+                
+                return new PreparedAST() {
+                    @Override
+                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                        if(((NameTypeAST)expression.resultType()).getType() != void.class) {
+                            // dup list
+                            generator.methodNode.dup();
+                        }
+                        
+                        // generate expresion
+                        expression.generate(c, generator, originalIl);
+                        
+                        if(((NameTypeAST)expression.resultType()).getType() != void.class) {
+                            // add to list
+                            generator.methodNode.invokeInterface(
+                                Type.getType(List.class), 
+                                new Method("add", Type.BOOLEAN_TYPE, new Type[]{Type.getType(Object.class)})
+                            );
+                            // pop return from add
+                            generator.methodNode.pop();
+                        }
+                    }
+                };
+            }
+
+            @Override
+            public PreparedAST visitInjectionBlock(InjectionBlockAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         });
@@ -1165,6 +1201,30 @@ public class MethodAST extends AbstractAST implements MemberAST {
         public PreparedExpressionAST visitInject(InjectAST ctx) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
+
+        @Override
+        public PreparedExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
+            List<PreparedAST> injections = ctx.injections.stream()
+                .map(i -> toCode(thisClass, i, variables))
+                .collect(Collectors.toList());
+            
+            return new PreparedExpressionAST() {
+                @Override
+                public TypeAST resultType() {
+                    return new NameTypeAST(null, List.class, new TypeAST[]{new NameTypeAST(null, CodeAST.class)});
+                }
+
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    generator.methodNode.newInstance(Type.getType(ArrayList.class));
+                    generator.methodNode.dup();
+                    generator.methodNode.invokeConstructor(Type.getType(ArrayList.class), new Method("<init>", Type.VOID_TYPE, new Type[0]));
+                    
+                    injections.forEach(i -> 
+                        i.generate(c, generator, originalIl));
+                }
+            };
+        }
     }
     
     public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables, boolean asExpression) {
@@ -1332,11 +1392,43 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitBlock(BlockAST ctx) {
+                // List of statements must be a list
                 ExpressionAST quotedStatements = quote(ctx.statements);
+                
+                List<InjectAST> injectStatements = ctx.statements.stream()
+                    .map(s -> s.accept(this))
+                    .map(s -> new InjectAST(null, s))
+                    .collect(Collectors.toList());
+                
+                InjectionBlockAST statementInjectorBlock = new InjectionBlockAST(null, injectStatements);
+                
+                // Each of the statements should be wrapped into an inject statement?
+                
+                /*
+                #{
+                    // Inject statement
+                    int i = 0;
+                
+                    // Inject statement also? Inject statement should be sensitive to whether result type is void or not?
+                    // If void, then don't add to list - otherwise add to list
+                    ${
+                        if(condition)
+                            ^#i++;
+                    }
+                
+                    // Inject statement
+                    return i;
+                }
+                
+                */
+                
+//                return new NewAST(
+//                    ctx.getRegion(), new NameTypeAST(null, BlockAST.class), 
+//                    Arrays.asList(new NullAST(null), quotedStatements));
                 
                 return new NewAST(
                     ctx.getRegion(), new NameTypeAST(null, BlockAST.class), 
-                    Arrays.asList(new NullAST(null), quotedStatements));
+                    Arrays.asList(new NullAST(null), statementInjectorBlock));
             }
 
             @Override
@@ -1386,6 +1478,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitInject(InjectAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public ExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         });

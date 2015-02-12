@@ -5,7 +5,7 @@ import jasy.lang.ASMCompiler.Region;
 import jasy.lang.ClassResolver;
 import java.util.List;
 
-public class VariableDeclarationAST extends AbstractAST implements ExpressionAST {
+public class VariableDeclarationAST extends AbstractAST implements CodeAST {
     public String name;
     public TypeAST type;
     public ExpressionAST value;
@@ -24,10 +24,10 @@ public class VariableDeclarationAST extends AbstractAST implements ExpressionAST
             value.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
-    @Override
-    public TypeAST resultType() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//    @Override
+//    public TypeAST resultType() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 
     @Override
     public <T> T accept(CodeVisitor<T> visitor) {

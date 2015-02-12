@@ -14,7 +14,8 @@ public class BlockAST extends AbstractAST implements CodeAST {
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        statements.forEach(s -> s.resolve(thisClass, expectedResultType, resolver, errorMessages));
+        statements.forEach(s -> 
+            s.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
     @Override
