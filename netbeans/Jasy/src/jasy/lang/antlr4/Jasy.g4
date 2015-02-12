@@ -36,7 +36,7 @@ arguments: (expression (COMMA expression)*)?;
 lookup: identifier;
 statements: statement*;
 statement: metaBlock | nonDelimitedStatement | delimitedStatement SEMI_COLON;
-nonDelimitedStatement: tryCatchStatement | ifElseStatement;
+nonDelimitedStatement: tryCatchStatement | ifElseStatement | whileStatement;
 proceedStatement: ELLIPSES;
 metaExpression: DOLLAR (expression | OPEN_BRA statements CLOSE_BRA);
 quotedExpression: HASH (expression | nonDelimitedStatement | delimitedStatement | block);
@@ -50,6 +50,11 @@ ifElseStatement:
     KW_IF OPEN_PAR condition=expression CLOSE_PAR 
     ifTrueBlock
     ifFalseBlock?;
+whileStatement:
+    KW_WHILE OPEN_PAR condition=expression CLOSE_PAR 
+    whileBody;
+whileBody:
+    OPEN_BRA statement* CLOSE_BRA | statement;
 ifTrueBlock:
     OPEN_BRA statement* CLOSE_BRA | statement;
 ifFalseBlock: KW_ELSE (OPEN_BRA statement* CLOSE_BRA | statement);
@@ -98,6 +103,7 @@ KW_THROW: 'throw';
 KW_CLASS: 'class';
 KW_TRUE: 'true';
 KW_FALSE: 'false';
+KW_WHILE: 'while';
 WILD_CARD: '*';
 SEMI_COLON: ';';
 COLON: ':';

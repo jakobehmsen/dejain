@@ -145,6 +145,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitIfFalseBlock(@NotNull JasyParser.IfFalseBlockContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#whileBody}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileBody(@NotNull JasyParser.WhileBodyContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#tryStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -318,6 +325,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFinallyStatement(@NotNull JasyParser.FinallyStatementContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#whileStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileStatement(@NotNull JasyParser.WhileStatementContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberMethod}.
