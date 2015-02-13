@@ -39,6 +39,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.CheckClassAdapter;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 /**
  *
@@ -794,6 +795,36 @@ public class SourceToClassTest {
             "        int i;\n" +
             "        ${^#i = " + expectedResult + ";}\n" +
             "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithWhileCountingToX() throws IOException {
+        int counterStart = 0;
+        int counterEnd = 10;
+        int valueStart = 0;
+        int valueIncrement = 6;
+        int expectedResult = valueStart + (counterEnd - counterStart) * valueIncrement;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() {\n" +
+            "        int i = " + counterStart + ";\n" +
+            "        int value = " + valueStart + ";\n" +
+            "        while(i < " + counterEnd + ") {\n" +
+            "           value = value + " + valueIncrement + ";\n" +
+            "           i = i + 1;\n" +
+            "        }\n" +
+            "        return value;\n" +
             "    }\n" +
             "}\n";
         
