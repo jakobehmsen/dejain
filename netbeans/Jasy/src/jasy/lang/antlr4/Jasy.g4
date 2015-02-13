@@ -59,10 +59,10 @@ whileStatement:
     KW_WHILE OPEN_PAR condition=expression CLOSE_PAR 
     whileBody;
 whileBody:
-    OPEN_BRA statement* CLOSE_BRA | statement;
+    OPEN_BRA statements CLOSE_BRA | statement;
 ifTrueBlock:
-    OPEN_BRA statement* CLOSE_BRA | statement;
-ifFalseBlock: KW_ELSE (OPEN_BRA statement* CLOSE_BRA | statement);
+    OPEN_BRA statements CLOSE_BRA | statement;
+ifFalseBlock: KW_ELSE (OPEN_BRA statements CLOSE_BRA | statement);
 delimitedStatement: 
     returnStatement | throwStatement | variableDeclaration | 
     injectStatement | expression;
