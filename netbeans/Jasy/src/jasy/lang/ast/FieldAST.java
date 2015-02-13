@@ -111,7 +111,7 @@ public class FieldAST extends AbstractAST implements MemberAST {
                                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
                                         generatorAdapter.loadThis();
                                         PreparedAST pa = MethodAST.toExpression(new ClassNodeScope(c.getTarget()), FieldAST.this.value, new Hashtable<>(), new Hashtable<>());
-                                        pa.generate(c, new MethodAST.MethodCodeGenerator(generatorAdapter, null), new InsnList());
+                                        pa.generate(c, new MethodCodeGenerator(generatorAdapter, null), new InsnList());
                                         String className = c.getTarget().name;
                                         generatorAdapter.putField(Type.getType(className), selector.name, Type.getType(selector.fieldType.getDescriptor(className)));
                                     }
