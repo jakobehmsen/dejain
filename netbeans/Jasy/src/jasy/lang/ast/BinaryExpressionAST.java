@@ -10,6 +10,12 @@ import java.util.List;
 public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     public static final int OPERATOR_ADD = 0;
     public static final int OPERATOR_SUB = 1;
+    public static final int OPERATOR_LT = 2;
+    public static final int OPERATOR_LTE = 3;
+    public static final int OPERATOR_GT = 4;
+    public static final int OPERATOR_GTE = 5;
+    public static final int OPERATOR_MULT = 6;
+    public static final int OPERATOR_DIV = 7;
     
     public int operator;
     public ExpressionAST lhs;
