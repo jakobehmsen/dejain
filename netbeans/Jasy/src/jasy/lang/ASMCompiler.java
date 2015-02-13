@@ -47,6 +47,7 @@ import jasy.lang.ast.ThisAST;
 import jasy.lang.ast.TypeAST;
 import jasy.lang.ast.VariableAssignmentAST;
 import jasy.lang.ast.VariableDeclarationAST;
+import jasy.lang.ast.WhileAST;
 import jasy.runtime.asm.ClassTransformer;
 import jasy.runtime.asm.ClassTransformerSequence;
 import jasy.runtime.asm.CommonClassTransformer;
@@ -327,6 +328,14 @@ public class ASMCompiler {
                 ExpressionAST expression = getExpression(ctx.expression(), mp);
                 
                 return new InjectAST(new Region(ctx), expression);
+            }
+
+            @Override
+            public CodeAST visitWhileStatement(JasyParser.WhileStatementContext ctx) {
+                ExpressionAST condition = getExpression(ctx.condition, mp);
+                CodeAST body = ctx.whileBody().accept(this);
+                
+                return new WhileAST(new Region(ctx), condition, body);
             }
         });
         

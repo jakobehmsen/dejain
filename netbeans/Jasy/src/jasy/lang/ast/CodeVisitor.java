@@ -25,4 +25,5 @@ public interface CodeVisitor<T> {
     T visitMetaCode(MetaCodeAST ctx);
     T visitInject(InjectAST ctx);
     T visitInjectionBlock(InjectionBlockAST ctx);
+    T visitWhile(WhileAST ctx);
 }

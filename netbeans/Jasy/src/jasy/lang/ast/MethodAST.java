@@ -512,6 +512,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitInjectionBlock(InjectionBlockAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public PreparedAST visitWhile(WhileAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
 
@@ -1231,6 +1236,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
                 }
             };
         }
+
+        @Override
+        public PreparedExpressionAST visitWhile(WhileAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
     
     public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables, boolean asExpression) {
@@ -1490,6 +1500,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public ExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public ExpressionAST visitWhile(WhileAST ctx) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         });
