@@ -180,7 +180,8 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitWhile(WhileAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ExpressionAST quotedCondition = ctx.condition.accept(this);
+        ExpressionAST quotedBody = ctx.body.accept(this);
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, WhileAST.class), Arrays.asList(new NullAST(null), quotedCondition, quotedBody));
     }
-    
 }

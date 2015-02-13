@@ -3,7 +3,9 @@ package jasy.lang.ast;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
@@ -49,7 +51,8 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
         return new PreparedAST() {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                pas.forEach((pa) -> pa.generate(c, generator, originalIl));
+                pas.forEach((pa) -> 
+                    pa.generate(c, generator, originalIl));
             }
 
             @Override
@@ -207,6 +210,23 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 
     @Override
     public PreparedAST visitWhile(WhileAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        PreparedExpressionAST condition = MethodAST.toExpression(thisClass, ctx.condition, parameters, variables);
+        PreparedAST body = ctx.body.accept(this);
+        
+        return new PreparedAST() {
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                Label loopStart = new Label();
+                Label afterLoop = new Label();
+                generator.methodNode.visitLabel(loopStart);
+//                generator.methodNode.push(false);
+                condition.generate(c, generator, originalIl);
+                generator.methodNode.ifZCmp(GeneratorAdapter.EQ, afterLoop);
+//                generator.methodNode.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, afterLoop);
+                body.generate(c, generator, originalIl);
+                generator.methodNode.goTo(loopStart);
+                generator.methodNode.visitLabel(afterLoop);
+            }
+        };
     } 
 }

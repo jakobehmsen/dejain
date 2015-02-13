@@ -164,11 +164,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
         metaCodeGenerator.end();
         generatorMethod.visitEnd();
         
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
         metaObjectClassNode.accept(cw);
         
-        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
-        metaObjectClassNode.accept(traceClassVisitor);
+//        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
+//        metaObjectClassNode.accept(traceClassVisitor);
         CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), false, new PrintWriter(System.out));
         
         SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);

@@ -338,7 +338,9 @@ public class ASMCompiler {
             @Override
             public CodeAST visitWhileStatement(JasyParser.WhileStatementContext ctx) {
                 ExpressionAST condition = getExpression(ctx.condition, mp);
-                CodeAST body = ctx.whileBody().accept(this);
+                CodeAST body = ctx.whileBody().statement() != null 
+                    ? getStatement(ctx.whileBody().statement(), mp) 
+                    : new BlockAST(new Region(ctx.whileBody()), getStatements(ctx.whileBody().statements(), mp));
                 
                 return new WhileAST(new Region(ctx), condition, body);
             }
