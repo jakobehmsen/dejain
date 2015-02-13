@@ -5,6 +5,13 @@ import jasy.lang.ASMCompiler.Region;
 import jasy.lang.ClassResolver;
 import jasy.lang.SingleClassLoader;
 import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_ADD;
+import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_DIV;
+import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_GT;
+import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_GTE;
+import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_LT;
+import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_LTE;
+import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_MULT;
+import static jasy.lang.ast.BinaryExpressionAST.OPERATOR_SUB;
 import jasy.runtime.asm.CommonClassTransformer;
 import jasy.runtime.asm.CompositeTransformer;
 import jasy.runtime.asm.IfAllTransformer;
@@ -99,8 +106,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         
                         int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
                         String methodName = selector.name;
-                        Type[] argumentTypes = selector.parameterTypes.stream()
-                            .map(x -> Type.getType(x.getDescriptor(c.getTarget().name)))
+                        Type[] argumentTypes = selector.parameters.stream()
+                            .map(x -> Type.getType(x.type.getDescriptor(c.getTarget().name)))
                             .toArray(size -> new Type[size]);
                         String methodDescriptor = Type.getMethodDescriptor(
                             Type.getType(selector.returnType.getDescriptor(c.getTarget().name)), 
@@ -109,10 +116,20 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         MethodNode methodNode = new MethodNode(methodAccess, methodName, methodDescriptor, null, null);
                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(methodNode, methodAccess, methodName, methodDescriptor);
                         MethodCodeGenerator generator = new MethodCodeGenerator(generatorAdapter, selector.returnType);
+//                        for(int i = 0; i < selector.parameterTypes.size(); i++) {
+//                            Parameter p = selector.parameterTypes.get(i);
+//                            generator.defineParameter(p.name, p.type, i);
+//                        }
+                        
+                        Hashtable<String, ParameterInfo> parameters = new Hashtable<>();
+                        for(int i = 0; i < selector.parameters.size(); i++) {
+                            Parameter p = selector.parameters.get(i);
+                            parameters.put(p.name, new ParameterInfo(p.type, i + 1));
+                        }
 
                         methodNode.visitCode();
                         generator.start();
-                        toCode(c, body, generator, new InsnList() /*Something that generates a default values for non-void returns?*/);
+                        toCode(c, body, generator, parameters, new InsnList() /*Something that generates a default values for non-void returns?*/);
                         generator.end();
                         methodNode.visitEnd();
 
@@ -180,8 +197,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
         
         mp.metaScope.addFields(metaObjectClassNode);
         
+        Hashtable<String, ParameterInfo> metaParameters = new Hashtable<>();
         Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
-        PreparedAST pbody = toCode(mp.metaScope, body, metaVariables);
+        PreparedAST pbody = toCode(mp.metaScope, body, metaParameters, metaVariables);
         ArrayList<TypeAST> returnTypes = new ArrayList<>();
         pbody.returns(returnTypes);
         // Must return CodeAST
@@ -234,14 +252,14 @@ public class MethodAST extends AbstractAST implements MemberAST {
         return bodyAsMethodTmp;
     }
 
-    public static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator) {
-        toCode(c, body, generator, new InsnList());
+    public static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, Hashtable<String, ParameterInfo> parameters) {
+        toCode(c, body, generator, parameters, new InsnList());
     }
 
-    private static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, InsnList originalIl) {
+    private static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, Hashtable<String, ParameterInfo> parameters, InsnList originalIl) {
         Hashtable<String, TypeAST> variables = new Hashtable<>();
         
-        PreparedAST pa = toCode(new ClassNodeScope(c.getTarget()), body, variables);
+        PreparedAST pa = toCode(new ClassNodeScope(c.getTarget()), body, parameters, variables);
         pa.generate(c, generator, originalIl);
         
 //        body.forEach(ctx -> {
@@ -250,11 +268,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
 //        });
     }
 
-    public static PreparedAST toCode(Scope thisClass, CodeAST ctx, Hashtable<String, TypeAST> variables) {
+    public static PreparedAST toCode(Scope thisClass, CodeAST ctx, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
         return ctx.accept(new CodeVisitor<PreparedAST>() {
             @Override
             public PreparedAST visitReturn(ReturnAST ctx) {
-                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, variables, true);
+                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, parameters, variables, true);
                 
                 return new PreparedAST() {
                     @Override
@@ -354,7 +372,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public PreparedAST visitInvocation(InvocationAST ctx) {
-                return toExpression(thisClass, ctx, variables, false);
+                return toExpression(thisClass, ctx, parameters, variables, false);
 //                ctx.arguments.forEach(a -> a.accept(this));
 //                
 //                Type[] argumentTypes = ctx.arguments.stream().map(a -> Type.getType(a.resultType().getDescriptor(c.getTarget().name))).toArray(size -> new Type[size]);
@@ -417,7 +435,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitVariableDeclaration(VariableDeclarationAST ctx) {
                 variables.put(ctx.name, ctx.type);
                 
-                PreparedExpressionAST value = ctx.value != null ? toExpression(thisClass, ctx.value, variables) : null;
+                PreparedExpressionAST value = ctx.value != null ? toExpression(thisClass, ctx.value, parameters, variables) : null;
                 
                 return new PreparedAST() {
                     @Override
@@ -445,7 +463,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             @Override
             public PreparedAST visitRootExpression(RootExpressionAST ctx) {
-                return toExpression(thisClass, ctx.expression, variables, false);
+                return toExpression(thisClass, ctx.expression, parameters, variables, false);
             }
 
             @Override
@@ -482,7 +500,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
             public PreparedAST visitInject(InjectAST ctx) {
                 // A list for the statements of the immediate outer block being
                 // built is assumed to be on the top of the stack.
-                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, variables, true);
+                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, parameters, variables, true);
                 
                 return new PreparedAST() {
                     @Override
@@ -531,19 +549,31 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
     }
     
-    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables) {
-        return toExpression(thisClass, expression, variables, true);
+    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
+        return toExpression(thisClass, expression, parameters, variables, true);
+    }
+    
+    private static class ParameterInfo {
+        public TypeAST type;
+        public int index;
+
+        public ParameterInfo(TypeAST type, int index) {
+            this.type = type;
+            this.index = index;
+        }
     }
     
     private static class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         private Scope thisClass; 
         private ExpressionAST expression; 
+        private Hashtable<String, ParameterInfo> parameters; 
         private Hashtable<String, TypeAST> variables; 
         private boolean asExpression;
 
-        public ExpressionPreparer(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables, boolean asExpression) {
+        public ExpressionPreparer(Scope thisClass, ExpressionAST expression, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
             this.thisClass = thisClass;
             this.expression = expression;
+            this.parameters = parameters;
             this.variables = variables;
             this.asExpression = asExpression;
         }
@@ -555,7 +585,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
         @Override
         public PreparedExpressionAST visitMetaCode(MetaCodeAST ctx) {
-            PreparedAST body = toCode(thisClass, ctx.body, variables);
+            PreparedAST body = toCode(thisClass, ctx.body, parameters, variables);
             
             return new PreparedExpressionAST() {
                 @Override
@@ -618,7 +648,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
             if(lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;") || rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;")) {
                 switch(ctx.operator) {
-                    case OPERATOR_ADD:
+                    case BinaryExpressionAST.OPERATOR_ADD:
                         if(!lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
                             lhsTmp = expressionAsString(lhsTmp);
                         if(!rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;"))
@@ -631,7 +661,22 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         break;
                 }
             } else if(lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int")) {
-                resultType = new NameTypeAST(ctx.getRegion(), int.class);
+                switch(ctx.operator) {
+                    case BinaryExpressionAST.OPERATOR_ADD:
+                    case BinaryExpressionAST.OPERATOR_SUB:
+                    case BinaryExpressionAST.OPERATOR_MULT:
+                    case BinaryExpressionAST.OPERATOR_DIV:
+                        resultType = new NameTypeAST(ctx.getRegion(), int.class);
+                        break;
+                    case BinaryExpressionAST.OPERATOR_LT:
+                    case BinaryExpressionAST.OPERATOR_LTE:
+                    case BinaryExpressionAST.OPERATOR_GT:
+                    case BinaryExpressionAST.OPERATOR_GTE:
+                        resultType = new NameTypeAST(ctx.getRegion(), boolean.class);
+                        break;
+                    default:
+                        resultType = null;
+                }
             } else
                 resultType = null;
 
@@ -649,25 +694,98 @@ public class MethodAST extends AbstractAST implements MemberAST {
                     lhs.generate(c, generator, originalIl);
                     rhs.generate(c, generator, originalIl);
 
-                    switch(resultType().getSimpleName(c.getTarget().name)) {
-                        case "String":
-                            generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
-                            break;
-                        case "short":
-                            generator.methodNode.visitInsn(Opcodes.IADD);
-                            break;
-                        case "int":
-                            generator.methodNode.visitInsn(Opcodes.IADD);
-                            break;
-                        case "long":
-                            generator.methodNode.visitInsn(Opcodes.LADD);
-                            break;
-                        case "float":
-                            generator.methodNode.visitInsn(Opcodes.FADD);
-                            break;
-                        case "double":
-                            generator.methodNode.visitInsn(Opcodes.DADD);
-                            break;
+                    switch(ctx.operator) {
+                    case BinaryExpressionAST.OPERATOR_ADD: {
+                        switch(resultType().getSimpleName(c.getTarget().name)) {
+                            case "String":
+                                generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
+                                break;
+                            case "short":
+                                generator.methodNode.visitInsn(Opcodes.IADD);
+                                break;
+                            case "int":
+                                generator.methodNode.visitInsn(Opcodes.IADD);
+                                break;
+                            case "long":
+                                generator.methodNode.visitInsn(Opcodes.LADD);
+                                break;
+                            case "float":
+                                generator.methodNode.visitInsn(Opcodes.FADD);
+                                break;
+                            case "double":
+                                generator.methodNode.visitInsn(Opcodes.DADD);
+                                break;
+                        }
+                        break;
+                    } case BinaryExpressionAST.OPERATOR_SUB: {
+                        switch(resultType().getSimpleName(c.getTarget().name)) {
+                            case "short":
+                                generator.methodNode.visitInsn(Opcodes.ISUB);
+                                break;
+                            case "int":
+                                generator.methodNode.visitInsn(Opcodes.ISUB);
+                                break;
+                            case "long":
+                                generator.methodNode.visitInsn(Opcodes.LSUB);
+                                break;
+                            case "float":
+                                generator.methodNode.visitInsn(Opcodes.FSUB);
+                                break;
+                            case "double":
+                                generator.methodNode.visitInsn(Opcodes.DSUB);
+                                break;
+                        }
+                        break;
+                    } case BinaryExpressionAST.OPERATOR_MULT: {
+                        switch(resultType().getSimpleName(c.getTarget().name)) {
+                            case "short":
+                                generator.methodNode.visitInsn(Opcodes.IMUL);
+                                break;
+                            case "int":
+                                generator.methodNode.visitInsn(Opcodes.IMUL);
+                                break;
+                            case "long":
+                                generator.methodNode.visitInsn(Opcodes.LMUL);
+                                break;
+                            case "float":
+                                generator.methodNode.visitInsn(Opcodes.FMUL);
+                                break;
+                            case "double":
+                                generator.methodNode.visitInsn(Opcodes.DMUL);
+                                break;
+                        }
+                        break;
+                    } case BinaryExpressionAST.OPERATOR_DIV: {
+                        switch(resultType().getSimpleName(c.getTarget().name)) {
+                            case "short":
+                                generator.methodNode.visitInsn(Opcodes.IDIV);
+                                break;
+                            case "int":
+                                generator.methodNode.visitInsn(Opcodes.IDIV);
+                                break;
+                            case "long":
+                                generator.methodNode.visitInsn(Opcodes.LDIV);
+                                break;
+                            case "float":
+                                generator.methodNode.visitInsn(Opcodes.FDIV);
+                                break;
+                            case "double":
+                                generator.methodNode.visitInsn(Opcodes.DDIV);
+                                break;
+                        }
+                        break;
+                    } case BinaryExpressionAST.OPERATOR_LT: {                        
+                        Label ifTrue = new Label();
+                        Label end = new Label();
+                        generator.methodNode.ifCmp(Type.getType(resultType.getDescriptor()), GeneratorAdapter.GE, ifTrue);
+                        generator.methodNode.push(true);
+                        generator.methodNode.visitJumpInsn(Opcodes.GOTO, end);
+                        generator.methodNode.visitLabel(ifTrue);
+                        generator.methodNode.push(false);
+                        generator.methodNode.visitLabel(end);
+                        
+                        break;
+                    }
                     }
                 }
             };
@@ -855,7 +973,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
         @Override
         public PreparedExpressionAST visitMetaExpression(MetaExpressionAST ctx) {
             // Assumed, body is an expression
-            PreparedExpressionAST expressionRaw = toExpression(thisClass, ctx.body, variables, asExpression);
+            PreparedExpressionAST expressionRaw = toExpression(thisClass, ctx.body, parameters, variables, asExpression);
             
             TypeAST resultTypeRaw = expressionRaw.resultType();
             
@@ -937,7 +1055,30 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
         @Override
         public PreparedExpressionAST visitLookup(LookupAST ctx) {
-            if(variables.containsKey(ctx.name)) {
+            if(parameters.containsKey(ctx.name)) {
+                TypeAST resultType = parameters.get(ctx.name).type;
+                return new PreparedExpressionAST() {
+                    @Override
+                    public TypeAST resultType() {
+                        return resultType;
+                    }
+
+                    @Override
+                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                        int ordinal = generator.getVariableIndex(ctx.name);
+                        int ordinal = parameters.get(ctx.name).index;
+
+                        switch(resultType.getSimpleName()) {
+                            case "int":
+                                generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
+                                break;
+                            default:
+                                generator.methodNode.visitVarInsn(Opcodes.ALOAD, ordinal);
+                                break;
+                        }
+                    }
+                };
+            } else if(variables.containsKey(ctx.name)) {
                 TypeAST resultType = variables.get(ctx.name);
                 return new PreparedExpressionAST() {
                     @Override
@@ -991,7 +1132,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
 
         private PreparedExpressionAST getAsExpression(ExpressionAST ctx) {
-            return toExpression(thisClass, ctx, variables, true);
+            return toExpression(thisClass, ctx, parameters, variables, true);
 
 //                boolean changedAsExpression = false;
 //                if(!asExpression) {
@@ -1216,7 +1357,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
         @Override
         public PreparedExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
             List<PreparedAST> injections = ctx.injections.stream()
-                .map(i -> toCode(thisClass, i, variables))
+                .map(i -> toCode(thisClass, i, parameters, variables))
                 .collect(Collectors.toList());
             
             return new PreparedExpressionAST() {
@@ -1243,8 +1384,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
     }
     
-    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, TypeAST> variables, boolean asExpression) {
-        return expression.accept(new ExpressionPreparer(thisClass, expression, variables, asExpression));
+    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
+        return expression.accept(new ExpressionPreparer(thisClass, expression, parameters, variables, asExpression));
     }
     
     public static ExpressionAST quote(Scope thisClass, CodeAST ctx, Hashtable<String, TypeAST> variables) {

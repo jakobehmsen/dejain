@@ -13,19 +13,19 @@ public class MethodSelectorAST {
     public Boolean isStatic;
     public TypeAST returnType;
     public String name;
-    public List<TypeAST> parameterTypes;
+    public List<Parameter> parameters;
 
-    public MethodSelectorAST(Integer accessModifier, Boolean isStatic, TypeAST returnType, String name, List<TypeAST> parameterTypes) {
+    public MethodSelectorAST(Integer accessModifier, Boolean isStatic, TypeAST returnType, String name, List<Parameter> parameters) {
         this.accessModifier = accessModifier;
         this.isStatic = isStatic;
         this.returnType = returnType;
         this.name = name;
-        this.parameterTypes = parameterTypes;
+        this.parameters = parameters;
     }
 
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         returnType.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        parameterTypes.forEach(pt -> pt.resolve(thisClass, expectedResultType, resolver, errorMessages));
+        parameters.forEach(pt -> pt.type.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
     public void populate(IfAllTransformer<Transformation<MethodNode>> transformer) {
@@ -38,15 +38,15 @@ public class MethodSelectorAST {
         if(name != null)
             transformer.addPredicate(m -> m.getTarget().name.equals(name));
         
-        if(parameterTypes != null) {
+        if(parameters != null) {
             transformer.addPredicate(m -> {
                 Type[] argumentTypes = Type.getArgumentTypes(m.getTarget().desc);
                 
-                if(argumentTypes.length != parameterTypes.size())
+                if(argumentTypes.length != parameters.size())
                     return false;
                 
-                for(int i = 0; i < parameterTypes.size(); i++) {
-                    if(!argumentTypes[i].getClassName().equals(parameterTypes.get(0).getDescriptor()))
+                for(int i = 0; i < parameters.size(); i++) {
+                    if(!argumentTypes[i].getClassName().equals(parameters.get(0).type.getDescriptor()))
                         return false;
                 }
                 

@@ -41,6 +41,7 @@ import jasy.lang.ast.MemberVisitor;
 import jasy.lang.ast.MetaCodeAST;
 import jasy.lang.ast.MetaScope;
 import jasy.lang.ast.NameTypeAST;
+import jasy.lang.ast.Parameter;
 import jasy.lang.ast.QuoteAST;
 import jasy.lang.ast.StringLiteralAST;
 import jasy.lang.ast.ThisAST;
@@ -213,8 +214,12 @@ public class ASMCompiler {
                                 boolean isStatic = ctx.modStatic() != null;
                                 TypeAST returnType = new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText());
                                 String name = ctx.identifier().getText();
-                                List<TypeAST> parameterTypes = ctx.parameters().parameter().stream()
-                                    .map(pCtx -> new NameTypeAST(new Region(ctx), pCtx.typeQualifier().getText()))
+                                List<Parameter> parameters = ctx.parameters().parameter().stream()
+                                    .map(pCtx -> {
+                                        String pname = pCtx.identifier().getText();
+                                        TypeAST type = new NameTypeAST(new Region(ctx), pCtx.typeQualifier().getText());
+                                        return new Parameter(pname, type);
+                                    })
                                     .collect(Collectors.toList());
                                 
                                 CodeAST body;
@@ -231,7 +236,7 @@ public class ASMCompiler {
                                     body = new BlockAST(new Region(ctx.body), statements);
                                 }
                                 
-                                MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameterTypes), body, mp);
+                                MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameters), body, mp);
                                 
                                 members.add(method);
                                 
