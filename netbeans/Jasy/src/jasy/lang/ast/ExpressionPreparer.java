@@ -237,13 +237,36 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                             break;
                         }
                     case BinaryExpressionAST.OPERATOR_LT:
+                    case BinaryExpressionAST.OPERATOR_LTE:
+                    case BinaryExpressionAST.OPERATOR_GT:
+                    case BinaryExpressionAST.OPERATOR_GTE:
                         {
-                            Label ifTrue = new Label();
+                            // Derive opposite mode
+                            int mode;
+                            
+                            switch(ctx.operator) {
+                                case BinaryExpressionAST.OPERATOR_LT:
+                                    mode = GeneratorAdapter.GE;
+                                    break;
+                                case BinaryExpressionAST.OPERATOR_LTE:
+                                    mode = GeneratorAdapter.GT;
+                                    break;
+                                case BinaryExpressionAST.OPERATOR_GT:
+                                    mode = GeneratorAdapter.LE;
+                                    break;
+                                case BinaryExpressionAST.OPERATOR_GTE:
+                                    mode = GeneratorAdapter.LT;
+                                    break;
+                                default:
+                                    mode = -1;
+                            }
+                            
+                            Label ifOppositeTrue = new Label();
                             Label end = new Label();
-                            generator.methodNode.ifCmp(Type.getType(resultType.getDescriptor()), GeneratorAdapter.GE, ifTrue);
+                            generator.methodNode.ifCmp(Type.getType(resultType.getDescriptor()), mode, ifOppositeTrue);
                             generator.methodNode.push(true);
-                            generator.methodNode.visitJumpInsn(Opcodes.GOTO, end);
-                            generator.methodNode.visitLabel(ifTrue);
+                            generator.methodNode.goTo(end);
+                            generator.methodNode.visitLabel(ifOppositeTrue);
                             generator.methodNode.push(false);
                             generator.methodNode.visitLabel(end);
                             break;
