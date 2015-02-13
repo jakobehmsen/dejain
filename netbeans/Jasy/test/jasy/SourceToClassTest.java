@@ -157,6 +157,48 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAdd1PublicMethodReturningTrueForLessThan() throws IOException {
+        int x = 7;
+        int y = 9;
+        boolean expectedResult = x < y;
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            "class {+public boolean compare(int x, int y) {return x < y;}}", 
+            forClass("jasy.TestClass1", 
+                chasMethodWhere(
+                    mname(is("compare"))
+                    .and(rreturnType(is(boolean.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, invocationResult(new Object[]{x, y}, is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningFalseForLessThan() throws IOException {
+        int x = 9;
+        int y = 7;
+        boolean expectedResult = x < y;
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            "class {+public boolean compare(int x, int y) {return x < y;}}", 
+            forClass("jasy.TestClass1", 
+                chasMethodWhere(
+                    mname(is("compare"))
+                    .and(rreturnType(is(boolean.class)))
+                    .and(rmodifiers(isPublic()))
+                    .and(rmodifiers(isStatic().negate()))
+                ).and(
+                    forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, invocationResult(new Object[]{x, y}, is(expectedResult))))
+                )
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAdd1PublicMethodReturningGeneratedStringConcatenation() throws IOException {
         String str1 = "H";
         String str2 = "i";
@@ -850,9 +892,13 @@ public class SourceToClassTest {
     }
     
     private static Predicate<Object> imethod(String name, BiPredicate<Object, Method> predicate) {
+        return imethod(name, new Class<?>[0], predicate);
+    }
+    
+    private static Predicate<Object> imethod(String name, Class<?>[] parameterTypes, BiPredicate<Object, Method> predicate) {
         return i -> {
             try {
-                Method m = i.getClass().getDeclaredMethod(name);
+                Method m = i.getClass().getDeclaredMethod(name, parameterTypes);
                 return predicate.test(i, m);
             } catch (NoSuchMethodException | SecurityException ex) {
                 Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -877,9 +923,13 @@ public class SourceToClassTest {
     }
     
     private static BiPredicate<Object, Method> invocationResult(Predicate<Object> predicate) {
+        return invocationResult(new Object[0], predicate);
+    }
+    
+    private static BiPredicate<Object, Method> invocationResult(Object[] args, Predicate<Object> predicate) {
         return (i, m) -> {
             try {
-                Object result = m.invoke(i);
+                Object result = m.invoke(i, args);
                 return predicate.test(result);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
