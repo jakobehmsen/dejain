@@ -194,6 +194,223 @@ public class MethodAST extends AbstractAST implements MemberAST {
         
         return bodyAsMethodTmp;
     }
+    
+    private static class CodePreparer implements CodeVisitor<PreparedAST> {
+        private Scope thisClass;
+        private CodeAST ctx;
+        private Hashtable<String, ParameterInfo> parameters;
+        private Hashtable<String, TypeAST> variables;
+
+        public CodePreparer(Scope thisClass, CodeAST ctx, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
+            this.thisClass = thisClass;
+            this.ctx = ctx;
+            this.parameters = parameters;
+            this.variables = variables;
+        }
+        
+        @Override
+        public PreparedAST visitReturn(ReturnAST ctx) {
+            PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, parameters, variables, true);
+
+            return new PreparedAST() {
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    expression.generate(c, generator, originalIl);
+                    generator.methodNode.returnValue();
+                }
+
+                @Override
+                public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
+                    returnTypes.add(expression.resultType());
+                }
+            };
+        }
+
+        @Override
+        public PreparedAST visitBlock(BlockAST ctx) {
+            List<PreparedAST> pas = ctx.statements.stream()
+                .map(s -> {
+                    if(s instanceof ExpressionAST)
+                        return new RootExpressionAST(null, (ExpressionAST)s);
+                    return s;
+                })
+                .map(s -> s.accept(this)).collect(Collectors.toList());
+
+            return new PreparedAST() {
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    pas.forEach(pa -> pa.generate(c, generator, originalIl));
+                }
+
+                @Override
+                public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
+                    pas.forEach(pa -> pa.returns(returnTypes));
+                }
+            };
+        }
+
+        @Override
+        public PreparedAST visitMetaCode(MetaCodeAST ctx) {
+            PreparedAST body = ctx.body.accept(this);
+
+            return new PreparedAST() {
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    body.generate(c, generator, originalIl);
+                }
+            };
+        }
+
+        @Override
+        public PreparedAST visitStringLiteral(StringLiteralAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitIntLiteral(IntLiteralAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitLongLiteral(LongLiteralAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitBinaryExpression(BinaryExpressionAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitInvocation(InvocationAST ctx) {
+            return toExpression(thisClass, ctx, parameters, variables, false);
+        }
+
+        @Override
+        public PreparedAST visitFieldSet(FieldSetAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitMetaExpression(MetaExpressionAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitThis(ThisAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitFieldGet(FieldGetAST ctx) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreparedAST visitVariableDeclaration(VariableDeclarationAST ctx) {
+            variables.put(ctx.name, ctx.type);
+
+            PreparedExpressionAST value = ctx.value != null ? toExpression(thisClass, ctx.value, parameters, variables) : null;
+
+            return new PreparedAST() {
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    int ordinal = generator.declareVariable(ctx.name, ctx.type.getDescriptor(), ctx.type);
+
+                    if(value != null) {
+                        value.generate(c, generator, originalIl);
+
+                        appendStore(generator, ordinal, ctx.type);
+                    }
+                }
+            };
+        }
+
+        @Override
+        public PreparedAST visitLookup(LookupAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitVariableAssignment(VariableAssignmentAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitRootExpression(RootExpressionAST ctx) {
+            return toExpression(thisClass, ctx.expression, parameters, variables, false);
+        }
+
+        @Override
+        public PreparedAST visitQuote(QuoteAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitNew(NewAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitArray(ArrayAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitNull(NullAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitTypecast(TypecastAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitGetClass(GetClassAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitInject(InjectAST ctx) {
+            // A list for the statements of the immediate outer block being
+            // built is assumed to be on the top of the stack.
+            PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, parameters, variables, true);
+
+            return new PreparedAST() {
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    if(((NameTypeAST)expression.resultType()).getType() != void.class) {
+                        // dup list
+                        generator.methodNode.dup();
+                    }
+
+                    // generate expresion
+                    expression.generate(c, generator, originalIl);
+
+                    if(((NameTypeAST)expression.resultType()).getType() != void.class) {
+                        // add to list
+                        generator.methodNode.invokeInterface(
+                            Type.getType(List.class), 
+                            new Method("add", Type.BOOLEAN_TYPE, new Type[]{Type.getType(Object.class)})
+                        );
+                        // pop return from add
+                        generator.methodNode.pop();
+                    }
+                }
+            };
+        }
+
+        @Override
+        public PreparedAST visitInjectionBlock(InjectionBlockAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public PreparedAST visitWhile(WhileAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
 
     public static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, Hashtable<String, ParameterInfo> parameters) {
         toCode(c, body, generator, parameters, new InsnList());
@@ -207,210 +424,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
     }
 
     public static PreparedAST toCode(Scope thisClass, CodeAST ctx, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
-        return ctx.accept(new CodeVisitor<PreparedAST>() {
-            @Override
-            public PreparedAST visitReturn(ReturnAST ctx) {
-                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, parameters, variables, true);
-                
-                return new PreparedAST() {
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        expression.generate(c, generator, originalIl);
-                        generator.methodNode.returnValue();
-                    }
-
-                    @Override
-                    public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
-                        returnTypes.add(expression.resultType());
-                    }
-                };
-            }
-
-            @Override
-            public PreparedAST visitBlock(BlockAST ctx) {
-                List<PreparedAST> pas = ctx.statements.stream()
-                    .map(s -> {
-                        if(s instanceof ExpressionAST)
-                            return new RootExpressionAST(null, (ExpressionAST)s);
-                        return s;
-                    })
-                    .map(s -> s.accept(this)).collect(Collectors.toList());
-                
-                return new PreparedAST() {
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        pas.forEach(pa -> pa.generate(c, generator, originalIl));
-                    }
-
-                    @Override
-                    public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
-                        pas.forEach(pa -> pa.returns(returnTypes));
-                    }
-                };
-            }
-
-            @Override
-            public PreparedAST visitMetaCode(MetaCodeAST ctx) {
-                PreparedAST body = ctx.body.accept(this);
-                
-                return new PreparedAST() {
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        body.generate(c, generator, originalIl);
-                    }
-                };
-            }
-
-            @Override
-            public PreparedAST visitStringLiteral(StringLiteralAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitIntLiteral(IntLiteralAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitLongLiteral(LongLiteralAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitBinaryExpression(BinaryExpressionAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitInvocation(InvocationAST ctx) {
-                return toExpression(thisClass, ctx, parameters, variables, false);
-            }
-
-            @Override
-            public PreparedAST visitFieldSet(FieldSetAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitMetaExpression(MetaExpressionAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitThis(ThisAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitFieldGet(FieldGetAST ctx) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public PreparedAST visitVariableDeclaration(VariableDeclarationAST ctx) {
-                variables.put(ctx.name, ctx.type);
-                
-                PreparedExpressionAST value = ctx.value != null ? toExpression(thisClass, ctx.value, parameters, variables) : null;
-                
-                return new PreparedAST() {
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        int ordinal = generator.declareVariable(ctx.name, ctx.type.getDescriptor(), ctx.type);
-                        
-                        if(value != null) {
-                            value.generate(c, generator, originalIl);
-                            
-                            appendStore(generator, ordinal, ctx.type);
-                        }
-                    }
-                };
-            }
-
-            @Override
-            public PreparedAST visitLookup(LookupAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitVariableAssignment(VariableAssignmentAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitRootExpression(RootExpressionAST ctx) {
-                return toExpression(thisClass, ctx.expression, parameters, variables, false);
-            }
-
-            @Override
-            public PreparedAST visitQuote(QuoteAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitNew(NewAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitArray(ArrayAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitNull(NullAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitTypecast(TypecastAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitGetClass(GetClassAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitInject(InjectAST ctx) {
-                // A list for the statements of the immediate outer block being
-                // built is assumed to be on the top of the stack.
-                PreparedExpressionAST expression = toExpression(thisClass, ctx.expression, parameters, variables, true);
-                
-                return new PreparedAST() {
-                    @Override
-                    public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                        if(((NameTypeAST)expression.resultType()).getType() != void.class) {
-                            // dup list
-                            generator.methodNode.dup();
-                        }
-                        
-                        // generate expresion
-                        expression.generate(c, generator, originalIl);
-                        
-                        if(((NameTypeAST)expression.resultType()).getType() != void.class) {
-                            // add to list
-                            generator.methodNode.invokeInterface(
-                                Type.getType(List.class), 
-                                new Method("add", Type.BOOLEAN_TYPE, new Type[]{Type.getType(Object.class)})
-                            );
-                            // pop return from add
-                            generator.methodNode.pop();
-                        }
-                    }
-                };
-            }
-
-            @Override
-            public PreparedAST visitInjectionBlock(InjectionBlockAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public PreparedAST visitWhile(WhileAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        });
+        return ctx.accept(new CodePreparer(thisClass, ctx, parameters, variables));
     }
 
     private static void appendStore(MethodCodeGenerator generator, int ordinal, TypeAST type) {
@@ -1184,228 +1198,240 @@ public class MethodAST extends AbstractAST implements MemberAST {
         return expression.accept(new ExpressionPreparer(thisClass, expression, parameters, variables, asExpression));
     }
     
+    private static class CodeQuoter implements CodeVisitor<ExpressionAST> {
+        private Scope thisClass;
+        private CodeAST ctx;
+        private Hashtable<String, TypeAST> variables;
+
+        public CodeQuoter(Scope thisClass, CodeAST ctx, Hashtable<String, TypeAST> variables) {
+            this.thisClass = thisClass;
+            this.ctx = ctx;
+            this.variables = variables;
+        }
+        
+        @Override
+        public ExpressionAST visitReturn(ReturnAST ctx) {
+            ExpressionAST quotedExpression = ctx.expression.accept(this);
+
+            return new NewAST(ctx.getRegion(), new NameTypeAST(null, ReturnAST.class), Arrays.asList(new NullAST(null), quotedExpression));
+        }
+
+        @Override
+        public ExpressionAST visitMetaCode(MetaCodeAST ctx) {
+            return ctx;
+        }
+
+        @Override
+        public ExpressionAST visitStringLiteral(StringLiteralAST ctx) {
+            return new NewAST(ctx.getRegion(), new NameTypeAST(null, StringLiteralAST.class), Arrays.asList(new NullAST(null), new StringLiteralAST(null, ctx.value)));
+        }
+
+        @Override
+        public ExpressionAST visitIntLiteral(IntLiteralAST ctx) {
+            return new NewAST(ctx.getRegion(), new NameTypeAST(null, IntLiteralAST.class), Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.value)));
+        }
+
+        @Override
+        public ExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
+            ExpressionAST quotedLhs = ctx.lhs.accept(this);
+            ExpressionAST quotedRhs = ctx.rhs.accept(this);
+
+            return new NewAST(
+                ctx.getRegion(), 
+                new NameTypeAST(null, BinaryExpressionAST.class), 
+                Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.operator), quotedLhs, quotedRhs)
+            );
+        }
+
+        @Override
+        public ExpressionAST visitInvocation(InvocationAST ctx) {
+            ExpressionAST quotedTarget = ctx.target != null ? ctx.target.accept(this) : new NullAST(null);
+            ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
+            ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
+            ExpressionAST quotedArguments = quote(ctx.arguments);
+
+            return new NewAST(
+                ctx.getRegion(), 
+                new NameTypeAST(null, BinaryExpressionAST.class), 
+                Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, null));
+        }
+
+        private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
+            List<ExpressionAST> expressionList = expressions.stream().map(a -> a.accept(this)).collect(Collectors.toList());
+            ExpressionAST quotedExpressionsAsArray = 
+                new ArrayAST(null, new NameTypeAST(null, CodeAST.class), expressionList);
+            return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
+        }
+
+        @Override
+        public ExpressionAST visitFieldSet(FieldSetAST ctx) {
+            ExpressionAST quotedTarget = ctx.target.accept(this);
+            ExpressionAST quotedDeclaringClass = MethodAST.quote(ctx.declaringClass);
+            ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
+            ExpressionAST quotedValue = ctx.value.accept(this);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), 
+                Arrays.asList(null, quotedTarget, quotedDeclaringClass, quotedFieldName, quotedValue));
+        }
+
+        @Override
+        public ExpressionAST visitLongLiteral(LongLiteralAST ctx) {
+            return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
+        }
+
+        @Override
+        public ExpressionAST visitMetaExpression(MetaExpressionAST ctx) {
+            // Should just return body in executed form.
+            // Body should be an ExpressionAST.
+
+            /*
+            Somehow, it should be figured out, what the result type of the body is.
+            If the result type is not an ExpressionAST, then it is decided whether
+            it is possible to convert the result type into an ExpressionAST.
+            - E.g. string expresions are converted into a "new StringLiteral(...)" expression
+            */
+
+            return ctx;
+        }
+
+        @Override
+        public ExpressionAST visitThis(ThisAST ctx) {
+            return new NewAST(ctx.getRegion(), new NameTypeAST(null, ThisAST.class), Arrays.<ExpressionAST>asList(new NullAST(null)));
+        }
+
+        @Override
+        public ExpressionAST visitFieldGet(FieldGetAST ctx) {
+            ExpressionAST quotedTarget = ctx.target.accept(this);
+            ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), 
+                Arrays.asList(null, quotedTarget, quotedFieldName));
+        }
+
+        @Override
+        public ExpressionAST visitVariableDeclaration(VariableDeclarationAST ctx) {
+            ExpressionAST quotedName = MethodAST.quote(ctx.name);
+            ExpressionAST quotedType = MethodAST.quote(ctx.type);
+            ExpressionAST quotedValue = ctx.value != null ? ctx.value.accept(this) : new NullAST(null);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, VariableDeclarationAST.class), 
+                Arrays.asList(new NullAST(null), quotedName, quotedType, quotedValue));
+        }
+
+        @Override
+        public ExpressionAST visitLookup(LookupAST ctx) {
+            ExpressionAST quotedName = MethodAST.quote(ctx.name);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, LookupAST.class), 
+                Arrays.asList(new NullAST(null), quotedName));
+        }
+
+        @Override
+        public ExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
+            ExpressionAST quotedName = MethodAST.quote(ctx.name);
+            ExpressionAST quotedValue = ctx.value.accept(this);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, VariableAssignmentAST.class), 
+                Arrays.asList(new NullAST(null), quotedName, quotedValue));
+        }
+
+        @Override
+        public ExpressionAST visitRootExpression(RootExpressionAST ctx) {
+            ExpressionAST quotedExpression = ctx.expression.accept(this);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, RootExpressionAST.class), 
+                Arrays.asList(new NullAST(null), quotedExpression));
+        }
+
+        @Override
+        public ExpressionAST visitQuote(QuoteAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ExpressionAST visitBlock(BlockAST ctx) {
+            List<InjectAST> injectStatements = ctx.statements.stream()
+                .map(s -> s.accept(this))
+                .map(s -> 
+                    new InjectAST(null, s))
+                .collect(Collectors.toList());
+
+            InjectionBlockAST statementInjectorBlock = new InjectionBlockAST(null, injectStatements);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, BlockAST.class), 
+                Arrays.asList(new NullAST(null), statementInjectorBlock));
+        }
+
+        @Override
+        public ExpressionAST visitNew(NewAST ctx) {
+            ExpressionAST quotedC = MethodAST.quote(ctx.c);
+            ExpressionAST quotedArguments = quote(ctx.arguments);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, NewAST.class), 
+                Arrays.asList(new NullAST(null), quotedC, quotedArguments));
+        }
+
+        @Override
+        public ExpressionAST visitArray(ArrayAST ctx) {
+            ExpressionAST quotedType = MethodAST.quote(ctx.type);
+            ExpressionAST quotedElements = quote(ctx.elements);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, ArrayAST.class), 
+                Arrays.asList(new NullAST(null), quotedType, quotedElements));
+        }
+
+        @Override
+        public ExpressionAST visitNull(NullAST ctx) {
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, NullAST.class), 
+                Arrays.<ExpressionAST>asList(new NullAST(null)));
+        }
+
+        @Override
+        public ExpressionAST visitTypecast(TypecastAST ctx) {
+            ExpressionAST quotedExpression = ctx.expression.accept(this);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, TypecastAST.class), 
+                Arrays.asList(new NullAST(null), quotedExpression));
+        }
+
+        @Override
+        public ExpressionAST visitGetClass(GetClassAST ctx) {
+            ExpressionAST quotedType = MethodAST.quote(ctx.t);
+
+            return new NewAST(
+                ctx.getRegion(), new NameTypeAST(null, GetClassAST.class), 
+                Arrays.asList(new NullAST(null), quotedType));
+        }
+
+        @Override
+        public ExpressionAST visitInject(InjectAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ExpressionAST visitWhile(WhileAST ctx) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+    
     public static ExpressionAST quote(Scope thisClass, CodeAST ctx, Hashtable<String, TypeAST> variables) {
-        return ctx.accept(new CodeVisitor<ExpressionAST>() {
-            @Override
-            public ExpressionAST visitReturn(ReturnAST ctx) {
-                ExpressionAST quotedExpression = ctx.expression.accept(this);
-                
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, ReturnAST.class), Arrays.asList(new NullAST(null), quotedExpression));
-            }
-
-            @Override
-            public ExpressionAST visitMetaCode(MetaCodeAST ctx) {
-                return ctx;
-            }
-
-            @Override
-            public ExpressionAST visitStringLiteral(StringLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, StringLiteralAST.class), Arrays.asList(new NullAST(null), new StringLiteralAST(null, ctx.value)));
-            }
-
-            @Override
-            public ExpressionAST visitIntLiteral(IntLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, IntLiteralAST.class), Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.value)));
-            }
-
-            @Override
-            public ExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
-                ExpressionAST quotedLhs = ctx.lhs.accept(this);
-                ExpressionAST quotedRhs = ctx.rhs.accept(this);
-                
-                return new NewAST(
-                    ctx.getRegion(), 
-                    new NameTypeAST(null, BinaryExpressionAST.class), 
-                    Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.operator), quotedLhs, quotedRhs)
-                );
-            }
-
-            @Override
-            public ExpressionAST visitInvocation(InvocationAST ctx) {
-                ExpressionAST quotedTarget = ctx.target != null ? ctx.target.accept(this) : new NullAST(null);
-                ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
-                ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
-                ExpressionAST quotedArguments = quote(ctx.arguments);
-                
-                return new NewAST(
-                    ctx.getRegion(), 
-                    new NameTypeAST(null, BinaryExpressionAST.class), 
-                    Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, null));
-            }
-            
-            private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
-                List<ExpressionAST> expressionList = expressions.stream().map(a -> a.accept(this)).collect(Collectors.toList());
-                ExpressionAST quotedExpressionsAsArray = 
-                    new ArrayAST(null, new NameTypeAST(null, CodeAST.class), expressionList);
-                return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
-            }
-
-            @Override
-            public ExpressionAST visitFieldSet(FieldSetAST ctx) {
-                ExpressionAST quotedTarget = ctx.target.accept(this);
-                ExpressionAST quotedDeclaringClass = MethodAST.quote(ctx.declaringClass);
-                ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
-                ExpressionAST quotedValue = ctx.value.accept(this);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), 
-                    Arrays.asList(null, quotedTarget, quotedDeclaringClass, quotedFieldName, quotedValue));
-            }
-
-            @Override
-            public ExpressionAST visitLongLiteral(LongLiteralAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
-            }
-
-            @Override
-            public ExpressionAST visitMetaExpression(MetaExpressionAST ctx) {
-                // Should just return body in executed form.
-                // Body should be an ExpressionAST.
-                
-                /*
-                Somehow, it should be figured out, what the result type of the body is.
-                If the result type is not an ExpressionAST, then it is decided whether
-                it is possible to convert the result type into an ExpressionAST.
-                - E.g. string expresions are converted into a "new StringLiteral(...)" expression
-                */
-                
-                return ctx;
-            }
-
-            @Override
-            public ExpressionAST visitThis(ThisAST ctx) {
-                return new NewAST(ctx.getRegion(), new NameTypeAST(null, ThisAST.class), Arrays.<ExpressionAST>asList(new NullAST(null)));
-            }
-
-            @Override
-            public ExpressionAST visitFieldGet(FieldGetAST ctx) {
-                ExpressionAST quotedTarget = ctx.target.accept(this);
-                ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), 
-                    Arrays.asList(null, quotedTarget, quotedFieldName));
-            }
-
-            @Override
-            public ExpressionAST visitVariableDeclaration(VariableDeclarationAST ctx) {
-                ExpressionAST quotedName = MethodAST.quote(ctx.name);
-                ExpressionAST quotedType = MethodAST.quote(ctx.type);
-                ExpressionAST quotedValue = ctx.value != null ? ctx.value.accept(this) : new NullAST(null);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, VariableDeclarationAST.class), 
-                    Arrays.asList(new NullAST(null), quotedName, quotedType, quotedValue));
-            }
-
-            @Override
-            public ExpressionAST visitLookup(LookupAST ctx) {
-                ExpressionAST quotedName = MethodAST.quote(ctx.name);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, LookupAST.class), 
-                    Arrays.asList(new NullAST(null), quotedName));
-            }
-
-            @Override
-            public ExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
-                ExpressionAST quotedName = MethodAST.quote(ctx.name);
-                ExpressionAST quotedValue = ctx.value.accept(this);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, VariableAssignmentAST.class), 
-                    Arrays.asList(new NullAST(null), quotedName, quotedValue));
-            }
-
-            @Override
-            public ExpressionAST visitRootExpression(RootExpressionAST ctx) {
-                ExpressionAST quotedExpression = ctx.expression.accept(this);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, RootExpressionAST.class), 
-                    Arrays.asList(new NullAST(null), quotedExpression));
-            }
-
-            @Override
-            public ExpressionAST visitQuote(QuoteAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public ExpressionAST visitBlock(BlockAST ctx) {
-                List<InjectAST> injectStatements = ctx.statements.stream()
-                    .map(s -> s.accept(this))
-                    .map(s -> 
-                        new InjectAST(null, s))
-                    .collect(Collectors.toList());
-                
-                InjectionBlockAST statementInjectorBlock = new InjectionBlockAST(null, injectStatements);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, BlockAST.class), 
-                    Arrays.asList(new NullAST(null), statementInjectorBlock));
-            }
-
-            @Override
-            public ExpressionAST visitNew(NewAST ctx) {
-                ExpressionAST quotedC = MethodAST.quote(ctx.c);
-                ExpressionAST quotedArguments = quote(ctx.arguments);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, NewAST.class), 
-                    Arrays.asList(new NullAST(null), quotedC, quotedArguments));
-            }
-
-            @Override
-            public ExpressionAST visitArray(ArrayAST ctx) {
-                ExpressionAST quotedType = MethodAST.quote(ctx.type);
-                ExpressionAST quotedElements = quote(ctx.elements);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, ArrayAST.class), 
-                    Arrays.asList(new NullAST(null), quotedType, quotedElements));
-            }
-
-            @Override
-            public ExpressionAST visitNull(NullAST ctx) {
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, NullAST.class), 
-                    Arrays.<ExpressionAST>asList(new NullAST(null)));
-            }
-
-            @Override
-            public ExpressionAST visitTypecast(TypecastAST ctx) {
-                ExpressionAST quotedExpression = ctx.expression.accept(this);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, TypecastAST.class), 
-                    Arrays.asList(new NullAST(null), quotedExpression));
-            }
-
-            @Override
-            public ExpressionAST visitGetClass(GetClassAST ctx) {
-                ExpressionAST quotedType = MethodAST.quote(ctx.t);
-                
-                return new NewAST(
-                    ctx.getRegion(), new NameTypeAST(null, GetClassAST.class), 
-                    Arrays.asList(new NullAST(null), quotedType));
-            }
-
-            @Override
-            public ExpressionAST visitInject(InjectAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public ExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public ExpressionAST visitWhile(WhileAST ctx) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        });
+        return ctx.accept(new CodeQuoter(thisClass, ctx, variables));
     }
     
     private static ExpressionAST quote(String str) {
