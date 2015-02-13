@@ -132,9 +132,6 @@ public class SourceToClassTest {
                 )
             )
         );
-        
-        // [Ljava/lang/Object;
-        // [Ljava/lang/Object;
     }
     
     @Test
@@ -157,43 +154,73 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAdd1PublicMethodReturningTrueForLessThan() throws IOException {
-        int x = 7;
-        int y = 9;
-        boolean expectedResult = x < y;
+    public void testAllClassesAdd1PublicMethodReturningXLessThanY() throws IOException {
         testSourceToClasses(
             new String[]{"jasy.TestClass1"}, 
             "class {+public boolean compare(int x, int y) {return x < y;}}", 
             forClass("jasy.TestClass1", 
-                chasMethodWhere(
-                    mname(is("compare"))
-                    .and(rreturnType(is(boolean.class)))
-                    .and(rmodifiers(isPublic()))
-                    .and(rmodifiers(isStatic().negate()))
-                ).and(
-                    forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, invocationResult(new Object[]{x, y}, is(expectedResult))))
-                )
+                forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, 
+                    invocationResult(new Object[]{8, 9}, is(true))
+                    .and(
+                        invocationResult(new Object[]{9, 9}, is(false))
+                    ).and(
+                        invocationResult(new Object[]{9, 8}, is(false))
+                    )
+                ))
             )
         );
     }
     
     @Test
-    public void testAllClassesAdd1PublicMethodReturningFalseForLessThan() throws IOException {
-        int x = 9;
-        int y = 7;
-        boolean expectedResult = x < y;
+    public void testAllClassesAdd1PublicMethodReturningXLessThanOrEqualsY() throws IOException {
         testSourceToClasses(
             new String[]{"jasy.TestClass1"}, 
-            "class {+public boolean compare(int x, int y) {return x < y;}}", 
+            "class {+public boolean compare(int x, int y) {return x <= y;}}", 
             forClass("jasy.TestClass1", 
-                chasMethodWhere(
-                    mname(is("compare"))
-                    .and(rreturnType(is(boolean.class)))
-                    .and(rmodifiers(isPublic()))
-                    .and(rmodifiers(isStatic().negate()))
-                ).and(
-                    forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, invocationResult(new Object[]{x, y}, is(expectedResult))))
-                )
+                forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, 
+                    invocationResult(new Object[]{8, 9}, is(true))
+                    .and(
+                        invocationResult(new Object[]{9, 9}, is(true))
+                    ).and(
+                        invocationResult(new Object[]{9, 8}, is(false))
+                    )
+                ))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningXGreaterThanY() throws IOException {
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            "class {+public boolean compare(int x, int y) {return x > y;}}", 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, 
+                    invocationResult(new Object[]{8, 9}, is(false))
+                    .and(
+                        invocationResult(new Object[]{9, 9}, is(false))
+                    ).and(
+                        invocationResult(new Object[]{9, 8}, is(true))
+                    )
+                ))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningXGreaterThanOrEqualsY() throws IOException {
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            "class {+public boolean compare(int x, int y) {return x >= y;}}", 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, 
+                    invocationResult(new Object[]{8, 9}, is(false))
+                    .and(
+                        invocationResult(new Object[]{9, 9}, is(true))
+                    ).and(
+                        invocationResult(new Object[]{9, 8}, is(true))
+                    )
+                ))
             )
         );
     }
