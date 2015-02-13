@@ -33,13 +33,6 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitAnnotations(@NotNull JasyParser.AnnotationsContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link JasyParser#binarySum}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBinarySum(@NotNull JasyParser.BinarySumContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link JasyParser#program}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -47,11 +40,18 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitProgram(@NotNull JasyParser.ProgramContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link JasyParser#binarySumOperator}.
+	 * Visit a parse tree produced by {@link JasyParser#relationalOperator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBinarySumOperator(@NotNull JasyParser.BinarySumOperatorContext ctx);
+	T visitRelationalOperator(@NotNull JasyParser.RelationalOperatorContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#multiplicativeOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMultiplicativeOperator(@NotNull JasyParser.MultiplicativeOperatorContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMember}.
@@ -59,6 +59,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMember(@NotNull JasyParser.ClassTransformerMemberContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#additiveOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAdditiveOperator(@NotNull JasyParser.AdditiveOperatorContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#block}.
@@ -80,13 +87,6 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitIdentifier(@NotNull JasyParser.IdentifierContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link JasyParser#binaryRelational}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBinaryRelational(@NotNull JasyParser.BinaryRelationalContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#catchStatement}.
@@ -166,6 +166,20 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitTryStatement(@NotNull JasyParser.TryStatementContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#additiveExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAdditiveExpression(@NotNull JasyParser.AdditiveExpressionContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#relationalExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRelationalExpression(@NotNull JasyParser.RelationalExpressionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#statements}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -199,13 +213,6 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLiteral(@NotNull JasyParser.LiteralContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link JasyParser#binaryMult}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBinaryMult(@NotNull JasyParser.BinaryMultContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#accessModifier}.
@@ -320,11 +327,11 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitMetaExpression(@NotNull JasyParser.MetaExpressionContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link JasyParser#binaryMultOperator}.
+	 * Visit a parse tree produced by {@link JasyParser#multiplicativeExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBinaryMultOperator(@NotNull JasyParser.BinaryMultOperatorContext ctx);
+	T visitMultiplicativeExpression(@NotNull JasyParser.MultiplicativeExpressionContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberMethodBlody}.

@@ -384,17 +384,17 @@ public class ASMCompiler {
             }
 
             @Override
-            public ExpressionAST visitBinarySum(JasyParser.BinarySumContext ctx) {
+            public ExpressionAST visitAdditiveExpression(JasyParser.AdditiveExpressionContext ctx) {
                 ExpressionAST result = ctx.first.accept(this);
                 // Derive 
                 
-                for(int i = 1; i < ctx.binaryMult().size(); i++) {
+                for(int i = 1; i < ctx.multiplicativeExpression().size(); i++) {
                     ExpressionAST lhs = result;
-                    ExpressionAST rhs = ctx.binaryMult(i).accept(this);
+                    ExpressionAST rhs = ctx.multiplicativeExpression(i).accept(this);
 
                     int operator;
 
-                    switch(ctx.binarySumOperator(i - 1).operator.getType()) {
+                    switch(ctx.additiveOperator(i - 1).operator.getType()) {
                         case JasyLexer.PLUS:
                             operator = BinaryExpressionAST.OPERATOR_ADD;
                             break;
@@ -455,7 +455,7 @@ public class ASMCompiler {
 
                     return new VariableAssignmentAST(new Region(ctx), name, value);
                 } else
-                    return ctx.binaryRelational().accept(this);
+                    return ctx.relationalExpression().accept(this);
             }
 
             @Override
@@ -929,209 +929,6 @@ public class ASMCompiler {
         private Class<?> getReturnType() {
             return returnType;
         }
-    }
-    
-    private Class<?> treeToCode(ParserRuleContext ctx, MethodCodeGenerator generator, InsnList originalIl, boolean asExpression) {
-        return ctx.accept(new JasyBaseVisitor<Class<?>>() {
-            @Override
-            public Class<?> visitProceedStatement(JasyParser.ProceedStatementContext ctx) {
-                InsnList originalIlCopy = new InsnList();
-                originalIlCopy.add(originalIl);
-                
-                Label afterProceed = new Label();
-                
-                // Replace all return instructions with unconditional jumps
-                for(int i = 0; i < originalIlCopy.size(); i++) {
-                    AbstractInsnNode insn = originalIlCopy.get(i);
-                    
-                    if(isReturn(insn.getOpcode()))
-                        generator.methodNode.visitJumpInsn(Opcodes.GOTO, afterProceed);
-                    else
-                        generator.methodNode.instructions.add(insn);
-                    
-//                    if(isReturn(insn.getOpcode()))
-//                        originalIlCopy.set(insn, new JumpInsnNode(Opcodes.GOTO, new LabelNode(afterProceed)));
-                }
-                
-//                methodNode.instructions.add(originalIlCopy);
-                generator.methodNode.visitLabel(afterProceed);
-                
-                if(asExpression) {
-                    Type returnType = Type.getReturnType(generator.methodNode.desc);
-
-                    try {
-                        return classResolver.resolveType(returnType.getClassName());
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(ASMCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                        return null;
-                    }
-                } else {
-                    generator.methodNode.visitInsn(Opcodes.POP);
-                    return void.class;
-                }
-            }
-
-            @Override
-            public Class<?> visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
-                try {
-                    String name = ctx.id.getText();
-                    Class<?> type = classResolver.resolveType(ctx.typeQualifier().getText());
-                    String descriptor = Type.getDescriptor(type);
-                    int index = generator.declareVariable(name, descriptor, type);
-                    generator.methodNode.visitLocalVariable(name, name, name, null, null, index);
-                    return type; //To change body of generated methods, choose Tools | Templates.
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(ASMCompiler.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-                
-                return null;
-            }
-            
-            @Override
-            public Class<?> visitBinarySum(JasyParser.BinarySumContext ctx) {
-                if(asExpression) {
-                    Class<?> resultType = ctx.first.accept(this);
-
-                    for(int i = 0; i < ctx.rest.getChildCount(); i++) {
-                        Class<?> lhsResultType = resultType;
-
-                        ParserRuleContext rhsCtx = (ParserRuleContext) ctx.rest.getChild(i);
-
-                        Class<?> rhsResultType = rhsCtx.accept(this);
-
-                        switch(ctx.binarySumOperator(i - 1).operator.getType()) {
-                            case JasyLexer.PLUS:
-                                if(lhsResultType.equals(String.class)) {
-                                    if(!rhsResultType.equals(String.class))
-                                        generator.methodNode.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;", false);
-                                    generator.methodNode.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "concat", "(Ljava/lang/String;)Ljava/lang/String;", false);
-                                } else if(rhsResultType.equals(String.class)) {
-                                    // Not supported
-                                } else {
-                                    switch(lhsResultType.getSimpleName()) {
-                                        case "short":
-                                            generator.methodNode.visitInsn(Opcodes.IADD);
-                                            break;
-                                        case "int":
-                                            generator.methodNode.visitInsn(Opcodes.IADD);
-                                            break;
-                                        case "long":
-                                            generator.methodNode.visitInsn(Opcodes.LADD);
-                                            break;
-                                        case "float":
-                                            generator.methodNode.visitInsn(Opcodes.FADD);
-                                            break;
-                                        case "double":
-                                            generator.methodNode.visitInsn(Opcodes.DADD);
-                                            break;
-                                    }
-                                }
-                                break;
-                            case JasyLexer.MINUS:
-                                switch(lhsResultType.getSimpleName()) {
-                                    case "short":
-                                        generator.methodNode.visitInsn(Opcodes.ISUB);
-                                        break;
-                                    case "int":
-                                        generator.methodNode.visitInsn(Opcodes.ISUB);
-                                        break;
-                                    case "long":
-                                        generator.methodNode.visitInsn(Opcodes.LSUB);
-                                        break;
-                                    case "float":
-                                        generator.methodNode.visitInsn(Opcodes.FSUB);
-                                        break;
-                                    case "double":
-                                        generator.methodNode.visitInsn(Opcodes.DSUB);
-                                        break;
-                                }
-                                break;
-                        }
-
-                        resultType = rhsResultType;
-                    }
-
-                    return resultType;
-                }
-                
-                return void.class;
-            }
-
-            @Override
-            public Class<?> visitLookup(JasyParser.LookupContext ctx) {
-                String id = ctx.identifier().getText();
-                
-                if(generator.isVariable(id)) {
-                    int index = generator.getVariableIndex(id);
-                    Class<?> type = generator.getVariableType(id);
-                    int loadOpcode = getLoad(type);
-                    generator.methodNode.visitVarInsn(loadOpcode, index);
-                } else {
-                    // I field
-                }
-                
-                return super.visitLookup(ctx); //To change body of generated methods, choose Tools | Templates.
-            }
-            
-            @Override
-            public Class<?> visitStringLiteral(JasyParser.StringLiteralContext ctx) {
-                String str = ctx.STRING().getText().substring(1, ctx.STRING().getText().length() - 1);
-                generator.methodNode.visitLdcInsn(str);
-                
-                return String.class;
-            }
-
-            @Override
-            public Class<?> visitIntegerLiteral(JasyParser.IntegerLiteralContext ctx) {
-                int i = Integer.parseInt(ctx.INTEGER().getText());
-                generator.methodNode.visitLdcInsn(i);
-                
-                return int.class;
-            }
-            
-            @Override
-            public Class<?> visitReturnStatement(JasyParser.ReturnStatementContext ctx) {
-                treeToCode(ctx.expression(), generator, originalIl, true);
-                
-//                Type returnType = Type.getReturnType(generator.methodNode.desc);                    
-//                String returnTypeDescriptor = returnType.getDescriptor();
-                int returnCode = getReturn(generator.getReturnType());
-                generator.methodNode.visitInsn(returnCode);
-                
-//                switch(returnTypeDescriptor) {
-//                    case "V":
-//                        generator.methodNode.visitInsn(Opcodes.RETURN);
-//                    case "J":
-//                        generator.methodNode.visitInsn(Opcodes.LRETURN);
-//                    case "D":
-//                        generator.methodNode.visitInsn(Opcodes.DRETURN);
-//                    case "F":
-//                        generator.methodNode.visitInsn(Opcodes.FRETURN);
-//                    case "I": case "Z": case "B": case "C": case "S":
-//                        generator.methodNode.visitInsn(Opcodes.IRETURN);
-//                    default:
-//                        generator.methodNode.visitInsn(Opcodes.ARETURN);
-//                }
-                
-//                if(type.equals("V")){
-//                   node.visitInsn(Opcodes.RETURN);
-//                }else if(type.equals("J")){     
-//                   node.visitInsn(Opcodes.LRETURN);
-//                }else if(type.equals("D")){
-//                   node.visitInsn(Opcodes.DRETURN);
-//                }else if(type.equals("F")){
-//                   node.visitInsn(Opcodes.FRETURN);
-//                }else if (type.equals("I") || type.equals("Z") || type.equals("B")
-//                      || type.equals("C") || type.equals("S")) {
-//                   node.visitInsn(Opcodes.IRETURN);
-//                } else {
-//                   node.visitInsn(Opcodes.ARETURN);
-//                }
-
-                return void.class;
-            }
-        });
     }
     
     private static int getReturn(Class<?> type) {

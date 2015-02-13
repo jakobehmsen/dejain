@@ -22,18 +22,19 @@ block: OPEN_BRA statements CLOSE_BRA;
 parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
 expression: variableAssignment;
-variableAssignment: identifier ASSIGN_OP value=variableAssignment | binaryRelational;
-binaryRelational: 
-    first=binarySum (operator=(LT | LTE | GT | GTE) rest=binarySum)*;
-binarySum: first=binaryMult (binarySumOperator rest=binaryMult)*;
-binaryMult: first=leafExpression (binaryMultOperator rest=leafExpression)*;
+variableAssignment: identifier ASSIGN_OP value=variableAssignment | relationalExpression;
+relationalExpression: 
+    first=additiveExpression (relationalOperator rest=additiveExpression)*;
+relationalOperator: operator=(LT | LTE | GT | GTE);
+additiveExpression: first=multiplicativeExpression (additiveOperator rest=multiplicativeExpression)*;
+additiveOperator: operator=(PLUS | MINUS);
+multiplicativeExpression: first=leafExpression (multiplicativeOperator rest=leafExpression)*;
+multiplicativeOperator: operator=(MULT | DIV);
 leafExpression: 
     (invocation | literal | lookup | thisResult | proceedStatement | 
     metaExpression | quotedExpression | OPEN_PAR expression CLOSE_PAR) 
     leafExpressionChain;
 leafExpressionChain: (DOT (lookup|invocation))*;
-binarySumOperator: operator=(PLUS | MINUS);
-binaryMultOperator: operator=(MULT | DIV);
 thisResult: KW_THIS_RESULT;
 invocation: identifier OPEN_PAR arguments CLOSE_PAR;
 arguments: (expression (COMMA expression)*)?;
