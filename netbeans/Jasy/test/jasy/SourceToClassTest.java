@@ -521,7 +521,7 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodWithInstantiation() throws IOException {
+    public void testAllClassesAddMethodWithNew() throws IOException {
         String src =
             "class {\n" +
             "    +public StringBuilder createStringBuilder() {\n" +
@@ -534,6 +534,26 @@ public class SourceToClassTest {
             src, 
             forClass("jasy.TestClass1", 
                 forInstance(imethod("createStringBuilder", invocationResult(instanceOf(StringBuilder.class))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithNewWithArguments() throws IOException {
+        String expectedResult = "Some text";
+        
+        String src =
+            "class {\n" +
+            "    +public String createStringBuilder() {\n" +
+            "        return new StringBuilder(\"" + expectedResult + "\").toString();\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("createStringBuilder", invocationResult(is(expectedResult))))
             )
         );
     }
