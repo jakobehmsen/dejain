@@ -106,6 +106,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitNewExpression(@NotNull JasyParser.NewExpressionContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitCatchStatement(@NotNull JasyParser.CatchStatementContext ctx) { return visitChildren(ctx); }
 
 	/**

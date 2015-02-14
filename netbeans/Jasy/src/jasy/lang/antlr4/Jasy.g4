@@ -32,7 +32,8 @@ multiplicativeExpression: first=leafExpression (multiplicativeOperator rest=leaf
 multiplicativeOperator: operator=(MULT | DIV);
 leafExpression: 
     (invocation | literal | lookup | thisResult | proceedStatement | 
-    metaExpression | quotedExpression | OPEN_PAR expression CLOSE_PAR) 
+    metaExpression | quotedExpression | newExpression | 
+    OPEN_PAR expression CLOSE_PAR) 
     leafExpressionChain;
 leafExpressionChain: (DOT (lookup|invocation))*;
 thisResult: KW_THIS_RESULT;
@@ -45,6 +46,9 @@ nonDelimitedStatement: tryCatchStatement | ifElseStatement | whileStatement;
 proceedStatement: ELLIPSES;
 metaExpression: DOLLAR (expression | OPEN_BRA statements CLOSE_BRA);
 quotedExpression: HASH (expression | nonDelimitedStatement | delimitedStatement | block);
+newExpression: 
+    KW_NEW className=typeQualifier 
+    OPEN_PAR (expression (COMMA expression)*)? CLOSE_PAR;
 tryCatchStatement: 
     tryStatement ((catchStatement finallyStatement?) | finallyStatement);
 tryStatement: KW_TRY OPEN_BRA statements CLOSE_BRA;
@@ -101,6 +105,7 @@ GTE: '>=';
 ASSIGN_OP: '=';
 REPLACE_OP: '=>';
 KW_THIS_RESULT: 'thisResult';
+KW_NEW: 'new';
 KW_TRY: 'try';
 KW_CATCH: 'catch';
 KW_FINALLY: 'finally';

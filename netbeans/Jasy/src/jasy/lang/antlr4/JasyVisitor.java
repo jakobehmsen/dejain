@@ -89,6 +89,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitIdentifier(@NotNull JasyParser.IdentifierContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#newExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNewExpression(@NotNull JasyParser.NewExpressionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#catchStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
