@@ -521,6 +521,24 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodWithInstantiation() throws IOException {
+        String src =
+            "class {\n" +
+            "    +public StringBuilder createStringBuilder() {\n" +
+            "        return new StringBuilder();\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("createStringBuilder", invocationResult(instanceOf(StringBuilder.class))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodReturnValueOfMetaVariable() throws IOException {
         int expectedResult = 5;
         
@@ -954,6 +972,7 @@ public class SourceToClassTest {
         
         classMap.addClassName("java.lang.String");
         classMap.addClassName("java.lang.Object");
+        classMap.addClassName("java.lang.StringBuilder");
         CommonClassResolver resolver = new CommonClassResolver(classMap);
         resolver.importPackage("java.lang");
         
