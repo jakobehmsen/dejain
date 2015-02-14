@@ -838,12 +838,12 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodWithIf() throws IOException {
+    public void testAllClassesAddMethodWithReturnInIfElse() throws IOException {
         int trueIfGT = 10;
         
         String src =
             "class {\n" +
-            "    +public boolean gt" + trueIfGT + "(int x) {\n" +
+            "    +public boolean gt(int x) {\n" +
             "        if(x > " + trueIfGT + ")\n" +
             "            return true;\n" +
             "        else\n" +
@@ -854,8 +854,32 @@ public class SourceToClassTest {
         testSourceToClasses(new String[]{"jasy.TestClass1"}, 
             src, 
             forClass("jasy.TestClass1", 
-                forInstance(imethod("getValue", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT + 1}, is(true))))
-                .and(forInstance(imethod("getValue", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
+                forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT + 1}, is(true))))
+                .and(forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
+                )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithReturnInIf() throws IOException {
+        int trueIfGT = 10;
+        
+        String src =
+            "class {\n" +
+            "    +public boolean gt(int x) {\n" +
+            "        if(x > " + trueIfGT + ")\n" +
+            "            return true;\n" +
+            "        \n" +
+            "        return false;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT + 1}, is(true))))
+                .and(forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
                 )
             )
         );
