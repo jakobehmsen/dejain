@@ -837,6 +837,30 @@ public class SourceToClassTest {
         );
     }
     
+    @Test
+    public void testAllClassesAddMethodWithIf() throws IOException {
+        int trueIfGT = 10;
+        
+        String src =
+            "class {\n" +
+            "    +public boolean gt" + trueIfGT + "(int x) {\n" +
+            "        if(x > " + trueIfGT + ")\n" +
+            "            return true;\n" +
+            "        else\n" +
+            "            return false;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT + 1}, is(true))))
+                .and(forInstance(imethod("getValue", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
+                )
+            )
+        );
+    }
+    
     private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
         return bytes -> {
