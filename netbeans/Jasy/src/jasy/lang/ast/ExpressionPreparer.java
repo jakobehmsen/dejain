@@ -732,10 +732,25 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                generator.methodNode.newInstance(Type.getType(ArrayList.class));
+//                generator.methodNode.dup();
+//                generator.methodNode.invokeConstructor(Type.getType(ArrayList.class), new Method("<init>", Type.VOID_TYPE, new Type[0]));
+//                injections.forEach((i) -> i.generate(c, generator, originalIl));
+                
+                generator.beginInjection();
+                
+                int injectionListIndex = generator.getInjectionListIndex();
+                
                 generator.methodNode.newInstance(Type.getType(ArrayList.class));
                 generator.methodNode.dup();
                 generator.methodNode.invokeConstructor(Type.getType(ArrayList.class), new Method("<init>", Type.VOID_TYPE, new Type[0]));
+                generator.methodNode.storeLocal(injectionListIndex);
+                
                 injections.forEach((i) -> i.generate(c, generator, originalIl));
+                
+                generator.methodNode.loadLocal(injectionListIndex);
+                
+                generator.endInjection();
             }
         };
     }

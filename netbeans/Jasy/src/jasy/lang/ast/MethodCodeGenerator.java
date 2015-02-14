@@ -1,6 +1,8 @@
 package jasy.lang.ast;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.List;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -50,5 +52,20 @@ public class MethodCodeGenerator {
 
     private TypeAST getReturnType() {
         return returnType;
+    }
+    
+    private ArrayDeque<Integer> injectionListIndexStack = new ArrayDeque<>();
+
+    public void beginInjection() {
+        int injectionListIndex = methodNode.newLocal(Type.getType(List.class));
+        injectionListIndexStack.push(injectionListIndex);
+    }
+
+    public int getInjectionListIndex() {
+        return injectionListIndexStack.peek();
+    }
+
+    public void endInjection() {
+        injectionListIndexStack.pop();
     }
 }

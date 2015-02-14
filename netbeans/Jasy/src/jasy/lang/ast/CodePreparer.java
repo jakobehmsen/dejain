@@ -187,9 +187,24 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
         return new PreparedAST() {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+//                if (((NameTypeAST) expression.resultType()).getType() != void.class) {
+//                    // dup list
+//                    generator.methodNode.dup();
+//                }
+//                // generate expresion
+//                expression.generate(c, generator, originalIl);
+//                if (((NameTypeAST) expression.resultType()).getType() != void.class) {
+//                    // add to list
+//                    generator.methodNode.invokeInterface(Type.getType(List.class), new Method("add", Type.BOOLEAN_TYPE, new Type[]{Type.getType(Object.class)}));
+//                    // pop return from add
+//                    generator.methodNode.pop();
+//                }
+                
+                int injectionListIndex = generator.getInjectionListIndex();
+                
                 if (((NameTypeAST) expression.resultType()).getType() != void.class) {
                     // dup list
-                    generator.methodNode.dup();
+                    generator.methodNode.loadLocal(injectionListIndex);
                 }
                 // generate expresion
                 expression.generate(c, generator, originalIl);
