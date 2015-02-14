@@ -134,10 +134,10 @@ public class MethodAST extends AbstractAST implements MemberAST {
         Hashtable<String, ParameterInfo> metaParameters = new Hashtable<>();
         Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
         PreparedAST pbody = toCode(mp.metaScope, body, metaParameters, metaVariables);
-        ArrayList<TypeAST> returnTypes = new ArrayList<>();
-        pbody.returns(returnTypes);
+//        ArrayList<TypeAST> returnTypes = new ArrayList<>();
+//        pbody.returns(returnTypes);
         // Must return CodeAST
-        TypeAST returnType = returnTypes.get(0);
+//        TypeAST returnType = returnTypes.get(0);
         
         Class<?> returnTypeClass = CodeAST.class;//((NameTypeAST)returnType).getType();
         
@@ -167,9 +167,9 @@ public class MethodAST extends AbstractAST implements MemberAST {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
         metaObjectClassNode.accept(cw);
         
-//        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
-//        metaObjectClassNode.accept(traceClassVisitor);
-        CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), false, new PrintWriter(System.out));
+        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
+        metaObjectClassNode.accept(traceClassVisitor);
+        CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), true, new PrintWriter(System.out));
         
         SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
         Class<?> metaObjectClass = classLoader.loadClass();
