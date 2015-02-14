@@ -17,6 +17,7 @@ import jasy.lang.antlr4.JasyParser.StatementContext;
 import jasy.lang.antlr4.JasyParser.StatementsContext;
 import jasy.lang.ast.BinaryExpressionAST;
 import jasy.lang.ast.BlockAST;
+import jasy.lang.ast.BooleanLiteralAST;
 import jasy.lang.ast.ClassAST;
 import jasy.lang.ast.ExpressionAST;
 import jasy.lang.ast.FieldAST;
@@ -565,6 +566,14 @@ public class ASMCompiler {
                     code = getExpression(ctx.expression(), mp);
                 
                 return new QuoteAST(new Region(ctx), code);
+            }
+
+            @Override
+            public ExpressionAST visitBooleanLiteral(JasyParser.BooleanLiteralContext ctx) {
+                String valueStr = ctx.getText();
+                boolean value = Boolean.parseBoolean(valueStr);
+                
+                return new BooleanLiteralAST(new Region(ctx), value);
             }
         });
     }

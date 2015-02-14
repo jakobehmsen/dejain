@@ -38,6 +38,16 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
     }
 
     @Override
+    public ExpressionAST visitLongLiteral(LongLiteralAST ctx) {
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
+    }
+
+    @Override
+    public ExpressionAST visitBoolean(BooleanLiteralAST ctx) {
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, BooleanLiteralAST.class), Arrays.asList(new NullAST(null), new BooleanLiteralAST(null, ctx.value)));
+    }
+ 
+    @Override
     public ExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
         ExpressionAST quotedLhs = ctx.lhs.accept(this);
         ExpressionAST quotedRhs = ctx.rhs.accept(this);
@@ -66,11 +76,6 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
         ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
         ExpressionAST quotedValue = ctx.value.accept(this);
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), Arrays.asList(null, quotedTarget, quotedDeclaringClass, quotedFieldName, quotedValue));
-    }
-
-    @Override
-    public ExpressionAST visitLongLiteral(LongLiteralAST ctx) {
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, LongLiteralAST.class), Arrays.asList(new NullAST(null), new LongLiteralAST(null, ctx.value)));
     }
 
     @Override

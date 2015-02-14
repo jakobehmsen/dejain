@@ -27,4 +27,5 @@ public interface CodeVisitor<T> {
     T visitInjectionBlock(InjectionBlockAST ctx);
     T visitWhile(WhileAST ctx);
     T visitIfElse(IfElseAST ctx);
+    T visitBoolean(BooleanLiteralAST ctx);
 }

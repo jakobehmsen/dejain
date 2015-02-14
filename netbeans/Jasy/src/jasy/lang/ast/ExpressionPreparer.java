@@ -749,4 +749,19 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     public PreparedExpressionAST visitIfElse(IfElseAST ctx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public PreparedExpressionAST visitBoolean(BooleanLiteralAST ctx) {
+        return new PreparedExpressionAST() {
+            @Override
+            public TypeAST resultType() {
+                return new NameTypeAST(null, boolean.class);
+            }
+
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                generator.methodNode.push(ctx.value);
+            }
+        };
+    }
 }
