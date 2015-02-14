@@ -54,7 +54,7 @@ finallyStatement: KW_FINALLY OPEN_BRA statements CLOSE_BRA;
 ifElseStatement: 
     KW_IF OPEN_PAR condition=expression CLOSE_PAR 
     ifTrueBlock=singleOrMultiStatement
-    (KW_ELSE ifFalseBlock=singleOrMultiStatement);
+    (KW_ELSE ifFalseBlock=singleOrMultiStatement)?;
 whileStatement:
     KW_WHILE OPEN_PAR condition=expression CLOSE_PAR 
     whileTrueBlock=singleOrMultiStatement;
