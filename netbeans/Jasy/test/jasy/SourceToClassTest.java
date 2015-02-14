@@ -855,7 +855,8 @@ public class SourceToClassTest {
             src, 
             forClass("jasy.TestClass1", 
                 forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT + 1}, is(true))))
-                .and(forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
+                .and(
+                    forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
                 )
             )
         );
@@ -879,8 +880,34 @@ public class SourceToClassTest {
             src, 
             forClass("jasy.TestClass1", 
                 forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT + 1}, is(true))))
-                .and(forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
+                .and(
+                    forInstance(imethod("gt", new Class<?>[]{int.class}, invocationResult(new Object[]{trueIfGT}, is(false))))
                 )
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithParametersAndVariables() throws IOException {
+        int x = 10;
+        int a = 15;
+        int y = 5;
+        int b = 56;
+        int expectedValue = x + a + y + b;
+        
+        String src =
+            "class {\n" +
+            "    +public int gt(int x, int a) {\n" +
+            "        int y = " + y + ";\n" +
+            "        int b = " + b + ";\n" +
+            "        return x + a + y + b;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("gt", new Class<?>[]{int.class, int.class}, invocationResult(new Object[]{x, a}, is(expectedValue))))
             )
         );
     }
