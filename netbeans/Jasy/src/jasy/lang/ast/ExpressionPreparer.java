@@ -744,4 +744,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     public PreparedExpressionAST visitWhile(WhileAST ctx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public PreparedExpressionAST visitIfElse(IfElseAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

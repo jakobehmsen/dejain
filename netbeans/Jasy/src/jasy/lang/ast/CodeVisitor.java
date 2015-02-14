@@ -26,4 +26,5 @@ public interface CodeVisitor<T> {
     T visitInject(InjectAST ctx);
     T visitInjectionBlock(InjectionBlockAST ctx);
     T visitWhile(WhileAST ctx);
+    T visitIfElse(IfElseAST ctx);
 }

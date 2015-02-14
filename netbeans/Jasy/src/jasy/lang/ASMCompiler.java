@@ -14,6 +14,7 @@ import jasy.lang.antlr4.JasyParser.LookupContext;
 import jasy.lang.antlr4.JasyParser.MetaBlockContext;
 import jasy.lang.antlr4.JasyParser.ProgramContext;
 import jasy.lang.antlr4.JasyParser.StatementContext;
+import jasy.lang.antlr4.JasyParser.StatementsContext;
 import jasy.lang.ast.BinaryExpressionAST;
 import jasy.lang.ast.BlockAST;
 import jasy.lang.ast.ClassAST;
@@ -32,6 +33,7 @@ import jasy.lang.ast.CodeVisitor;
 import jasy.lang.ast.RootExpressionAST;
 import jasy.lang.ast.FieldGetAST;
 import jasy.lang.ast.FieldSetAST;
+import jasy.lang.ast.IfElseAST;
 import jasy.lang.ast.InjectAST;
 import jasy.lang.ast.IntLiteralAST;
 import jasy.lang.ast.InvocationAST;
@@ -57,6 +59,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -336,13 +339,27 @@ public class ASMCompiler {
             }
 
             @Override
+            public CodeAST visitIfElseStatement(JasyParser.IfElseStatementContext ctx) {
+                ExpressionAST condition = getExpression(ctx.condition, mp);
+                CodeAST ifTrueBody = getBody(ctx.ifTrueBlock);
+                CodeAST ifFalseBody = ctx.ifFalseBlock != null
+                    ? getBody(ctx.ifFalseBlock)
+                    : new BlockAST(new Region(new Position(ctx.ifTrueBlock.stop), new Position(ctx.ifTrueBlock.stop)), Collections.emptyList());
+                
+                return new IfElseAST(new Region(ctx), condition, ifTrueBody, ifFalseBody);
+            }
+
+            @Override
             public CodeAST visitWhileStatement(JasyParser.WhileStatementContext ctx) {
                 ExpressionAST condition = getExpression(ctx.condition, mp);
-                CodeAST body = ctx.whileBody().statement() != null 
-                    ? getStatement(ctx.whileBody().statement(), mp) 
-                    : new BlockAST(new Region(ctx.whileBody()), getStatements(ctx.whileBody().statements(), mp));
+                CodeAST body = getBody(ctx.whileTrueBlock);
                 
                 return new WhileAST(new Region(ctx), condition, body);
+            }
+            
+            private CodeAST getBody(JasyParser.SingleOrMultiStatementContext ctx) {
+                return ctx.statement() != null ? getStatement(ctx.statement(), mp) 
+                    : new BlockAST(new Region(ctx), getStatements(ctx.statements(), mp));
             }
         });
         

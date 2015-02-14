@@ -228,5 +228,10 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
                 generator.methodNode.visitLabel(afterLoop);
             }
         };
-    } 
+    }
+
+    @Override
+    public PreparedAST visitIfElse(IfElseAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

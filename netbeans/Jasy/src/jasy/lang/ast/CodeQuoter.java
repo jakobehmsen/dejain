@@ -184,4 +184,17 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
         ExpressionAST quotedBody = ctx.body.accept(this);
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, WhileAST.class), Arrays.asList(new NullAST(null), quotedCondition, quotedBody));
     }
+
+    @Override
+    public ExpressionAST visitIfElse(IfElseAST ctx) {
+        ExpressionAST quotedCondition = ctx.condition.accept(this);
+        ExpressionAST quotedIfTrueBody = ctx.ifTrueBody.accept(this);
+        ExpressionAST quotedIfFalseBody = ctx.ifFalseBody.accept(this);
+        
+        return new NewAST(
+            ctx.getRegion(), 
+            new NameTypeAST(null, WhileAST.class), 
+            Arrays.asList(new NullAST(null), quotedCondition, quotedIfTrueBody, quotedIfFalseBody)
+        );
+    }
 }
