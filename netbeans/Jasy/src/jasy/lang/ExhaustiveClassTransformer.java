@@ -31,7 +31,7 @@ public class ExhaustiveClassTransformer {
         while(true) {
             ClassReader classReader = new ClassReader(classfileBuffer);
             ClassNode classNode = new ClassNode();
-            classReader.accept(classNode, 0);
+            classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
             ClassAction action = transformer.resolve(classNode);
 
             if(action == null)
