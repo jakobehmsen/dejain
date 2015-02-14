@@ -198,7 +198,7 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
         
         return new NewAST(
             ctx.getRegion(), 
-            new NameTypeAST(null, WhileAST.class), 
+            new NameTypeAST(null, IfElseAST.class), 
             Arrays.asList(new NullAST(null), quotedCondition, quotedIfTrueBody, quotedIfFalseBody)
         );
     }

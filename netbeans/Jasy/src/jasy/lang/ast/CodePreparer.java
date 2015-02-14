@@ -217,21 +217,49 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
                 Label loopStart = new Label();
-                Label afterLoop = new Label();
+                Label end = new Label();
+                
                 generator.methodNode.visitLabel(loopStart);
-//                generator.methodNode.push(false);
+                
                 condition.generate(c, generator, originalIl);
-                generator.methodNode.ifZCmp(GeneratorAdapter.EQ, afterLoop);
-//                generator.methodNode.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, afterLoop);
+                generator.methodNode.ifZCmp(GeneratorAdapter.EQ, end);
+                
                 body.generate(c, generator, originalIl);
                 generator.methodNode.goTo(loopStart);
-                generator.methodNode.visitLabel(afterLoop);
+                
+                generator.methodNode.visitLabel(end);
             }
         };
     }
 
     @Override
     public PreparedAST visitIfElse(IfElseAST ctx) {
+        PreparedExpressionAST condition = MethodAST.toExpression(thisClass, ctx.condition, parameters, variables);
+        PreparedAST ifTrueBody = ctx.ifTrueBody.accept(this);
+        PreparedAST ifFalseBody = ctx.ifFalseBody.accept(this);
+        
+        return new PreparedAST() {
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                Label ifFalseBodyStart = new Label();
+                Label end = new Label();
+                
+                condition.generate(c, generator, originalIl);
+                generator.methodNode.ifZCmp(GeneratorAdapter.EQ, ifFalseBodyStart);
+                
+                ifTrueBody.generate(c, generator, originalIl);
+                generator.methodNode.goTo(end);
+                
+                generator.methodNode.visitLabel(ifFalseBodyStart);
+                ifFalseBody.generate(c, generator, originalIl);
+                
+                generator.methodNode.visitLabel(end);
+            }
+        };
+    }
+
+    @Override
+    public PreparedAST visitBoolean(BooleanLiteralAST ctx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
