@@ -135,6 +135,7 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
                     case "long": c = long.class; break;
                     case "float": c = float.class; break;
                     case "double": c = double.class; break;
+                    case "void": c = void.class; break;
                     default: c = Class.forName(name);
                 }
                 
