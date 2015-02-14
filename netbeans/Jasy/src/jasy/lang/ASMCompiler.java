@@ -61,6 +61,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -217,7 +218,9 @@ public class ASMCompiler {
                             public Object visitClassTransformerMemberMethod(JasyParser.ClassTransformerMemberMethodContext ctx) {
                                 Integer accessModifier = ctx.accessModifier() != null ? getAccessModifier(ctx.accessModifier(), null) : null;
                                 boolean isStatic = ctx.modStatic() != null;
-                                TypeAST returnType = new NameTypeAST(new Region(ctx), ctx.typeQualifier().getText());
+                                String returnTypeName = ctx.typeQualifier().getText();
+                                TypeAST returnType = new NameTypeAST(new Region(ctx), returnTypeName);
+                                boolean isVoid = returnTypeName.equals("void");
                                 String name = ctx.identifier().getText();
                                 List<Parameter> parameters = ctx.parameters().parameter().stream()
                                     .map(pCtx -> {
@@ -232,13 +235,23 @@ public class ASMCompiler {
                                 if(ctx.body.block() != null) {
                                     // TODO: Wrap into meta block, that returns the block quoted
                                     List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.block().statements(), mp);
+                                    if(isVoid)
+                                        statements.add(new ReturnAST(new Region(ctx.body), null));
                                     CodeAST bodyBlock = new BlockAST(new Region(ctx.body), statements);
                                     body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), bodyBlock));
                                     
 //                                    body = getStatements(ctx.body.block().statements(), mp);
                                 } else {
                                     List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.metaBlock().statements(), mp);
-                                    body = new BlockAST(new Region(ctx.body), statements);
+                                    CodeAST metaBodyBlock = new BlockAST(new Region(ctx.body), statements);
+                                    CodeAST metaCode = new MetaCodeAST(new Region(ctx.body), metaBodyBlock);
+                                    ArrayList<CodeAST> bodyStatements = new ArrayList<>();
+                                    bodyStatements.add(metaCode);
+                                    if(isVoid)
+                                        bodyStatements.add(new ReturnAST(new Region(ctx.body), null));
+                                    CodeAST bodyBlock = new BlockAST(new Region(ctx.body), bodyStatements);
+//                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), metaCode));
+                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), bodyBlock));
                                 }
                                 
                                 MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameters), body, mp);
