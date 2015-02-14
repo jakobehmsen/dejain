@@ -7,6 +7,11 @@ public class Assertion {
         return x -> x.equals(other);
     }
     
+    public static <T> Predicate<T> instanceOf(Class<?> c) {
+        return x -> 
+            c.isInstance(x);
+    }
+    
     public static <T> Predicate<T> isNull() {
         return x -> x == null;
     }

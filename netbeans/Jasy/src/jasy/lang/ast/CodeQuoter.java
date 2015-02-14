@@ -60,7 +60,7 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
         ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
         ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
         ExpressionAST quotedArguments = quote(ctx.arguments);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, null));
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, InvocationAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, new NullAST(null)));
     }
 
     private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
@@ -75,7 +75,7 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
         ExpressionAST quotedDeclaringClass = MethodAST.quote(ctx.declaringClass);
         ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
         ExpressionAST quotedValue = ctx.value.accept(this);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, BinaryExpressionAST.class), Arrays.asList(null, quotedTarget, quotedDeclaringClass, quotedFieldName, quotedValue));
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, FieldSetAST.class), Arrays.asList(null, quotedTarget, quotedDeclaringClass, quotedFieldName, quotedValue));
     }
 
     @Override

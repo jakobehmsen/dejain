@@ -44,6 +44,7 @@ import jasy.lang.ast.MemberVisitor;
 import jasy.lang.ast.MetaCodeAST;
 import jasy.lang.ast.MetaScope;
 import jasy.lang.ast.NameTypeAST;
+import jasy.lang.ast.NewAST;
 import jasy.lang.ast.Parameter;
 import jasy.lang.ast.QuoteAST;
 import jasy.lang.ast.StringLiteralAST;
@@ -574,6 +575,17 @@ public class ASMCompiler {
                 boolean value = Boolean.parseBoolean(valueStr);
                 
                 return new BooleanLiteralAST(new Region(ctx), value);
+            }
+
+            @Override
+            public ExpressionAST visitNewExpression(JasyParser.NewExpressionContext ctx) {
+                String className = ctx.className.getText();
+                TypeAST c = new NameTypeAST(new Region(ctx.className), className);
+                List<ExpressionAST> arguments = ctx.expression().stream()
+                    .map(eCtx -> getExpression(eCtx, mp))
+                    .collect(Collectors.toList());
+                
+                return new NewAST(new Region(ctx), c, arguments);
             }
         });
     }

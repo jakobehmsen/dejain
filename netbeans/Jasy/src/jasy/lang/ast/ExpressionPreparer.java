@@ -288,7 +288,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     @Override
     public PreparedExpressionAST visitInvocation(InvocationAST ctx) {
         PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
-        List<PreparedExpressionAST> arguments = ctx.arguments.stream().map((a) -> a.accept(this)).collect(Collectors.toList());
+        List<PreparedExpressionAST> arguments = ctx.arguments.stream()
+            .map(a -> MethodAST.toExpression(thisClass, a, parameters, variables))
+            .collect(Collectors.toList());
         return createInvocation(target, ctx.declaringClass, ctx.methodName, arguments);
     }
 
@@ -325,7 +327,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 if (target != null) {
                     target.generate(c, generator, originalIl);
                 }
-                arguments.forEach((a) -> a.generate(c, generator, originalIl));
+                arguments.forEach(a -> 
+                    a.generate(c, generator, originalIl));
                 Type returnType = /*castType != null ? castType : */ Type.getType(method.getReturnType());
                 Method asmMethod = new Method(methodName, returnType, argumentTypes);
                 if (target != null) {
@@ -633,8 +636,13 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitNew(NewAST ctx) {
-        List<PreparedExpressionAST> arguments = //                .map(e -> e.accept(this))
-        ctx.arguments.stream().map((e) -> getAsExpression(e)).collect(Collectors.toList());
+        List<PreparedExpressionAST> arguments = ctx.arguments.stream()
+            .map(e -> {
+                if(e == null)
+                    new String(); 
+                return getAsExpression(e);
+            })
+            .collect(Collectors.toList());
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
