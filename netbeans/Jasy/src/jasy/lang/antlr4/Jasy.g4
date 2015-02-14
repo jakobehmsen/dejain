@@ -53,16 +53,11 @@ catchStatement:
 finallyStatement: KW_FINALLY OPEN_BRA statements CLOSE_BRA;
 ifElseStatement: 
     KW_IF OPEN_PAR condition=expression CLOSE_PAR 
-    ifTrueBlock
-    ifFalseBlock?;
+    ifTrueBlock=singleOrMultiStatement
+    ifFalseBlock=singleOrMultiStatement;
 whileStatement:
     KW_WHILE OPEN_PAR condition=expression CLOSE_PAR 
-    whileBody;
-whileBody:
-    OPEN_BRA statements CLOSE_BRA | statement;
-ifTrueBlock:
-    OPEN_BRA statements CLOSE_BRA | statement;
-ifFalseBlock: KW_ELSE (OPEN_BRA statements CLOSE_BRA | statement);
+    whileTrueBlock=singleOrMultiStatement;
 delimitedStatement: 
     returnStatement | throwStatement | variableDeclaration | 
     injectStatement | expression;
@@ -76,6 +71,8 @@ integerLiteral: INTEGER;
 longLiteral: LONG;
 booleanLiteral: KW_TRUE | KW_FALSE;
 metaBlock: DOLLAR OPEN_BRA statements CLOSE_BRA;
+
+singleOrMultiStatement: OPEN_BRA statements CLOSE_BRA | statement;
 
 annotation: AT PLUS? typeQualifier;
 annotations: annotation*;

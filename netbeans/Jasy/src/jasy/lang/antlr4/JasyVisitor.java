@@ -103,13 +103,6 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitMetaBlock(@NotNull JasyParser.MetaBlockContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link JasyParser#ifTrueBlock}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIfTrueBlock(@NotNull JasyParser.IfTrueBlockContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link JasyParser#invocation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -145,25 +138,18 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitDelimitedStatement(@NotNull JasyParser.DelimitedStatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link JasyParser#ifFalseBlock}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIfFalseBlock(@NotNull JasyParser.IfFalseBlockContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link JasyParser#whileBody}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitWhileBody(@NotNull JasyParser.WhileBodyContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link JasyParser#tryStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTryStatement(@NotNull JasyParser.TryStatementContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#singleOrMultiStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSingleOrMultiStatement(@NotNull JasyParser.SingleOrMultiStatementContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#additiveExpression}.
