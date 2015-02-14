@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
@@ -25,19 +26,28 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 
     @Override
     public PreparedAST visitReturn(ReturnAST ctx) {
-        PreparedExpressionAST expression = MethodAST.toExpression(thisClass, ctx.expression, parameters, variables, true);
-        return new PreparedAST() {
-            @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                expression.generate(c, generator, originalIl);
-                generator.methodNode.returnValue();
-            }
+        if(ctx.expression != null) {
+            PreparedExpressionAST expression = MethodAST.toExpression(thisClass, ctx.expression, parameters, variables, true);
+            return new PreparedAST() {
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    expression.generate(c, generator, originalIl);
+                    generator.methodNode.returnValue();
+                }
 
-            @Override
-            public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
-                returnTypes.add(expression.resultType());
-            }
-        };
+                @Override
+                public void returns(java.util.List<jasy.lang.ast.TypeAST> returnTypes) {
+                    returnTypes.add(expression.resultType());
+                }
+            };
+        } else {
+            return new PreparedAST() {
+                @Override
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                    generator.methodNode.visitInsn(Opcodes.RETURN);
+                }
+            };
+        }
     }
 
     @Override

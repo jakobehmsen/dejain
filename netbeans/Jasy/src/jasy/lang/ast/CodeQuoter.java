@@ -18,7 +18,7 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitReturn(ReturnAST ctx) {
-        ExpressionAST quotedExpression = ctx.expression.accept(this);
+        ExpressionAST quotedExpression = ctx.expression != null ? ctx.expression.accept(this) : new NullAST(null);
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, ReturnAST.class), Arrays.asList(new NullAST(null), quotedExpression));
     }
 
@@ -137,7 +137,10 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitBlock(BlockAST ctx) {
-        List<InjectAST> injectStatements = ctx.statements.stream().map((s) -> s.accept(this)).map((jasy.lang.ast.ExpressionAST s) -> new InjectAST(null, s)).collect(Collectors.toList());
+        List<InjectAST> injectStatements = ctx.statements.stream()
+            .map(s -> s.accept(this))
+            .map(s -> new InjectAST(null, s))
+            .collect(Collectors.toList());
         InjectionBlockAST statementInjectorBlock = new InjectionBlockAST(null, injectStatements);
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, BlockAST.class), Arrays.asList(new NullAST(null), statementInjectorBlock));
     }

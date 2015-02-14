@@ -20,6 +20,7 @@ public class ReturnAST extends AbstractAST implements CodeAST {
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        expression.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        if(expression != null)
+            expression.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 }
