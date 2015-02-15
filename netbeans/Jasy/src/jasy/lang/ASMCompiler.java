@@ -11,10 +11,7 @@ import jasy.lang.antlr4.JasyParser;
 import jasy.lang.antlr4.JasyParser.AnnotationContext;
 import jasy.lang.antlr4.JasyParser.InvocationContext;
 import jasy.lang.antlr4.JasyParser.LookupContext;
-import jasy.lang.antlr4.JasyParser.MetaBlockContext;
 import jasy.lang.antlr4.JasyParser.ProgramContext;
-import jasy.lang.antlr4.JasyParser.StatementContext;
-import jasy.lang.antlr4.JasyParser.StatementsContext;
 import jasy.lang.ast.BinaryExpressionAST;
 import jasy.lang.ast.BlockAST;
 import jasy.lang.ast.BooleanLiteralAST;
@@ -22,7 +19,6 @@ import jasy.lang.ast.ClassAST;
 import jasy.lang.ast.ExpressionAST;
 import jasy.lang.ast.FieldAST;
 import jasy.lang.ast.FieldSelectorAST;
-import jasy.lang.ast.LiteralAST;
 import jasy.lang.ast.MemberAST;
 import jasy.lang.ast.MethodAST;
 import jasy.lang.ast.MethodSelectorAST;
@@ -30,17 +26,14 @@ import jasy.lang.ast.ModuleAST;
 import jasy.lang.ast.ReturnAST;
 import jasy.lang.ast.MetaExpressionAST;
 import jasy.lang.ast.CodeAST;
-import jasy.lang.ast.CodeVisitor;
 import jasy.lang.ast.RootExpressionAST;
 import jasy.lang.ast.FieldGetAST;
-import jasy.lang.ast.FieldSetAST;
 import jasy.lang.ast.IfElseAST;
 import jasy.lang.ast.InjectAST;
 import jasy.lang.ast.IntLiteralAST;
 import jasy.lang.ast.InvocationAST;
 import jasy.lang.ast.LongLiteralAST;
 import jasy.lang.ast.LookupAST;
-import jasy.lang.ast.MemberVisitor;
 import jasy.lang.ast.MetaCodeAST;
 import jasy.lang.ast.MetaScope;
 import jasy.lang.ast.NameTypeAST;
@@ -48,7 +41,6 @@ import jasy.lang.ast.NewAST;
 import jasy.lang.ast.Parameter;
 import jasy.lang.ast.QuoteAST;
 import jasy.lang.ast.StringLiteralAST;
-import jasy.lang.ast.ThisAST;
 import jasy.lang.ast.TypeAST;
 import jasy.lang.ast.VariableAssignmentAST;
 import jasy.lang.ast.VariableDeclarationAST;
@@ -58,66 +50,29 @@ import jasy.runtime.asm.ClassTransformerSequence;
 import jasy.runtime.asm.CommonClassTransformer;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import javax.lang.model.element.Modifier;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
 
-/**
- *
- * @author Jakob
- */
 public class ASMCompiler {
-//    private static Class<?> resolveType(String typeName) throws ClassNotFoundException {
-//        switch(typeName) {
-//            case "boolean": return boolean.class;
-//            case "byte": return byte.class;
-//            case "short": return short.class;
-//            case "int": return int.class;
-//            case "long": return long.class;
-//            case "float": return float.class;
-//            case "double": return double.class;
-//        }
-//        
-//        return Class.forName(typeName);
-//    }
-    
-//    public static AST compile(InputStream sourceCode) throws IOException {
-//        return null;
-//    }
-    
     private ClassResolver classResolver;
 
     public ASMCompiler(ClassResolver classResolver) {
@@ -131,15 +86,6 @@ public class ASMCompiler {
         return new JasyParser(tokenStream);
     }
     
-//    public ExpressionAST compileExpression(InputStream sourceCode) throws IOException {
-//        DejainParser parser = createParser(sourceCode);
-//        
-//        DejainParser.ExpressionContext expression = parser.expression();
-//        
-//        MetaProcessing mp = new MetaProcessing();
-//        return getExpression(expression, mp);
-//    }
-    
     public ModuleAST compile(InputStream sourceCode) throws IOException {
         ArrayList<ClassAST> classes = new ArrayList<>();
         
@@ -148,7 +94,6 @@ public class ASMCompiler {
         JasyParser.ProgramContext program = parser.program();
         
         Hashtable<String, TypeAST> patternVariables = new Hashtable<>();
-        MetaScope metaScope = new MetaScope(patternVariables);
         MetaProcessing mp = new MetaProcessing(patternVariables);
         
         program.accept(new JasyBaseVisitor<Object>() {
@@ -189,8 +134,6 @@ public class ASMCompiler {
                                     String variableName = variableId;
                                     Region r = new Region(ctx);
                                     Class<?> c = List.class;
-//                                    NameTypeAST t = new NameTypeAST(r, c);
-//                                    NameTypeAST t = NameTypeAST.fromDescriptor(Type.getDescriptor(c), new TypeAST[]{NameTypeAST.fromDescriptor(Type.getDescriptor(FieldNode.class))});
                                     NameTypeAST t = new NameTypeAST(null, c, new TypeAST[]{new NameTypeAST(null, FieldNode.class)});
                                     patternVariables.put(variableName, t);
                                 }
@@ -273,8 +216,6 @@ public class ASMCompiler {
         });
         
         ModuleAST moduleCtx = new ModuleAST(new Region(program), classes);
-        
-//        processMeta(moduleCtx);
         
         return moduleCtx;
     }
@@ -520,20 +461,16 @@ public class ASMCompiler {
             
             @Override
             public ExpressionAST visitMetaExpression(JasyParser.MetaExpressionContext ctx) {
-//                ArrayList<CodeAST> body = new ArrayList<>();
                 ExpressionAST body = null;
                 
                 if(ctx.expression() != null) {
                     // only support expressions for now
                     ExpressionAST exprCtx = getExpression(ctx.expression(), mp);
-//                    body.add(new ReturnAST(new Region(ctx), exprCtx));
                     body = exprCtx;
                 } else {
                     // Not possible; only expressions are supported here!!!
-//                    body.addAll(getStatements(ctx.statements(), mp));
                 }
                 
-//                return new MetaExpressionAST(new Region(ctx), ASMCompiler.this, body, mp);
                 return new MetaExpressionAST(new Region(ctx), body);
             }
 
@@ -541,17 +478,6 @@ public class ASMCompiler {
             public ExpressionAST visitLookup(JasyParser.LookupContext ctx) {
                 String name = ctx.getText();
                 return new LookupAST(new Region(ctx), name);
-//                boolean isVariable = false;
-//                
-//                
-//                
-//                if(isVariable) {
-//                    // What to do?...
-//                } else {
-//                    return new FieldGetAST(new Region(ctx), new ThisAST(new Region(ctx)), name);
-//                }
-                
-//                return super.visitLookup(ctx); //To change body of generated methods, choose Tools | Templates.
             }
 
             @Override
