@@ -40,6 +40,8 @@ import jasy.lang.ast.NameTypeAST;
 import jasy.lang.ast.NewAST;
 import jasy.lang.ast.Parameter;
 import jasy.lang.ast.QuoteAST;
+import jasy.lang.ast.QuoteFlattener;
+import jasy.lang.ast.StatementFlattener;
 import jasy.lang.ast.StringLiteralAST;
 import jasy.lang.ast.TypeAST;
 import jasy.lang.ast.VariableAssignmentAST;
@@ -196,6 +198,10 @@ public class ASMCompiler {
 //                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), metaCode));
                                     body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), bodyBlock));
                                 }
+                                
+                                ArrayList<CodeAST> newBlockStatements = new ArrayList<>();
+                                body.accept(new StatementFlattener(new QuoteFlattener(newBlockStatements)));
+                                body = new BlockAST(body.getRegion(), newBlockStatements);
                                 
                                 MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameters), body, mp);
                                 
