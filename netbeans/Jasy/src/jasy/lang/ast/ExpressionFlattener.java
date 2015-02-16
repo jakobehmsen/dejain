@@ -4,15 +4,13 @@ import java.util.stream.Collectors;
 
 public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
     private QuoteFlattener quoteFlattener;
-    private boolean asExpression;
 
-    public ExpressionFlattener(QuoteFlattener quoteFlattener, boolean asExpression) {
+    public ExpressionFlattener(QuoteFlattener quoteFlattener) {
         this.quoteFlattener = quoteFlattener;
-        this.asExpression = asExpression;
     }
     
-    private ExpressionAST getAsExpression(ExpressionAST ctx) {
-        return ctx.accept(new ExpressionFlattener(quoteFlattener, true));
+    private ExpressionAST getExpression(ExpressionAST ctx) {
+        return ctx.accept(new ExpressionFlattener(quoteFlattener));
     }
 
     @Override
@@ -37,17 +35,17 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
-        return new BinaryExpressionAST(ctx.getRegion(), ctx.operator, getAsExpression(ctx.lhs), getAsExpression(ctx.rhs));
+        return new BinaryExpressionAST(ctx.getRegion(), ctx.operator, getExpression(ctx.lhs), getExpression(ctx.rhs));
     }
 
     @Override
     public ExpressionAST visitInvocation(InvocationAST ctx) {
         return new InvocationAST(
             ctx.getRegion(), 
-            ctx.target != null ? getAsExpression(ctx.target) : null, 
+            ctx.target != null ? getExpression(ctx.target) : null, 
             ctx.declaringClass, 
             ctx.methodName, 
-            ctx.arguments.stream().map(a -> getAsExpression(a)).collect(Collectors.toList()), 
+            ctx.arguments.stream().map(a -> getExpression(a)).collect(Collectors.toList()), 
             null);
     }
 
@@ -55,25 +53,28 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
     public ExpressionAST visitFieldSet(FieldSetAST ctx) {
         return new FieldSetAST(
             ctx.getRegion(), 
-            ctx.target != null ? getAsExpression(ctx.target) : null, 
+            ctx.target != null ? getExpression(ctx.target) : null, 
             ctx.declaringClass,
             ctx.fieldName,
-            getAsExpression(ctx.value));
+            getExpression(ctx.value));
     }
 
     @Override
     public ExpressionAST visitMetaExpression(MetaExpressionAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new MetaExpressionAST(ctx.getRegion(), getExpression(ctx.body));
     }
 
     @Override
     public ExpressionAST visitThis(ThisAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx;
     }
 
     @Override
     public ExpressionAST visitFieldGet(FieldGetAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new FieldGetAST(
+            ctx.getRegion(), 
+            ctx.target != null ? getExpression(ctx.target) : null,
+            ctx.fieldName);
     }
 
     @Override
@@ -83,12 +84,12 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitLookup(LookupAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx;
     }
 
     @Override
     public ExpressionAST visitVariableAssignment(VariableAssignmentAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new VariableAssignmentAST(ctx.getRegion(), ctx.name, getExpression(ctx.value));
     }
 
     @Override
@@ -98,7 +99,7 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitQuote(QuoteAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx.ast.accept(quoteFlattener);
     }
 
     @Override
@@ -108,27 +109,27 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitNew(NewAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new NewAST(ctx.getRegion(), ctx.c, ctx.arguments.stream().map(a -> getExpression(a)).collect(Collectors.toList()));
     }
 
     @Override
     public ExpressionAST visitArray(ArrayAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new ArrayAST(ctx.getRegion(), ctx.type, ctx.elements.stream().map(a -> getExpression(a)).collect(Collectors.toList()));
     }
 
     @Override
     public ExpressionAST visitNull(NullAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx;
     }
 
     @Override
     public ExpressionAST visitTypecast(TypecastAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new TypecastAST(ctx.getRegion(), getExpression(ctx.expression), ctx.type);
     }
 
     @Override
     public ExpressionAST visitGetClass(GetClassAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx;
     }
 
     @Override
@@ -158,6 +159,6 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitBoolean(BooleanLiteralAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx;
     }
 }

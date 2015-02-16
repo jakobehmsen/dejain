@@ -12,7 +12,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitReturn(ReturnAST ctx) {
-        quoteFlattener.flattenedCode.add(new ReturnAST(ctx.getRegion(), ctx.expression.accept(new ExpressionFlattener(quoteFlattener, true))));
+        quoteFlattener.flattenedCode.add(new ReturnAST(ctx.getRegion(), getExpression(ctx.expression)));
         return null;
     }
 
@@ -63,7 +63,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitVariableDeclaration(VariableDeclarationAST ctx) {
-        quoteFlattener.flattenedCode.add(new VariableDeclarationAST(ctx.getRegion(), ctx.name, ctx.type, ctx.value.accept(new ExpressionFlattener(quoteFlattener, true))));
+        quoteFlattener.flattenedCode.add(new VariableDeclarationAST(ctx.getRegion(), ctx.name, ctx.type, getExpression(ctx.value)));
         return null;
     }
 
@@ -79,7 +79,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitRootExpression(RootExpressionAST ctx) {
-        quoteFlattener.flattenedCode.add(new RootExpressionAST(ctx.getRegion(), ctx.expression.accept(new ExpressionFlattener(quoteFlattener, false))));
+        quoteFlattener.flattenedCode.add(new RootExpressionAST(ctx.getRegion(), getExpression(ctx.expression)));
         return null;
     }
 
@@ -134,7 +134,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
             new LookupAST(null, statementVarName), 
             null, 
             "add", 
-            Arrays.asList(ctx.expression), 
+            Arrays.asList(getExpression(ctx.expression)), 
             null
         ));
 
@@ -145,10 +145,14 @@ public class StatementFlattener implements CodeVisitor<Object> {
     public Object visitInjectionBlock(InjectionBlockAST ctx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    private ExpressionAST getExpression(ExpressionAST ctx) {
+        return ctx.accept(new ExpressionFlattener(quoteFlattener));
+    }
 
     @Override
     public Object visitWhile(WhileAST ctx) {
-        quoteFlattener.flattenedCode.add(new WhileAST(ctx.getRegion(), ctx.condition.accept(new ExpressionFlattener(quoteFlattener, true)), flatten(ctx.body)));
+        quoteFlattener.flattenedCode.add(new WhileAST(ctx.getRegion(), getExpression(ctx.condition), flatten(ctx.body)));
         return null;
     }
     
@@ -160,7 +164,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitIfElse(IfElseAST ctx) {
-        quoteFlattener.flattenedCode.add(new IfElseAST(ctx.getRegion(), ctx.condition.accept(new ExpressionFlattener(quoteFlattener, true)), flatten(ctx.ifTrueBody), flatten(ctx.ifFalseBody)));
+        quoteFlattener.flattenedCode.add(new IfElseAST(ctx.getRegion(), getExpression(ctx.condition), flatten(ctx.ifTrueBody), flatten(ctx.ifFalseBody)));
         return null;
     }
 

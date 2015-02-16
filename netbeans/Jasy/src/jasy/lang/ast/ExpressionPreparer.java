@@ -670,7 +670,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     }
 
     private List<Constructor<?>> getCompatibleConstructorsWith(Class<?> c, List<PreparedExpressionAST> arguments) {
-        return Arrays.asList(c.getConstructors()).stream().filter((cons) -> constructorIsCompatibleWith(cons, arguments)).collect(Collectors.toList());
+        return Arrays.asList(c.getConstructors()).stream().filter((cons) -> 
+            constructorIsCompatibleWith(cons, arguments)).collect(Collectors.toList());
     }
 
     private boolean constructorIsCompatibleWith(Constructor<?> cons, List<PreparedExpressionAST> arguments) {
