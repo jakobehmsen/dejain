@@ -559,6 +559,58 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodReturnNamesOfAllFields() throws IOException {
+        Field singleField = TestClass1.class.getDeclaredFields()[0];
+        String expectedResult = singleField.getName();
+        
+//        String src =
+//            "class {\n" +
+//            "    fields=;\n" +
+//            "    \n" +
+//            "    +public String getDescription() {\n" +
+//            "        StringBuilder sb = new StringBuilder();\n" + // "new" not supported yet
+//            "        ${\n" +
+//            "            int i = 0;\n" +
+//            "            while(i < fields.size()) {\n" +
+//            "                FieldNode f = fields.get(i);\n" +
+//            "                ^#sb.append($f.name);\n" +
+//            "                i = i + 1;\n" +
+//            "            }\n" +
+//            "        }\n" +
+//            "        return sb.toString();\n" +
+//            "    }\n" +
+//            "}\n";
+        
+//        String src =
+//            "class {\n" +
+//            "    +public String getDescription() ${\n" +
+////            "        int i = 0;\n" +
+//            "        if(false) {\n" +
+////            "            i = i + 1;\n" +
+//            "        }\n" +
+//            "        ^#return \"Text\";\n" +
+//            "    }\n" +
+//            "}\n";
+        
+        String src =
+            "class {\n" +
+            "    +public void getDescription() ${\n" +
+            "        if(false) {\n" +
+//            "            i = i + 1;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getDescription", invocationResult(isNull())))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodReturnValueOfMetaVariable() throws IOException {
         int expectedResult = 5;
         
@@ -630,7 +682,7 @@ public class SourceToClassTest {
             "class {\n" +
             "    +public int getValue() ${\n" +
             "        int i = " + expectedResult + ";\n" +
-            "        return #return $i;\n" +
+            "        ^#return $i;\n" +
             "    }\n" +
             "}\n";
         
@@ -673,7 +725,7 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        return #{\n" +
+            "        ^#{\n" +
             "            int i = " + expectedResult + ";\n" +
             "            return i;\n" +
             "        };\n" +
@@ -696,7 +748,7 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        return #{\n" +
+            "        ^#{\n" +
             "            int i;\n" +
             "            ${^#i = " + expectedResult + ";}\n" +
             "            return i;\n" +
@@ -722,7 +774,7 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        return #{\n" +
+            "        ^#{\n" +
             "            int i1;\n" +
             "            int i2;\n" +
             "            ${\n" +
@@ -752,7 +804,7 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        return #{\n" +
+            "        ^#{\n" +
             "            int i1;\n" +
             "            int i2;\n" +
             "            ${\n" +
@@ -786,7 +838,7 @@ public class SourceToClassTest {
             "    +public int getValue() ${\n" +
             "        int i1 = " + i1 + ";\n" +
             "        int i2 = " + i2 + ";\n" +
-            "        return #return $i1 + i2;\n" +
+            "        ^#return $i1 + i2;\n" +
             "    }\n" +
             "}\n";
         
@@ -993,8 +1045,12 @@ public class SourceToClassTest {
         classMap.addClassName("java.lang.String");
         classMap.addClassName("java.lang.Object");
         classMap.addClassName("java.lang.StringBuilder");
+        classMap.addClassName("org.objectweb.asm.tree.FieldNode");
+        
         CommonClassResolver resolver = new CommonClassResolver(classMap);
+        
         resolver.importPackage("java.lang");
+        resolver.importPackage("org.objectweb.asm.tree");
         
         ClassLoader cl = new ProxyClassLoader(ifIn(classNames), classBytesFromName().andThen(transformClass(resolver, source)));
         
