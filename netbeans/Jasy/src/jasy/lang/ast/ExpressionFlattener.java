@@ -1,10 +1,18 @@
 package jasy.lang.ast;
 
+import java.util.stream.Collectors;
+
 public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
     private QuoteFlattener quoteFlattener;
+    private boolean asExpression;
 
-    public ExpressionFlattener(QuoteFlattener quoteFlattener) {
+    public ExpressionFlattener(QuoteFlattener quoteFlattener, boolean asExpression) {
         this.quoteFlattener = quoteFlattener;
+        this.asExpression = asExpression;
+    }
+    
+    private ExpressionAST getAsExpression(ExpressionAST ctx) {
+        return ctx.accept(new ExpressionFlattener(quoteFlattener, true));
     }
 
     @Override
@@ -19,27 +27,38 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitIntLiteral(IntLiteralAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx;
     }
 
     @Override
     public ExpressionAST visitLongLiteral(LongLiteralAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ctx;
     }
 
     @Override
     public ExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new BinaryExpressionAST(ctx.getRegion(), ctx.operator, getAsExpression(ctx.lhs), getAsExpression(ctx.rhs));
     }
 
     @Override
     public ExpressionAST visitInvocation(InvocationAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new InvocationAST(
+            ctx.getRegion(), 
+            ctx.target != null ? getAsExpression(ctx.target) : null, 
+            ctx.declaringClass, 
+            ctx.methodName, 
+            ctx.arguments.stream().map(a -> getAsExpression(a)).collect(Collectors.toList()), 
+            null);
     }
 
     @Override
     public ExpressionAST visitFieldSet(FieldSetAST ctx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new FieldSetAST(
+            ctx.getRegion(), 
+            ctx.target != null ? getAsExpression(ctx.target) : null, 
+            ctx.declaringClass,
+            ctx.fieldName,
+            getAsExpression(ctx.value));
     }
 
     @Override

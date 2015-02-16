@@ -12,7 +12,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitReturn(ReturnAST ctx) {
-        quoteFlattener.flattenedCode.add(new ReturnAST(ctx.getRegion(), ctx.expression.accept(new ExpressionFlattener(quoteFlattener))));
+        quoteFlattener.flattenedCode.add(new ReturnAST(ctx.getRegion(), ctx.expression.accept(new ExpressionFlattener(quoteFlattener, true))));
         return null;
     }
 
@@ -63,7 +63,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitVariableDeclaration(VariableDeclarationAST ctx) {
-        quoteFlattener.flattenedCode.add(new VariableDeclarationAST(ctx.getRegion(), ctx.name, ctx.type, ctx.value.accept(new ExpressionFlattener(quoteFlattener))));
+        quoteFlattener.flattenedCode.add(new VariableDeclarationAST(ctx.getRegion(), ctx.name, ctx.type, ctx.value.accept(new ExpressionFlattener(quoteFlattener, true))));
         return null;
     }
 
@@ -79,7 +79,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitRootExpression(RootExpressionAST ctx) {
-        quoteFlattener.flattenedCode.add(new RootExpressionAST(ctx.getRegion(), ctx.expression.accept(new ExpressionFlattener(quoteFlattener))));
+        quoteFlattener.flattenedCode.add(new RootExpressionAST(ctx.getRegion(), ctx.expression.accept(new ExpressionFlattener(quoteFlattener, false))));
         return null;
     }
 
@@ -148,7 +148,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitWhile(WhileAST ctx) {
-        quoteFlattener.flattenedCode.add(new WhileAST(ctx.getRegion(), ctx.condition.accept(new ExpressionFlattener(quoteFlattener)), flatten(ctx.body)));
+        quoteFlattener.flattenedCode.add(new WhileAST(ctx.getRegion(), ctx.condition.accept(new ExpressionFlattener(quoteFlattener, true)), flatten(ctx.body)));
         return null;
     }
     
@@ -160,7 +160,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitIfElse(IfElseAST ctx) {
-        quoteFlattener.flattenedCode.add(new IfElseAST(ctx.getRegion(), ctx.condition.accept(new ExpressionFlattener(quoteFlattener)), flatten(ctx.ifTrueBody), flatten(ctx.ifFalseBody)));
+        quoteFlattener.flattenedCode.add(new IfElseAST(ctx.getRegion(), ctx.condition.accept(new ExpressionFlattener(quoteFlattener, true)), flatten(ctx.ifTrueBody), flatten(ctx.ifFalseBody)));
         return null;
     }
 
