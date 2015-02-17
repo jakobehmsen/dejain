@@ -5,6 +5,7 @@ public interface CodeVisitor<T> {
     T visitStringLiteral(StringLiteralAST ctx);
     T visitIntLiteral(IntLiteralAST ctx);
     T visitLongLiteral(LongLiteralAST ctx);
+    T visitBoolean(BooleanLiteralAST ctx);
     T visitBinaryExpression(BinaryExpressionAST ctx);
     T visitInvocation(InvocationAST ctx);
     T visitFieldSet(FieldSetAST ctx);
@@ -27,5 +28,4 @@ public interface CodeVisitor<T> {
     T visitInjectionBlock(InjectionBlockAST ctx);
     T visitWhile(WhileAST ctx);
     T visitIfElse(IfElseAST ctx);
-    T visitBoolean(BooleanLiteralAST ctx);
 }
