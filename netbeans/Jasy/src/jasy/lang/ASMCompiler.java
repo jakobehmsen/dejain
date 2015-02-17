@@ -190,18 +190,19 @@ public class ASMCompiler {
                                     List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.metaBlock().statements(), mp);
                                     CodeAST metaBodyBlock = new BlockAST(new Region(ctx.body), statements);
                                     CodeAST metaCode = new MetaCodeAST(new Region(ctx.body), metaBodyBlock);
-                                    ArrayList<CodeAST> bodyStatements = new ArrayList<>();
-                                    bodyStatements.add(metaCode);
-                                    if(isVoid)
-                                        bodyStatements.add(new ReturnAST(new Region(ctx.body), null));
-                                    CodeAST bodyBlock = new BlockAST(new Region(ctx.body), bodyStatements);
-//                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), metaCode));
-                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), bodyBlock));
+                                    body = metaCode;
+//                                    ArrayList<CodeAST> bodyStatements = new ArrayList<>();
+//                                    bodyStatements.add(metaCode);
+//                                    if(isVoid)
+//                                        bodyStatements.add(new ReturnAST(new Region(ctx.body), null));
+//                                    CodeAST bodyBlock = new BlockAST(new Region(ctx.body), bodyStatements);
+////                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), metaCode));
+//                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), bodyBlock));
                                 }
                                 
-                                ArrayList<CodeAST> newBlockStatements = new ArrayList<>();
-                                body.accept(new StatementFlattener(new QuoteFlattener(newBlockStatements)));
-                                body = new BlockAST(body.getRegion(), newBlockStatements);
+//                                ArrayList<CodeAST> newBlockStatements = new ArrayList<>();
+//                                body.accept(new StatementFlattener(new QuoteFlattener(newBlockStatements)));
+//                                body = new BlockAST(body.getRegion(), newBlockStatements);
                                 
                                 MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameters), body, mp);
                                 

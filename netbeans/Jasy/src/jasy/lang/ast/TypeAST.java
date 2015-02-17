@@ -35,5 +35,7 @@ public interface TypeAST extends AST {
 
     TypeAST getFieldType(String fieldName);
 
-    public TypeAST getTypeArgument(String name);
+    TypeAST getTypeArgument(String name);
+
+    boolean derivesFrom(TypeAST type);
 }

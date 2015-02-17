@@ -116,6 +116,21 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     resultType = null;
                     break;
             }
+        } else if (lhsTmp.resultType().derivesFrom(new NameTypeAST(null, CodeAST.class)) || rhsTmp.resultType().derivesFrom(new NameTypeAST(null, CodeAST.class))) {
+            switch (ctx.operator) {
+                case BinaryExpressionAST.OPERATOR_ADD:
+                    if (!lhsTmp.resultType().derivesFrom(new NameTypeAST(null, CodeAST.class))) {
+                        lhsTmp = expressionAsStatement(lhsTmp);
+                    }
+                    if (!rhsTmp.resultType().derivesFrom(new NameTypeAST(null, CodeAST.class))) {
+                        rhsTmp = expressionAsStatement(rhsTmp);
+                    }
+                    resultType = new NameTypeAST(ctx.getRegion(), CodeAST.class);
+                    break;
+                default:
+                    resultType = null;
+                    break;
+            }
         } else if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int")) {
             switch (ctx.operator) {
                 case BinaryExpressionAST.OPERATOR_ADD:
@@ -154,6 +169,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                             switch (resultType().getSimpleName(c.getTarget().name)) {
                                 case "String":
                                     generator.methodNode.invokeVirtual(Type.getType("java/lang/String"), new Method("concat", "(Ljava/lang/String;)Ljava/lang/String;"));
+                                    break;
+                                case "CodeAST":
+                                    generator.methodNode.invokeInterface(Type.getType("jasy/lang/ast/CodeAST"), new Method("concat", "(Ljasy/lang/ast/CodeAST;)Ljasy/lang/ast/CodeAST;"));
                                     break;
                                 case "short":
                                     generator.methodNode.visitInsn(Opcodes.IADD);
@@ -277,6 +295,15 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     }
 
     private PreparedExpressionAST expressionAsString(PreparedExpressionAST ctx) {
+        switch (ctx.resultType().getSimpleName()) {
+            case "int":
+                return createInvocation(null, new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
+            default:
+                return createInvocation(ctx, null, "toString", Collections.emptyList());
+        }
+    }
+
+    private PreparedExpressionAST expressionAsStatement(PreparedExpressionAST ctx) {
         switch (ctx.resultType().getSimpleName()) {
             case "int":
                 return createInvocation(null, new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));

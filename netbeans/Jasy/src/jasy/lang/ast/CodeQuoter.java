@@ -152,7 +152,7 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
             else {
                 ExpressionAST lhs = concatenation;
                 ExpressionAST rhs = quotedStatement;
-                concatenation = new BinaryExpressionAST(null, BinaryExpressionAST.OPERATOR_ADD, concatenation, concatenation);
+                concatenation = new BinaryExpressionAST(null, BinaryExpressionAST.OPERATOR_ADD, lhs, rhs);
             }
         }
         

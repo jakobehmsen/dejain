@@ -228,4 +228,12 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public TypeAST getTypeArgument(String name) {
         return typeVariableNameToTypeMap.get(name);
     }
+
+    @Override
+    public boolean derivesFrom(TypeAST type) {
+        if(type instanceof NameTypeAST)
+            return ((NameTypeAST)type).c.isAssignableFrom(c);
+        
+        return false;
+    }
 }
