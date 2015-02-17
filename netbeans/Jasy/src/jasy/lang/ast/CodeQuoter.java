@@ -2,6 +2,7 @@ package jasy.lang.ast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -159,7 +160,10 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
             }
         }
         
-        return concatenation;
+        if(concatenation != null)
+            return concatenation;
+        
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, BlockAST.class), Arrays.asList(new NullAST(null), quote(Collections.emptyList())));
         
 //        List<InjectAST> injectStatements = ctx.statements.stream()
 //            .map(s -> s.accept(this))
