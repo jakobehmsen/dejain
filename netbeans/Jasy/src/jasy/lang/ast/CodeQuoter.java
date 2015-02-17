@@ -147,6 +147,9 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
             CodeAST statement = ctx.statements.get(i);
             ExpressionAST quotedStatement = statement.accept(this);
             
+            if(statement instanceof RootExpressionAST && ((RootExpressionAST)statement).expression instanceof MetaExpressionAST)
+                quotedStatement = ((RootExpressionAST)statement).expression;
+            
             if(i == 0)
                 concatenation = quotedStatement;
             else {

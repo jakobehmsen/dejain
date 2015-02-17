@@ -424,22 +424,31 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         PreparedExpressionAST expressionRaw = MethodAST.toExpression(thisClass, ctx.body, parameters, variables, asExpression);
         TypeAST resultTypeRaw = expressionRaw.resultType();
         if (!ExpressionAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType())) {
-            Class<?> literalClass;
-            switch (resultTypeRaw.getSimpleName()) {
-                case "String":
-                    literalClass = StringLiteralAST.class;
-                    break;
-                case "int":
-                    literalClass = IntLiteralAST.class;
-                    break;
-                case "long":
-                    literalClass = LongLiteralAST.class;
-                    break;
-                default:
-                    literalClass = null;
+            if(CodeAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType())) {
+                resultTypeRaw = new NameTypeAST(null, CodeAST.class);
+            } else {
+                // Implicitly convert to literal
+                Class<?> literalClass;
+                switch (resultTypeRaw.getSimpleName()) {
+                    case "String":
+                        literalClass = StringLiteralAST.class;
+                        break;
+                    case "int":
+                        literalClass = IntLiteralAST.class;
+                        break;
+                    case "long":
+                        literalClass = LongLiteralAST.class;
+                        break;
+                    default: {
+                        literalClass = null;
+                    }
+                }
+
+                resultTypeRaw = new NameTypeAST(null, ExpressionAST.class);
+
+                if(literalClass != null)
+                    expressionRaw = new NewAST(null, new NameTypeAST(null, literalClass), Arrays.asList(new NullAST(null), ctx.body)).accept(this);
             }
-            resultTypeRaw = new NameTypeAST(null, ExpressionAST.class);
-            expressionRaw = new NewAST(null, new NameTypeAST(null, literalClass), Arrays.asList(new NullAST(null), ctx.body)).accept(this);
         }
         PreparedExpressionAST expression = expressionRaw;
         TypeAST resultType = resultTypeRaw;
