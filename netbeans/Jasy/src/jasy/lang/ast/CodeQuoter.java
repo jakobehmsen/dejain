@@ -1,5 +1,6 @@
 package jasy.lang.ast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -137,12 +138,32 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitBlock(BlockAST ctx) {
-        List<InjectAST> injectStatements = ctx.statements.stream()
-            .map(s -> s.accept(this))
-            .map(s -> new InjectAST(null, s))
-            .collect(Collectors.toList());
-        InjectionBlockAST statementInjectorBlock = new InjectionBlockAST(null, injectStatements);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, BlockAST.class), Arrays.asList(new NullAST(null), statementInjectorBlock));
+        // Some of the statements may be root meta expressions
+        // root meta expressions are interpolated
+        
+        ExpressionAST concatenation = null;
+        
+        for(int i = 0; i < ctx.statements.size(); i++) {
+            CodeAST statement = ctx.statements.get(i);
+            ExpressionAST quotedStatement = statement.accept(this);
+            
+            if(i == 0)
+                concatenation = quotedStatement;
+            else {
+                ExpressionAST lhs = concatenation;
+                ExpressionAST rhs = quotedStatement;
+                concatenation = new BinaryExpressionAST(null, BinaryExpressionAST.OPERATOR_ADD, concatenation, concatenation);
+            }
+        }
+        
+        return concatenation;
+        
+//        List<InjectAST> injectStatements = ctx.statements.stream()
+//            .map(s -> s.accept(this))
+//            .map(s -> new InjectAST(null, s))
+//            .collect(Collectors.toList());
+//        InjectionBlockAST statementInjectorBlock = new InjectionBlockAST(null, injectStatements);
+//        return new NewAST(ctx.getRegion(), new NameTypeAST(null, BlockAST.class), Arrays.asList(new NullAST(null), statementInjectorBlock));
     }
 
     @Override
