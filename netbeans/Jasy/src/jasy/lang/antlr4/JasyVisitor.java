@@ -68,6 +68,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitAdditiveOperator(@NotNull JasyParser.AdditiveOperatorContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#embeddedExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEmbeddedExpression(@NotNull JasyParser.EmbeddedExpressionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

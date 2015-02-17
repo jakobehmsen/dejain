@@ -33,8 +33,9 @@ multiplicativeOperator: operator=(MULT | DIV);
 leafExpression: 
     (invocation | literal | lookup | thisResult | proceedStatement | 
     metaExpression | quotedExpression | newExpression | 
-    OPEN_PAR expression CLOSE_PAR) 
+    embeddedExpression) 
     leafExpressionChain;
+embeddedExpression: OPEN_PAR expression CLOSE_PAR;
 leafExpressionChain: (DOT (lookup|invocation))*;
 thisResult: KW_THIS_RESULT;
 invocation: identifier OPEN_PAR arguments CLOSE_PAR;

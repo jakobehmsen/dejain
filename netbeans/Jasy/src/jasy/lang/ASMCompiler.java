@@ -413,6 +413,11 @@ public class ASMCompiler {
             }
 
             @Override
+            public ExpressionAST visitEmbeddedExpression(JasyParser.EmbeddedExpressionContext ctx) {
+                return ctx.expression().accept(this);
+            }
+
+            @Override
             public ExpressionAST visitAdditiveExpression(JasyParser.AdditiveExpressionContext ctx) {
                 ExpressionAST result = ctx.first.accept(this);
                 
