@@ -610,26 +610,26 @@ public class SourceToClassTest {
         );
     }
     
-    @Test
-    public void testAllClassesAddMethodReturnValueOfMetaVariable() throws IOException {
-        int expectedResult = 5;
-        
-        String src =
-            "class {\n" +
-            "    +public int getValue() {\n" +
-            "        ${int i = " + expectedResult + ";}\n" + 
-            "        return $i;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
-            )
-        );
-    }
+//    @Test
+//    public void testAllClassesAddMethodReturnValueOfMetaVariable() throws IOException {
+//        int expectedResult = 5;
+//        
+//        String src =
+//            "class {\n" +
+//            "    +public int getValue() {\n" +
+//            "        ${int i = " + expectedResult + ";}\n" + 
+//            "        return $i;\n" +
+//            "    }\n" +
+//            "}\n";
+//        
+//        testSourceToClasses(
+//            new String[]{"jasy.TestClass1"}, 
+//            src, 
+//            forClass("jasy.TestClass1", 
+//                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+//            )
+//        );
+//    }
     
     @Test
     public void testAllClassesAddMethodReturnValueOfVariable() throws IOException {
@@ -682,7 +682,7 @@ public class SourceToClassTest {
             "class {\n" +
             "    +public int getValue() ${\n" +
             "        int i = " + expectedResult + ";\n" +
-            "        ^#return $i;\n" +
+            "        return #return $i;\n" +
             "    }\n" +
             "}\n";
         
@@ -703,9 +703,7 @@ public class SourceToClassTest {
             "class {\n" +
             "    +public int getValue() {\n" +
             "        int i = " + expectedResult + ";\n" +
-            "        ${\n" +
-            "            ^#return i;\n" +
-            "        }\n" +
+            "        $#return i;\n" +
             "    }\n" +
             "}\n";
         
@@ -725,7 +723,7 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        ^#{\n" +
+            "        return #{\n" +
             "            int i = " + expectedResult + ";\n" +
             "            return i;\n" +
             "        };\n" +
@@ -748,9 +746,9 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        ^#{\n" +
+            "        return #{\n" +
             "            int i;\n" +
-            "            ${^#i = " + expectedResult + ";}\n" +
+            "            $#i = " + expectedResult + ";\n" +
             "            return i;\n" +
             "        };\n" +
             "    }\n" +
@@ -774,45 +772,14 @@ public class SourceToClassTest {
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        ^#{\n" +
+            "        ArrayList<CodeAST> statements = new ArrayList<CodeAST>();\n" +
+            "        statements.add(#i1 = " + i1 + ");\n" +
+            "        statements.add(#i2 = " + i2 + ");\n" +
+            "        return #{\n" +
+            "        return #{\n" +
             "            int i1;\n" +
             "            int i2;\n" +
-            "            ${\n" +
-            "                ^#i1 = " + i1 + ";\n" +
-            "                ^#i2 = " + i2 + ";\n" +
-            "            }\n" +
-            "            return i1 + i2;\n" +
-            "        };\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWhichGenerateQuotedBlockWithBlockInjected() throws IOException {
-        int i1 = 5;
-        int i2 = 7;
-        int expectedResult = i1 + i2;
-        
-        String src =
-            "class {\n" +
-            "    +public int getValue() ${\n" +
-            "        ^#{\n" +
-            "            int i1;\n" +
-            "            int i2;\n" +
-            "            ${\n" +
-            "                ^#{\n" +
-            "                    i1 = " + i1 + ";\n" +
-            "                    i2 = " + i2 + ";\n" +
-            "                };\n" +
-            "            }\n" +
+            "            $statements\n" +
             "            return i1 + i2;\n" +
             "        };\n" +
             "    }\n" +
@@ -838,7 +805,7 @@ public class SourceToClassTest {
             "    +public int getValue() ${\n" +
             "        int i1 = " + i1 + ";\n" +
             "        int i2 = " + i2 + ";\n" +
-            "        ^#return $i1 + i2;\n" +
+            "        return #return $i1 + i2;\n" +
             "    }\n" +
             "}\n";
         
@@ -883,7 +850,7 @@ public class SourceToClassTest {
             "class {\n" +
             "    +public int getValue() {\n" +
             "        int i;\n" +
-            "        ${^#i = " + expectedResult + ";}\n" +
+            "        $#i = " + expectedResult + ";\n" +
             "        return i;\n" +
             "    }\n" +
             "}\n";

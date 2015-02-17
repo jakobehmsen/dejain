@@ -17,6 +17,9 @@ public class NewAST extends AbstractAST implements ExpressionAST {
         super(region);
         this.c = c;
         this.arguments = arguments;
+        
+        if(arguments.stream().anyMatch(x -> x == null))
+            new String();
     }
 
     @Override
