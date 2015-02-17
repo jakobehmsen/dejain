@@ -12,6 +12,8 @@ import jasy.lang.antlr4.JasyParser.AnnotationContext;
 import jasy.lang.antlr4.JasyParser.InvocationContext;
 import jasy.lang.antlr4.JasyParser.LookupContext;
 import jasy.lang.antlr4.JasyParser.ProgramContext;
+import jasy.lang.antlr4.JasyParser.QualifiedLookupContext;
+import jasy.lang.antlr4.JasyParser.UnqualifiedLookupContext;
 import jasy.lang.ast.BinaryExpressionAST;
 import jasy.lang.ast.BlockAST;
 import jasy.lang.ast.BooleanLiteralAST;
@@ -294,12 +296,12 @@ public class ASMCompiler {
                 return new MetaCodeAST(null, new BlockAST(null, statements));
             }
 
-            @Override
-            public CodeAST visitInjectStatement(JasyParser.InjectStatementContext ctx) {
-                ExpressionAST expression = getExpression(ctx.expression(), mp);
-                
-                return new InjectAST(new Region(ctx), expression);
-            }
+//            @Override
+//            public CodeAST visitInjectStatement(JasyParser.InjectStatementContext ctx) {
+//                ExpressionAST expression = getExpression(ctx.expression(), mp);
+//                
+//                return new InjectAST(new Region(ctx), expression);
+//            }
 
             @Override
             public CodeAST visitIfElseStatement(JasyParser.IfElseStatementContext ctx) {
@@ -362,8 +364,22 @@ public class ASMCompiler {
                         switch(chainCtx.getRuleIndex()) {
                             case JasyParser.RULE_lookup:
                                 LookupContext lookupCtx = (LookupContext)chainCtx;
-                                String fieldName = lookupCtx.identifier().getText();
-                                result = new FieldGetAST(new Region(chainCtx), result, fieldName);
+                                ParserRuleContext actualLookupCtx = (ParserRuleContext)lookupCtx.getChild(0);
+                                
+                                switch(actualLookupCtx.getRuleIndex()) {
+                                    case JasyParser.RULE_unqualifiedLookup: {
+                                        UnqualifiedLookupContext unqualifiedCtx = (UnqualifiedLookupContext)actualLookupCtx;
+                                        String fieldName = unqualifiedCtx.identifier().getText();
+                                        result = new FieldGetAST(new Region(chainCtx), result, new StringLiteralAST(new Region(chainCtx), fieldName));
+                                        break;
+                                    } case JasyParser.RULE_qualifiedLookup: {
+                                        QualifiedLookupContext qualifiedCtx = (QualifiedLookupContext)actualLookupCtx;
+                                        ExpressionAST fieldName = getExpression(qualifiedCtx.expression(), mp);
+                                        result = new FieldGetAST(new Region(chainCtx), result, fieldName);
+                                        break;
+                                    }
+                                }
+                                
                                 break;
                             case JasyParser.RULE_invocation:
                                 InvocationContext invocationCtx = (InvocationContext)chainCtx;
@@ -486,9 +502,21 @@ public class ASMCompiler {
                 return new MetaExpressionAST(new Region(ctx), body);
             }
 
+//            @Override
+//            public ExpressionAST visitLookup(JasyParser.LookupContext ctx) {
+//                String name = ctx.getText();
+//                return new LookupAST(new Region(ctx), name);
+//            }
+
             @Override
-            public ExpressionAST visitLookup(JasyParser.LookupContext ctx) {
+            public ExpressionAST visitUnqualifiedLookup(JasyParser.UnqualifiedLookupContext ctx) {
                 String name = ctx.getText();
+                return new LookupAST(new Region(ctx), new StringLiteralAST(new Region(ctx), name));
+            }
+
+            @Override
+            public ExpressionAST visitQualifiedLookup(JasyParser.QualifiedLookupContext ctx) {
+                ExpressionAST name = getExpression(ctx.expression(), mp);
                 return new LookupAST(new Region(ctx), name);
             }
 

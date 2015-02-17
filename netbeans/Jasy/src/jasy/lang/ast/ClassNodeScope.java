@@ -23,7 +23,22 @@ public class ClassNodeScope implements Scope {
         if(field.isPresent()) {
             try {
                 Type t = Type.getType(field.get().desc);
-                Class<?> c = Class.forName(t.getClassName());
+                String cn = t.getClassName();
+                
+                Class<?> c;
+                switch(cn) {
+                    case "boolean": c = boolean.class; break;
+                    case "byte": c = byte.class; break;
+                    case "short": c = short.class; break;
+                    case "int": c = int.class; break;
+                    case "long": c = long.class; break;
+                    case "float": c = float.class; break;
+                    case "double": c = double.class; break;
+                    case "char": c = char.class; break;
+                    default: c = Class.forName(t.getClassName());
+                }
+                
+//                Class<?> c = Class.forName(t.getClassName());
                 return new NameTypeAST(null, c);
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(ClassNodeScope.class.getName()).log(Level.SEVERE, null, ex);

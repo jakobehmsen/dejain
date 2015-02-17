@@ -131,7 +131,7 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
         quoteFlattener.flattenedCode.add(new InvocationAST(
             null, 
-            new LookupAST(null, statementVarName), 
+            new LookupAST(null, new StringLiteralAST(null, statementVarName)), 
             null, 
             "add", 
             Arrays.asList(getExpression(ctx.expression)), 

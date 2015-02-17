@@ -485,7 +485,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     @Override
     public PreparedExpressionAST visitFieldGet(FieldGetAST ctx) {
         PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
-        TypeAST fieldType = target != null ? target.resultType().getFieldType(ctx.fieldName) : null /*from declared class instead*/ ;
+        String fieldName = ((StringLiteralAST)ctx.fieldName).value;
+        TypeAST fieldType = target != null ? target.resultType().getFieldType(fieldName) : null /*from declared class instead*/ ;
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -496,7 +497,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
                 if (asExpression) {
                     target.generate(c, generator, originalIl);
-                    generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), ctx.fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
+                    generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
                 }
             }
         };
@@ -509,8 +510,10 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitLookup(LookupAST ctx) {
-        if (parameters.containsKey(ctx.name)) {
-            TypeAST resultType = parameters.get(ctx.name).type;
+        String name = ((StringLiteralAST)ctx.name).value;
+                    
+        if (parameters.containsKey(name)) {
+            TypeAST resultType = parameters.get(name).type;
             return new PreparedExpressionAST() {
                 @Override
                 public TypeAST resultType() {
@@ -519,7 +522,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
                 @Override
                 public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                    int ordinal = parameters.get(ctx.name).index;
+                    int ordinal = parameters.get(name).index;
                     switch (resultType.getSimpleName()) {
                         case "int":
                             generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
@@ -530,8 +533,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     }
                 }
             };
-        } else if (variables.containsKey(ctx.name)) {
-            TypeAST resultType = variables.get(ctx.name);
+        } else if (variables.containsKey(name)) {
+            TypeAST resultType = variables.get(name);
             return new PreparedExpressionAST() {
                 @Override
                 public TypeAST resultType() {
@@ -540,7 +543,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
                 @Override
                 public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
-                    int ordinal = generator.getVariableIndex(ctx.name);
+                    int ordinal = generator.getVariableIndex(name);
                     switch (resultType.getSimpleName()) {
                         case "int":
                             generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);

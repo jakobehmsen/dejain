@@ -12,6 +12,13 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#qualifiedLookup}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitQualifiedLookup(@NotNull JasyParser.QualifiedLookupContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#variableAssignment}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -243,13 +250,6 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitStatement(@NotNull JasyParser.StatementContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link JasyParser#injectStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitInjectStatement(@NotNull JasyParser.InjectStatementContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberDefinition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -388,6 +388,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitArguments(@NotNull JasyParser.ArgumentsContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#unqualifiedLookup}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnqualifiedLookup(@NotNull JasyParser.UnqualifiedLookupContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMemberField}.

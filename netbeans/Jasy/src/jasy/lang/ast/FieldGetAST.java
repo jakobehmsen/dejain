@@ -5,11 +5,21 @@ import jasy.lang.ClassResolver;
 import java.util.List;
 
 public class FieldGetAST extends AbstractAST implements ExpressionAST {
+//    public ExpressionAST target;
+//    public String fieldName;
+//    public TypeAST fieldType;
+//
+//    public FieldGetAST(ASMCompiler.Region region, ExpressionAST target, String fieldName) {
+//        super(region);
+//        this.target = target;
+//        this.fieldName = fieldName;
+//    }
+    
     public ExpressionAST target;
-    public String fieldName;
+    public ExpressionAST fieldName;
     public TypeAST fieldType;
 
-    public FieldGetAST(ASMCompiler.Region region, ExpressionAST target, String fieldName) {
+    public FieldGetAST(ASMCompiler.Region region, ExpressionAST target, ExpressionAST fieldName) {
         super(region);
         this.target = target;
         this.fieldName = fieldName;

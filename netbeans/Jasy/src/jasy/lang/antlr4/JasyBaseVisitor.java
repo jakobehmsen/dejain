@@ -18,6 +18,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitQualifiedLookup(@NotNull JasyParser.QualifiedLookupContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitVariableAssignment(@NotNull JasyParser.VariableAssignmentContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -282,14 +290,6 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
-	@Override public T visitInjectStatement(@NotNull JasyParser.InjectStatementContext ctx) { return visitChildren(ctx); }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.
-	 */
 	@Override public T visitClassTransformerMemberDefinition(@NotNull JasyParser.ClassTransformerMemberDefinitionContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -443,6 +443,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitArguments(@NotNull JasyParser.ArgumentsContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitUnqualifiedLookup(@NotNull JasyParser.UnqualifiedLookupContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

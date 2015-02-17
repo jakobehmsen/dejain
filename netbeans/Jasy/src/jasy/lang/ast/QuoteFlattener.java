@@ -55,7 +55,7 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
             if(quotedStatement != null) {
                 flattenedCode.add(new InvocationAST(
                     null, 
-                    new LookupAST(null, statementVarName), 
+                    new LookupAST(null, new StringLiteralAST(null, statementVarName)), 
                     null, 
                     "add", 
                     Arrays.asList(quotedStatement), 
@@ -69,7 +69,7 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
         return new NewAST(
             null, 
             new NameTypeAST(null, BlockAST.class), 
-            Arrays.asList(new NullAST(null), new LookupAST(null, statementVarName))
+            Arrays.asList(new NullAST(null), new LookupAST(null, new StringLiteralAST(null, statementVarName)))
         );
     }
 
@@ -150,7 +150,7 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
     @Override
     public ExpressionAST visitFieldGet(FieldGetAST ctx) {
         ExpressionAST quotedTarget = ctx.target.accept(this);
-        ExpressionAST quotedFieldName = MethodAST.quote(ctx.fieldName);
+        ExpressionAST quotedFieldName = ctx.fieldName.accept(this);
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), Arrays.asList(null, quotedTarget, quotedFieldName));
     }
 
@@ -164,7 +164,7 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitLookup(LookupAST ctx) {
-        ExpressionAST quotedName = MethodAST.quote(ctx.name);
+        ExpressionAST quotedName = ctx.name.accept(this);
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, LookupAST.class), Arrays.asList(new NullAST(null), quotedName));
     }
 

@@ -40,7 +40,9 @@ leafExpressionChain: (DOT (lookup|invocation))*;
 thisResult: KW_THIS_RESULT;
 invocation: identifier OPEN_PAR arguments CLOSE_PAR;
 arguments: (expression (COMMA expression)*)?;
-lookup: identifier;
+lookup: unqualifiedLookup | qualifiedLookup;
+unqualifiedLookup: identifier;
+qualifiedLookup: COLON expression;
 statements: statement*;
 statement: metaBlock | nonDelimitedStatement | delimitedStatement SEMI_COLON;
 nonDelimitedStatement: tryCatchStatement | ifElseStatement | whileStatement;
@@ -64,12 +66,10 @@ whileStatement:
     KW_WHILE OPEN_PAR condition=expression CLOSE_PAR 
     whileTrueBlock=singleOrMultiStatement;
 delimitedStatement: 
-    returnStatement | throwStatement | variableDeclaration | 
-    injectStatement | expression;
+    returnStatement | throwStatement | variableDeclaration | expression;
 variableDeclaration: typeQualifier id=identifier (ASSIGN_OP value=expression)?;
 returnStatement: KW_RETURN expression;
 throwStatement: KW_THROW expression;
-injectStatement: HAT expression;
 literal: stringLiteral | integerLiteral | longLiteral | booleanLiteral;
 stringLiteral: STRING;
 integerLiteral: INTEGER;
