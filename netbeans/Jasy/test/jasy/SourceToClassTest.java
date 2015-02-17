@@ -764,22 +764,36 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodWhichGenerateQuotedBlockWithInjections() throws IOException {
+    public void testAllClassesAddMethodWhichGeneratesAndInterpolateQuotedBlock() throws IOException {
         int i1 = 5;
         int i2 = 7;
         int expectedResult = i1 + i2;
         
+//        String src =
+//            "class {\n" +
+//            "    +public int getValue() ${\n" +
+//            "        ArrayList<CodeAST> statements = new ArrayList<CodeAST>();\n" +
+//            "        statements.add(#i1 = " + i1 + ");\n" +
+//            "        statements.add(#i2 = " + i2 + ");\n" +
+//            "        return #{\n" +
+//            "            int i1;\n" +
+//            "            int i2;\n" +
+//            "            $statements\n" +
+//            "            return i1 + i2;\n" +
+//            "        };\n" +
+//            "    }\n" +
+//            "}\n";
+        
         String src =
             "class {\n" +
             "    +public int getValue() ${\n" +
-            "        ArrayList<CodeAST> statements = new ArrayList<CodeAST>();\n" +
-            "        statements.add(#i1 = " + i1 + ");\n" +
-            "        statements.add(#i2 = " + i2 + ");\n" +
-            "        return #{\n" +
+            "        jasy.lang.ast.CodeAST statements = \n" +
+            "            (#i1 = " + i1 + ") +\n" +
+            "            (#i2 = " + i2 + ");\n" +
             "        return #{\n" +
             "            int i1;\n" +
             "            int i2;\n" +
-            "            $statements\n" +
+            "            $statements;\n" +
             "            return i1 + i2;\n" +
             "        };\n" +
             "    }\n" +
