@@ -128,13 +128,13 @@ In some cases, it is practical to generate statements - perhaps even in a varyin
     ...
 	
     public String getDescription() {
-        StringBuilder descriptionBuilder = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 		
-        descriptionBuilder.append("firstName" + " = " + firstName);
-        descriptionBuilder.append("lastName" + " = " + lastName);
-        descriptionBuilder.append("age" + " = " + age);
+        sb.append("firstName" + " = " + firstName);
+        sb.append("lastName" + " = " + lastName);
+        sb.append("age" + " = " + age);
 		
-        return descriptionBuilder.toString();
+        return sb.toString();
     }
 }
 </code></pre>
