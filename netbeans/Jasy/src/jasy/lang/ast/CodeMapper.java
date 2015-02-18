@@ -8,7 +8,7 @@ public class CodeMapper implements CodeVisitor<CodeAST> {
         return ctx.accept(this);
     }
     
-    protected ExpressionAST getExpression(ExpressionAST ctx) {
+    protected ExpressionAST getExpression(CodeAST ctx) {
         return (ExpressionAST)ctx.accept(this);
     }
 

@@ -37,6 +37,7 @@ import jasy.lang.ast.InvocationAST;
 import jasy.lang.ast.LongLiteralAST;
 import jasy.lang.ast.LookupAST;
 import jasy.lang.ast.MetaCodeAST;
+import jasy.lang.ast.MetaProcessor;
 import jasy.lang.ast.MetaScope;
 import jasy.lang.ast.NameTypeAST;
 import jasy.lang.ast.NewAST;
@@ -44,6 +45,7 @@ import jasy.lang.ast.Parameter;
 import jasy.lang.ast.QuoteAST;
 import jasy.lang.ast.QuoteFlattener;
 import jasy.lang.ast.StatementFlattener;
+import jasy.lang.ast.StatementProcessor;
 import jasy.lang.ast.StringLiteralAST;
 import jasy.lang.ast.TypeAST;
 import jasy.lang.ast.VariableAssignmentAST;
@@ -205,6 +207,8 @@ public class ASMCompiler {
 //                                ArrayList<CodeAST> newBlockStatements = new ArrayList<>();
 //                                body.accept(new StatementFlattener(new QuoteFlattener(newBlockStatements)));
 //                                body = new BlockAST(body.getRegion(), newBlockStatements);
+                                
+//                                body = body.accept(new StatementProcessor(new MetaProcessor()));
                                 
                                 MethodAST method = new MethodAST(new Region(ctx), isAdd, new MethodSelectorAST(accessModifier, isStatic, returnType, name, parameters), body, mp);
                                 
