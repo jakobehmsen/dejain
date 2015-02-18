@@ -559,45 +559,16 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodReturnNamesOfAllFields() throws IOException {
+    public void testAllClassesAddMethodReturnNameAndValueOfFirstField() throws IOException {
         Field singleField = TestClass1.class.getDeclaredFields()[0];
-        String expectedResult = singleField.getName();
-        
-//        String src =
-//            "class {\n" +
-//            "    fields=;\n" +
-//            "    \n" +
-//            "    +public String getDescription() {\n" +
-//            "        StringBuilder sb = new StringBuilder();\n" + // "new" not supported yet
-//            "        ${\n" +
-//            "            int i = 0;\n" +
-//            "            while(i < fields.size()) {\n" +
-//            "                FieldNode f = fields.get(i);\n" +
-//            "                ^#sb.append($f.name);\n" +
-//            "                i = i + 1;\n" +
-//            "            }\n" +
-//            "        }\n" +
-//            "        return sb.toString();\n" +
-//            "    }\n" +
-//            "}\n";
-        
-//        String src =
-//            "class {\n" +
-//            "    +public String getDescription() ${\n" +
-////            "        int i = 0;\n" +
-//            "        if(false) {\n" +
-////            "            i = i + 1;\n" +
-//            "        }\n" +
-//            "        ^#return \"Text\";\n" +
-//            "    }\n" +
-//            "}\n";
+        int expectedValue = 0;
+        String expectedResult = singleField.getName() + " = " + expectedValue;
         
         String src =
             "class {\n" +
             "    fields=;\n" +
             "    +public Object getDescription() {\n" +
-//            "        return new java.lang.Integer(:$fields.get(0).name);\n" +
-            "        return $fields.get(0).name  + \" = \" + new java.lang.Integer(:$fields.get(0).name);\n" +
+            "        return ($fields.get(0).name) + \" = \" + (:$fields.get(0).name);\n" +
             "    }\n" +
             "}\n";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
         
@@ -605,7 +576,7 @@ public class SourceToClassTest {
             new String[]{"jasy.TestClass1"}, 
             src, 
             forClass("jasy.TestClass1", 
-                forInstance(imethod("getDescription", invocationResult(isNull())))
+                forInstance(imethod("getDescription", invocationResult(is(expectedResult))))
             )
         );
     }
