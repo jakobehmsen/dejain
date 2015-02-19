@@ -394,6 +394,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitForStatement(@NotNull JasyParser.ForStatementContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitMultiplicativeExpression(@NotNull JasyParser.MultiplicativeExpressionContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -403,6 +411,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitClassTransformerMemberMethodBlody(@NotNull JasyParser.ClassTransformerMemberMethodBlodyContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitCommaBlock(@NotNull JasyParser.CommaBlockContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

@@ -341,6 +341,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitMetaExpression(@NotNull JasyParser.MetaExpressionContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#forStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForStatement(@NotNull JasyParser.ForStatementContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#multiplicativeExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -353,6 +360,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMemberMethodBlody(@NotNull JasyParser.ClassTransformerMemberMethodBlodyContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#commaBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCommaBlock(@NotNull JasyParser.CommaBlockContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#variableDeclaration}.

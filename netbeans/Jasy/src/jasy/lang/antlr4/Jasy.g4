@@ -49,7 +49,8 @@ unqualifiedLookup: identifier;
 qualifiedLookup: COLON expression;
 statements: statement*;
 statement: metaBlock | nonDelimitedStatement | delimitedStatement SEMI_COLON;
-nonDelimitedStatement: tryCatchStatement | ifElseStatement | whileStatement;
+nonDelimitedStatement: 
+    tryCatchStatement | ifElseStatement | whileStatement | forStatement;
 proceedStatement: ELLIPSES;
 metaExpression: DOLLAR (expression | OPEN_BRA statements CLOSE_BRA);
 quotedExpression: HASH (expression | nonDelimitedStatement | delimitedStatement | block);
@@ -69,6 +70,14 @@ ifElseStatement:
 whileStatement:
     KW_WHILE OPEN_PAR condition=expression CLOSE_PAR 
     whileTrueBlock=singleOrMultiStatement;
+forStatement:
+    KW_FOR OPEN_PAR 
+        initialization=commaBlock? SEMI_COLON
+        (condition=expression)? SEMI_COLON
+        update=commaBlock?
+    CLOSE_PAR 
+    whileTrueBlock=singleOrMultiStatement;
+commaBlock: (delimitedStatement (COMMA delimitedStatement)*);
 delimitedStatement: 
     returnStatement | throwStatement | variableDeclaration | expression;
 variableDeclaration: typeQualifier id=identifier (ASSIGN_OP value=expression)?;
@@ -128,6 +137,7 @@ KW_CLASS: 'class';
 KW_TRUE: 'true';
 KW_FALSE: 'false';
 KW_WHILE: 'while';
+KW_FOR: 'for';
 WILD_CARD: '*';
 SEMI_COLON: ';';
 COLON: ':';
