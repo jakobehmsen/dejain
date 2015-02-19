@@ -227,6 +227,42 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAdd1PublicMethodReturningXEqualsY() throws IOException {
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            "class {+public boolean compare(int x, int y) {return x == y;}}", 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, 
+                    invocationResult(new Object[]{8, 9}, is(false))
+                    .and(
+                        invocationResult(new Object[]{9, 9}, is(true))
+                    ).and(
+                        invocationResult(new Object[]{9, 8}, is(false))
+                    )
+                ))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAdd1PublicMethodReturningXNotEqualsY() throws IOException {
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            "class {+public boolean compare(int x, int y) {return x != y;}}", 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("compare", new Class<?>[]{int.class, int.class}, 
+                    invocationResult(new Object[]{8, 9}, is(true))
+                    .and(
+                        invocationResult(new Object[]{9, 9}, is(false))
+                    ).and(
+                        invocationResult(new Object[]{9, 8}, is(true))
+                    )
+                ))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAdd1PublicMethodReturningGeneratedStringConcatenation() throws IOException {
         String str1 = "H";
         String str2 = "i";
