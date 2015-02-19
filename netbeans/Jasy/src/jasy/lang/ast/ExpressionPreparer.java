@@ -143,6 +143,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 case BinaryExpressionAST.OPERATOR_LTE:
                 case BinaryExpressionAST.OPERATOR_GT:
                 case BinaryExpressionAST.OPERATOR_GTE:
+                case BinaryExpressionAST.OPERATOR_EQ:
+                case BinaryExpressionAST.OPERATOR_NE:
                     resultType = new NameTypeAST(ctx.getRegion(), boolean.class);
                     break;
                 default:
@@ -258,6 +260,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     case BinaryExpressionAST.OPERATOR_LTE:
                     case BinaryExpressionAST.OPERATOR_GT:
                     case BinaryExpressionAST.OPERATOR_GTE:
+                    case BinaryExpressionAST.OPERATOR_EQ:
+                    case BinaryExpressionAST.OPERATOR_NE:
                         {
                             // Derive opposite mode
                             int mode;
@@ -274,6 +278,12 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                                     break;
                                 case BinaryExpressionAST.OPERATOR_GTE:
                                     mode = GeneratorAdapter.LT;
+                                    break;
+                                case BinaryExpressionAST.OPERATOR_EQ:
+                                    mode = GeneratorAdapter.NE;
+                                    break;
+                                case BinaryExpressionAST.OPERATOR_NE:
+                                    mode = GeneratorAdapter.EQ;
                                     break;
                                 default:
                                     mode = -1;

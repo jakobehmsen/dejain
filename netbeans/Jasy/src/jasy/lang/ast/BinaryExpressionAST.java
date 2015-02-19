@@ -16,6 +16,8 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     public static final int OPERATOR_GTE = 5;
     public static final int OPERATOR_MULT = 6;
     public static final int OPERATOR_DIV = 7;
+    public static final int OPERATOR_EQ = 8;
+    public static final int OPERATOR_NE = 9;
     
     public int operator;
     public ExpressionAST lhs;
