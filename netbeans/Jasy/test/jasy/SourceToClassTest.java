@@ -575,6 +575,46 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodWithVariableAssignAddInt() throws IOException {
+        String src =
+            "class {\n" +
+            "    +public int getInt() {\n" +
+            "        int i = 0;\n" +
+            "        i += 1;\n" +
+            "        return 1;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getInt", invocationResult(is(1))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithVariableAssignAddString() throws IOException {
+        String src =
+            "class {\n" +
+            "    +public String getString() {\n" +
+            "        String str = \"\";\n" +
+            "        str += \"Hi\";\n" +
+            "        return str;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getString", invocationResult(is("Hi"))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodWithNewWithArguments() throws IOException {
         String expectedResult = "Some text";
         
@@ -617,8 +657,8 @@ public class SourceToClassTest {
             "        while(i < fields.size()) {\n" +
             "            FieldNode f = fields.get(i);\n" +
             "            if(i > 0)\n" +
-            "                statements = statements + #sb.append(\", \");\n" +
-            "            statements = statements + #sb.append(($f.name) + \" = \" + (:$f.name));\n" +
+            "                statements += #sb.append(\", \");\n" +
+            "            statements += #sb.append(($f.name) + \" = \" + (:$f.name));\n" +
             "            i = i + 1;\n" +
             "        }\n" +
             "        return #{\n" +
