@@ -440,63 +440,24 @@ public class ASMCompiler {
                             return -1;
                     }
                 });
-                
-//                ExpressionAST result = ctx.first.accept(this);
-//                
-//                for(int i = 1; i < ctx.relationalExpression().size(); i++) {
-//                    ExpressionAST lhs = result;
-//                    ExpressionAST rhs = ctx.relationalExpression(i).accept(this);
-//
-//                    int operator;
-//
-//                    switch(ctx.equalityOperator(i - 1).operator.getType()) {
-//                        case JasyLexer.EQUALS:
-//                            operator = BinaryExpressionAST.OPERATOR_EQ;
-//                            break;
-//                        case JasyLexer.NOT_EQUALS:
-//                            operator = BinaryExpressionAST.OPERATOR_NE;
-//                            break;
-//                        default:
-//                            operator = -1;
-//                    }
-//
-//                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
-//                }
-//                
-//                return result;
             }
 
             @Override
             public ExpressionAST visitRelationalExpression(JasyParser.RelationalExpressionContext ctx) {
-                ExpressionAST result = ctx.first.accept(this);
-                
-                for(int i = 1; i < ctx.additiveExpression().size(); i++) {
-                    ExpressionAST lhs = result;
-                    ExpressionAST rhs = ctx.additiveExpression(i).accept(this);
-
-                    int operator;
-
-                    switch(ctx.relationalOperator(i - 1).operator.getType()) {
+                return parseBinaryExpressionRule(ctx.first, ctx.additiveExpression(), ctx.relationalOperator(), relationalOperator -> {
+                    switch(relationalOperator.operator.getType()) {
                         case JasyLexer.LT:
-                            operator = BinaryExpressionAST.OPERATOR_LT;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_LT;
                         case JasyLexer.LTE:
-                            operator = BinaryExpressionAST.OPERATOR_LTE;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_LTE;
                         case JasyLexer.GT:
-                            operator = BinaryExpressionAST.OPERATOR_GT;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_GT;
                         case JasyLexer.GTE:
-                            operator = BinaryExpressionAST.OPERATOR_GTE;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_GTE;
                         default:
-                            operator = -1;
+                            return -1;
                     }
-
-                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
-                }
-                
-                return result;
+                });
             }
 
             @Override
@@ -506,56 +467,30 @@ public class ASMCompiler {
 
             @Override
             public ExpressionAST visitAdditiveExpression(JasyParser.AdditiveExpressionContext ctx) {
-                ExpressionAST result = ctx.first.accept(this);
-                
-                for(int i = 1; i < ctx.multiplicativeExpression().size(); i++) {
-                    ExpressionAST lhs = result;
-                    ExpressionAST rhs = ctx.multiplicativeExpression(i).accept(this);
-
-                    int operator;
-
-                    switch(ctx.additiveOperator(i - 1).operator.getType()) {
+                return parseBinaryExpressionRule(ctx.first, ctx.multiplicativeExpression(), ctx.additiveOperator(), additiveOperator -> {
+                    switch(additiveOperator.operator.getType()) {
                         case JasyLexer.PLUS:
-                            operator = BinaryExpressionAST.OPERATOR_ADD;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_ADD;
                         case JasyLexer.MINUS:
-                            operator = BinaryExpressionAST.OPERATOR_SUB;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_SUB;
                         default:
-                            operator = -1;
+                            return -1;
                     }
-
-                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
-                }
-                
-                return result;
+                });
             }
 
             @Override
             public ExpressionAST visitMultiplicativeExpression(JasyParser.MultiplicativeExpressionContext ctx) {
-                ExpressionAST result = ctx.first.accept(this);
-                
-                for(int i = 1; i < ctx.leafExpression().size(); i++) {
-                    ExpressionAST lhs = result;
-                    ExpressionAST rhs = ctx.leafExpression(i).accept(this);
-
-                    int operator;
-
-                    switch(ctx.multiplicativeOperator(i - 1).operator.getType()) {
+                return parseBinaryExpressionRule(ctx.first, ctx.leafExpression(), ctx.multiplicativeOperator(), multiplicativeOperator -> {
+                    switch(multiplicativeOperator.operator.getType()) {
                         case JasyLexer.MULT:
-                            operator = BinaryExpressionAST.OPERATOR_MULT;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_MULT;
                         case JasyLexer.DIV:
-                            operator = BinaryExpressionAST.OPERATOR_DIV;
-                            break;
+                            return BinaryExpressionAST.OPERATOR_DIV;
                         default:
-                            operator = -1;
+                            return -1;
                     }
-
-                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
-                }
-                
-                return result;
+                });
             }
             
             @Override
