@@ -527,9 +527,30 @@ public class ASMCompiler {
 
             @Override
             public ExpressionAST visitVariableAssignment(JasyParser.VariableAssignmentContext ctx) {
-                if(ctx.ASSIGN_OP() != null) {
+                if(ctx.assignmentOperator() != null) {
                     String name = ctx.identifier().getText();
                     ExpressionAST value = getExpression(ctx.value, mp);
+                    
+                    int binaryExpresionOperator = -1;
+                    switch(ctx.assignmentOperator().operator.getType()) {
+                        case JasyLexer.ASSIGN_ADD:
+                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_ADD;
+                            break;
+                        case JasyLexer.ASSIGN_SUB:
+                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_SUB;
+                            break;
+                        case JasyLexer.ASSIGN_MULT:
+                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_MULT;
+                            break;
+                        case JasyLexer.ASSIGN_DIV:
+                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_DIV;
+                            break;
+                    }
+                    
+                    if(binaryExpresionOperator != -1) {
+                        ExpressionAST lhs = new LookupAST(new Region(ctx.value), new StringLiteralAST(new Region(ctx.value), name));
+                        value = new BinaryExpressionAST(new Region(ctx.value), binaryExpresionOperator, lhs, value);
+                    }
 
                     return new VariableAssignmentAST(new Region(ctx), name, value);
                 } else
