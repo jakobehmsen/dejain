@@ -279,14 +279,18 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                                     mode = -1;
                             }
                             
-                            Label ifOppositeTrue = new Label();
-                            Label end = new Label();
-                            generator.methodNode.ifCmp(Type.getType(resultType.getDescriptor()), mode, ifOppositeTrue);
-                            generator.methodNode.push(true);
-                            generator.methodNode.goTo(end);
-                            generator.methodNode.visitLabel(ifOppositeTrue);
-                            generator.methodNode.push(false);
-                            generator.methodNode.visitLabel(end);
+                            if(ifFalseLabel != null) {
+                                generator.methodNode.ifCmp(Type.getType(resultType.getDescriptor()), mode, ifFalseLabel);
+                            } else {
+                                Label ifOppositeTrue = new Label();
+                                Label end = new Label();
+                                generator.methodNode.ifCmp(Type.getType(resultType.getDescriptor()), mode, ifOppositeTrue);
+                                generator.methodNode.push(true);
+                                generator.methodNode.goTo(end);
+                                generator.methodNode.visitLabel(ifOppositeTrue);
+                                generator.methodNode.push(false);
+                                generator.methodNode.visitLabel(end);
+                            }
                             break;
                         }
                 }
