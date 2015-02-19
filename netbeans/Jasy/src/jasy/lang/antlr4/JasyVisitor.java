@@ -138,6 +138,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitStringLiteral(@NotNull JasyParser.StringLiteralContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#equalityExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEqualityExpression(@NotNull JasyParser.EqualityExpressionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMembers}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -367,6 +374,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitClassTransformerMemberMethod(@NotNull JasyParser.ClassTransformerMemberMethodContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#equalityOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEqualityOperator(@NotNull JasyParser.EqualityOperatorContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#modStatic}.
