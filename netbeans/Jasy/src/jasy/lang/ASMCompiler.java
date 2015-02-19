@@ -28,6 +28,7 @@ import jasy.lang.ast.ModuleAST;
 import jasy.lang.ast.ReturnAST;
 import jasy.lang.ast.MetaExpressionAST;
 import jasy.lang.ast.CodeAST;
+import jasy.lang.ast.CodePrinter;
 import jasy.lang.ast.RootExpressionAST;
 import jasy.lang.ast.FieldGetAST;
 import jasy.lang.ast.IfElseAST;
@@ -193,8 +194,10 @@ public class ASMCompiler {
                                 } else {
                                     List<jasy.lang.ast.CodeAST> statements = getStatements(ctx.body.metaBlock().statements(), mp);
                                     CodeAST metaBodyBlock = new BlockAST(new Region(ctx.body), statements);
-                                    CodeAST metaCode = new MetaCodeAST(new Region(ctx.body), metaBodyBlock);
-                                    body = metaCode;
+                                    body = metaBodyBlock;
+//                                    CodeAST metaCode = new MetaCodeAST(new Region(ctx.body), metaBodyBlock);
+//                                    body = metaCode;
+                                    
 //                                    ArrayList<CodeAST> bodyStatements = new ArrayList<>();
 //                                    bodyStatements.add(metaCode);
 //                                    if(isVoid)
@@ -203,6 +206,10 @@ public class ASMCompiler {
 ////                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), metaCode));
 //                                    body = new ReturnAST(new Region(ctx.body), new QuoteAST(new Region(ctx.body), bodyBlock));
                                 }
+                                
+                                System.out.println("Transformation body:");
+                                body.accept(new CodePrinter(System.out));
+                                System.out.println();
                                 
 //                                ArrayList<CodeAST> newBlockStatements = new ArrayList<>();
 //                                body.accept(new StatementFlattener(new QuoteFlattener(newBlockStatements)));

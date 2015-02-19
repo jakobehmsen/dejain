@@ -80,6 +80,10 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         
                         CodeAST body = (CodeAST)astGeneratorMethod.invoke(astGenerator, new Object[0]);
                         
+                        System.out.println("Synthesized body:");
+                        body.accept(new CodePrinter(System.out));
+                        System.out.println();
+                        
                         // Use the resulting CodeAST in toCode below
                         
                         int methodAccess = AST.Util.getAccessModifier(selector.accessModifier, selector.isStatic);
@@ -139,14 +143,14 @@ public class MethodAST extends AbstractAST implements MemberAST {
         // Must return CodeAST
 //        TypeAST returnType = returnTypes.get(0);
         
-        Class<?> returnTypeClass = CodeAST.class;//((NameTypeAST)returnType).getType();
+//        Class<?> returnTypeClass = int.class;
+        Class<?> returnTypeClass = CodeAST.class;
         
         metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
         metaObjectClassNode.access = Opcodes.ACC_PUBLIC;
         metaObjectClassNode.name = "dejain/generator/ASMGenerator" + mp.generatorCount;
+        metaObjectClassNode.signature = "L" + metaObjectClassNode.name + ";";
         metaObjectClassNode.superName = "java/lang/Object";
-        MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
-        metaObjectClassNode.methods.add(generatorMethod);
         
         MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
         defaultConstructor.visitCode();
@@ -157,18 +161,22 @@ public class MethodAST extends AbstractAST implements MemberAST {
         defaultConstructor.visitEnd();
         metaObjectClassNode.methods.add(defaultConstructor);
         
+        MethodNode generatorMethod = new MethodNode(Opcodes.ACC_PUBLIC, "generator", Type.getMethodDescriptor(Type.getType(returnTypeClass)), null, new String[]{});
         GeneratorAdapter generatorAdapter = new GeneratorAdapter(generatorMethod, generatorMethod.access, generatorMethod.name, generatorMethod.desc);
         MethodCodeGenerator metaCodeGenerator = new MethodCodeGenerator(generatorAdapter, null);
-        metaCodeGenerator.start();
+        generatorMethod.visitCode();
         pbody.generate(new Transformation<>(metaObjectClassNode), metaCodeGenerator, new InsnList());
-        metaCodeGenerator.end();
+        generatorMethod.visitMaxs(0,0);
         generatorMethod.visitEnd();
+        metaObjectClassNode.methods.add(generatorMethod);
         
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
+//        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              _MAXS);
         metaObjectClassNode.accept(cw);
         
         TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
-        metaObjectClassNode.accept(traceClassVisitor);
+        new ClassReader(cw.toByteArray()).accept(traceClassVisitor, 0);
+//        metaObjectClassNode.accept(traceClassVisitor);
         CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), true, new PrintWriter(System.out));
         
         SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
@@ -176,8 +184,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
         java.lang.reflect.Method bodyAsMethodTmp = null;
         
         try {
-            bodyAsMethodTmp = metaObjectClass.getMethod("generator", new Class<?>[0]);
-        } catch (NoSuchMethodException | SecurityException ex) {
+                                                                                                                                                                                                                                                                                                                        bodyAsMethodTmp = metaObjectClass.getMethod("generator", new Class<?>[0]);  
+                                                                                                                                                                                                                                                                                                                    } catch (NoSuchMethodException | SecurityException ex) {
             Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
         }
 
