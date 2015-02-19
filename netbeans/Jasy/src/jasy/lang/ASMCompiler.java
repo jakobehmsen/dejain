@@ -347,7 +347,12 @@ public class ASMCompiler {
             @Override
             public ExpressionAST visitStringLiteral(JasyParser.StringLiteralContext ctx) {
                 String value = ctx.getText().substring(1, ctx.getText().length() - 1);
-                value = value.replace("\\\\", "\\").replace("\\\"", "\"");
+                value = value
+                    .replace("\\\\", "\\")
+                    .replace("\\\"", "\"")
+                    .replace("\\n", "\n")
+                    .replace("\\r", "\r")
+                    .replace("\\t", "\t");
                 return new StringLiteralAST(new Region(ctx), value);
             }
 
