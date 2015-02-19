@@ -8,6 +8,7 @@ import java.util.Hashtable;
 import java.util.function.Function;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
@@ -30,7 +31,7 @@ public class ExhaustiveClassTransformer {
     public byte[] transform(byte[] classfileBuffer) {
         while(true) {
             ClassReader classReader = new ClassReader(classfileBuffer);
-            ClassNode classNode = new ClassNode();
+            ClassNode classNode = new ClassNode(Opcodes.ASM5);
             classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
             ClassAction action = transformer.resolve(classNode);
 
@@ -46,7 +47,7 @@ public class ExhaustiveClassTransformer {
 
             classfileBuffer = classWriter.toByteArray();
             
-//            new ClassReader(classfileBuffer).accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
+            new ClassReader(classfileBuffer).accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
             CheckClassAdapter.verify(new ClassReader(classfileBuffer), false, new PrintWriter(System.out));
         }
         
