@@ -51,7 +51,7 @@ public class CodePrinter implements CodeVisitor<Object> {
     @Override
     public Object visitStringLiteral(StringLiteralAST ctx) {
         print("\"");
-        print(ctx.value);
+        print(ctx.value.replace("\n", "\\n"));
         print("\"");
         
         return null;
@@ -80,17 +80,25 @@ public class CodePrinter implements CodeVisitor<Object> {
 
     @Override
     public Object visitBinaryExpression(BinaryExpressionAST ctx) {
+        print("(");
         ctx.lhs.accept(this);
+        print(")");
         print(" ");
         print(ctx.getOperatorString());
         print(" ");
-        return ctx.rhs.accept(this);
+        print("(");
+        ctx.rhs.accept(this);
+        print(")");
+        
+        return null;
     }
 
     @Override
     public Object visitInvocation(InvocationAST ctx) {
         ctx.target.accept(this);
-        print(".(");
+        print(".");
+        print(ctx.methodName);
+        print("(");
         ctx.arguments.stream()
             .flatMap(a -> Arrays.<Runnable>asList(() -> print(","), () -> a.accept(this)).stream())
             .skip(1)
@@ -153,7 +161,11 @@ public class CodePrinter implements CodeVisitor<Object> {
 
     @Override
     public Object visitLookup(LookupAST ctx) {
-        ctx.name.accept(this);
+        print(":");
+        if(ctx.name instanceof StringLiteralAST)
+            print(((StringLiteralAST)ctx.name).value);
+        else
+            ctx.name.accept(this);
         
         return null;
     }
@@ -190,11 +202,9 @@ public class CodePrinter implements CodeVisitor<Object> {
             s.accept(this);
             println();
         });
-//            .flatMap(a -> Arrays.<Runnable>asList(() -> print("\n"), () -> a.accept(this)).stream())
-//            .skip(1)
-//            .forEach(r -> r.run());
         dedent();
         print("}");
+            
         return null;
     }
 
