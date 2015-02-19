@@ -50,7 +50,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 body.generate(c, generator, originalIl);
             }
         };
@@ -70,7 +70,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 if (asExpression) {
                     generator.methodNode.push(ctx.value);
                 }
@@ -87,7 +87,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 //                    System.out.println("visitIntLiteral");
                 if (asExpression) {
                     generator.methodNode.push(ctx.value);
@@ -160,7 +160,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 lhs.generate(c, generator, originalIl);
                 rhs.generate(c, generator, originalIl);
                 switch (ctx.operator) {
@@ -350,7 +350,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 if (target != null) {
                     target.generate(c, generator, originalIl);
                 }
@@ -409,7 +409,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 System.out.println("visitLongLiteral");
                 if (asExpression) {
                     generator.methodNode.push(ctx.value);
@@ -459,7 +459,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 if (asExpression) {
                     expression.generate(c, generator, originalIl);
                 }
@@ -476,7 +476,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 generator.methodNode.loadThis();
             }
         };
@@ -494,7 +494,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 if (asExpression) {
                     target.generate(c, generator, originalIl);
                     generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
@@ -521,7 +521,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 }
 
                 @Override
-                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                     int ordinal = parameters.get(name).index;
                     switch (resultType.getSimpleName()) {
                         case "int":
@@ -542,7 +542,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 }
 
                 @Override
-                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+                public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                     int ordinal = generator.getVariableIndex(name);
                     switch (resultType.getSimpleName()) {
                         case "int":
@@ -569,7 +569,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 value.generate(c, generator, originalIl);
                 if (asExpression) {
                     generator.methodNode.dup();
@@ -627,7 +627,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 generator.methodNode.visitInsn(Opcodes.ACONST_NULL);
             }
         };
@@ -653,7 +653,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 int length = (int) elements.stream().filter((jasy.lang.ast.PreparedExpressionAST e) -> ((NameTypeAST) e.resultType()).getType() != void.class).count();
                 generator.methodNode.push(length);
                 generator.methodNode.newArray(Type.getType(ctx.type.getDescriptor()));
@@ -689,7 +689,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 generator.methodNode.newInstance(Type.getType(ctx.c.getDescriptor()));
                 generator.methodNode.dup();
                 arguments.forEach((a) -> a.generate(c, generator, originalIl));
@@ -741,7 +741,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 expression.generate(c, generator, originalIl);
                 generator.methodNode.checkCast(Type.getType(ctx.type.getDescriptor()));
             }
@@ -758,7 +758,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 generator.methodNode.push(Type.getType(ctx.t.getDescriptor()));
             }
         };
@@ -779,7 +779,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
 //                generator.methodNode.newInstance(Type.getType(ArrayList.class));
 //                generator.methodNode.dup();
 //                generator.methodNode.invokeConstructor(Type.getType(ArrayList.class), new Method("<init>", Type.VOID_TYPE, new Type[0]));
@@ -822,8 +822,11 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl) {
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 generator.methodNode.push(ctx.value);
+                if(ifFalseLabel != null) {
+                    generator.methodNode.ifZCmp(GeneratorAdapter.EQ, ifFalseLabel);
+                }
             }
         };
     }
