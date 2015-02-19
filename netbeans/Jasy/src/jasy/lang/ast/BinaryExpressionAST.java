@@ -65,7 +65,7 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
 //        }
     }
     
-    private String getOperatorString() {
+    public String getOperatorString() {
         switch(operator) {
             case OPERATOR_ADD: return "+";
             case OPERATOR_SUB: return "-";
