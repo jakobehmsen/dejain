@@ -1,16 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jasy;
 
 /**
- *
- * @author Jakob
- */
+Represent a class to be transformed, which contain exactly two instance fields.
+*/
 public class TestClass2 {
-    public static Class<?> getC() {
-        return Object.class;
-    }
+    private int field1;
+    private String field2 = "valueOfField2";
 }
