@@ -652,7 +652,7 @@ public class SourceToClassTest {
             "    fields=;\n" +
             "    \n" +
             "    +public String getDescription() ${\n" +
-            "        jasy.lang.ast.CodeAST statements = #{};\n" +
+            "        CodeAST statements = #{};\n" +
             "        int i = 0;\n" +
             "        while(i < fields.size()) {\n" +
             "            FieldNode f = fields.get(i);\n" +
@@ -1117,11 +1117,13 @@ public class SourceToClassTest {
         classMap.addClassName("java.lang.String");
         classMap.addClassName("java.lang.Object");
         classMap.addClassName("java.lang.StringBuilder");
+        classMap.addClassName("jasy.lang.ast.CodeAST");
         classMap.addClassName("org.objectweb.asm.tree.FieldNode");
         
         CommonClassResolver resolver = new CommonClassResolver(classMap);
         
         resolver.importPackage("java.lang");
+        resolver.importPackage("jasy.lang.ast");
         resolver.importPackage("org.objectweb.asm.tree");
         
         ClassLoader cl = new ProxyClassLoader(ifIn(classNames), classBytesFromName().andThen(transformClass(resolver, source)));
