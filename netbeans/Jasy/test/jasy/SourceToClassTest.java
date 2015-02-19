@@ -595,29 +595,17 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodReturnNamesOfAllFields() throws IOException {
-        Field singleField = TestClass1.class.getDeclaredFields()[0];
-        int expectedValue = 0;
-        String expectedResult = singleField.getName() + " = " + expectedValue;
-        
-//        String src =
-//            "class {\n" +
-//            "    fields=;\n" +
-//            "    \n" +
-//            "    +public String getDescription() {\n" +
-//            "        StringBuilder sb = new StringBuilder();\n" + // "new" not supported yet
-//            "        ${\n" +
-//            "            CodeAST statements = #{};\n" +
-//            "            while(i < fields.size()) {\n" +
-//            "                FieldNode f = fields.get(i);\n" +
-//            "                statements = statements + #sb.append($f.name);\n" +
-//            "                i = i + 1;\n" +
-//            "            }\n" +
-//            "        }\n" +
-//            "        $statements;\n" +
-//            "        return sb.toString();\n" +
-//            "    }\n" +
-//            "}\n";
+    public void testAllClassesAddMethodReturnNamesOfAllFields() throws IOException, InstantiationException, IllegalAccessException {
+        Object instance = TestClass2.class.newInstance();
+        Field[] fields = TestClass2.class.getDeclaredFields();
+        String expectedResult = "";
+        for(int i = 0; i < fields.length; i++) {
+            Field f = fields[i];
+            f.setAccessible(true);
+            if(i > 0)
+                expectedResult += ", ";
+            expectedResult += f.getName() + " = " + f.get(instance);
+        }
         
         String src =
             "class {\n" +
@@ -640,34 +628,6 @@ public class SourceToClassTest {
             "        };\n" +
             "    }\n" +
             "}\n";
-        
-//        String src =
-//            "class {\n" +
-//            "    fields=;\n" +
-//            "    \n" +
-//            "    +public int getDescription() ${\n" +
-//            "        int i = 0;\n" +
-//            "        while(i < 10) {\n" +
-//            "            i = i + 1;\n" +
-//            "        }\n" +
-//            "        return #return $i;\n" +
-//            "    }\n" +
-//            "}\n";
-        
-//        String src =
-//            "class {\n" +
-//            "    fields=;\n" +
-//            "    \n" +
-//            "    +public int getDescription() ${\n" +
-//            "        int i = 0;\n" +
-//            "        if(i > 1) {\n" +
-//            "            i = i + 1;\n" +
-//            "        } else {\n" +
-//            "            i = i - 1;\n" +
-//            "        }\n" +
-//            "        return #return $i;\n" +
-//            "    }\n" +
-//            "}\n";
         
         testSourceToClasses(
             new String[]{"jasy.TestClass2"}, 
