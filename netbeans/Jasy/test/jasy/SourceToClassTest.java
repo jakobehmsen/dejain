@@ -1000,6 +1000,34 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodWithForCountingToX() throws IOException {
+        int counterStart = 0;
+        int counterEnd = 10;
+        int valueStart = 0;
+        int valueIncrement = 6;
+        int expectedResult = valueStart + (counterEnd - counterStart) * valueIncrement;
+        
+        String src =
+            "class {\n" +
+            "    +public int getValue() {\n" +
+            "        int value = " + valueStart + ";\n" +
+            "        for(int i = " + counterStart + "; i < " + counterEnd + "; i += 1) {\n" +
+            "           value += " + valueIncrement + ";\n" +
+            "        }\n" +
+            "        return value;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodWithReturnInIfElse() throws IOException {
         int trueIfGT = 10;
         
