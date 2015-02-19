@@ -653,13 +653,11 @@ public class SourceToClassTest {
             "    \n" +
             "    +public String getDescription() ${\n" +
             "        CodeAST statements = #{};\n" +
-            "        int i = 0;\n" +
-            "        while(i < fields.size()) {\n" +
+            "        for(int i = 0; i < fields.size(); i += 1) {\n" +
             "            FieldNode f = fields.get(i);\n" +
             "            if(i > 0)\n" +
             "                statements += #sb.append(\", \");\n" +
             "            statements += #sb.append(($f.name) + \" = \" + (:$f.name));\n" +
-            "            i = i + 1;\n" +
             "        }\n" +
             "        return #{\n" +
             "            StringBuilder sb = new StringBuilder();\n" +
