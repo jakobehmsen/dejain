@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -410,6 +411,60 @@ public class ASMCompiler {
                 
                 return result;
             }
+            
+            private <V extends ParserRuleContext, O extends ParserRuleContext> ExpressionAST parseBinaryExpressionRule(
+                    V first, List<V> rest, List<O> operators, Function<O, Integer> operatorFunc) {
+                ExpressionAST result = first.accept(this);
+                
+                for(int i = 1; i < rest.size(); i++) {
+                    ExpressionAST lhs = result;
+                    ExpressionAST rhs = rest.get(i).accept(this);
+
+                    int operator = operatorFunc.apply(operators.get(i - 1));
+
+                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
+                }
+                
+                return result;
+            }
+
+            @Override
+            public ExpressionAST visitEqualityExpression(JasyParser.EqualityExpressionContext ctx) {
+                return parseBinaryExpressionRule(ctx.first, ctx.relationalExpression(), ctx.equalityOperator(), equalityOperator -> {
+                    switch(equalityOperator.operator.getType()) {
+                        case JasyLexer.EQUALS:
+                            return BinaryExpressionAST.OPERATOR_EQ;
+                        case JasyLexer.NOT_EQUALS:
+                            return BinaryExpressionAST.OPERATOR_NE;
+                        default:
+                            return -1;
+                    }
+                });
+                
+//                ExpressionAST result = ctx.first.accept(this);
+//                
+//                for(int i = 1; i < ctx.relationalExpression().size(); i++) {
+//                    ExpressionAST lhs = result;
+//                    ExpressionAST rhs = ctx.relationalExpression(i).accept(this);
+//
+//                    int operator;
+//
+//                    switch(ctx.equalityOperator(i - 1).operator.getType()) {
+//                        case JasyLexer.EQUALS:
+//                            operator = BinaryExpressionAST.OPERATOR_EQ;
+//                            break;
+//                        case JasyLexer.NOT_EQUALS:
+//                            operator = BinaryExpressionAST.OPERATOR_NE;
+//                            break;
+//                        default:
+//                            operator = -1;
+//                    }
+//
+//                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
+//                }
+//                
+//                return result;
+            }
 
             @Override
             public ExpressionAST visitRelationalExpression(JasyParser.RelationalExpressionContext ctx) {
@@ -544,7 +599,7 @@ public class ASMCompiler {
 
                     return new VariableAssignmentAST(new Region(ctx), name, value);
                 } else
-                    return ctx.relationalExpression().accept(this);
+                    return ctx.equalityExpression().accept(this);
             }
 
             @Override
