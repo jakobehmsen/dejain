@@ -559,6 +559,90 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodReturnNamesOfAllFields() throws IOException {
+        Field singleField = TestClass1.class.getDeclaredFields()[0];
+        int expectedValue = 0;
+        String expectedResult = singleField.getName() + " = " + expectedValue;
+        
+//        String src =
+//            "class {\n" +
+//            "    fields=;\n" +
+//            "    \n" +
+//            "    +public String getDescription() {\n" +
+//            "        StringBuilder sb = new StringBuilder();\n" + // "new" not supported yet
+//            "        ${\n" +
+//            "            CodeAST statements = #{};\n" +
+//            "            while(i < fields.size()) {\n" +
+//            "                FieldNode f = fields.get(i);\n" +
+//            "                statements = statements + #sb.append($f.name);\n" +
+//            "                i = i + 1;\n" +
+//            "            }\n" +
+//            "        }\n" +
+//            "        $statements;\n" +
+//            "        return sb.toString();\n" +
+//            "    }\n" +
+//            "}\n";
+        
+        String src =
+            "class {\n" +
+            "    fields=;\n" +
+            "    \n" +
+            "    +public String getDescription() ${\n" +
+            "        jasy.lang.ast.CodeAST statements = #{};\n" +
+            "        int i = 0;\n" +
+            "        while(i < fields.size()) {\n" +
+            "            FieldNode f = fields.get(i);\n" +
+            "            if(i > 0)\n" +
+            "                statements = statements + #sb.append(\", \");\n" +
+            "            statements = statements + #sb.append(($f.name) + \" = \" + (:$f.name));\n" +
+            "            i = i + 1;\n" +
+            "        }\n" +
+            "        return #{\n" +
+            "            StringBuilder sb = new StringBuilder();\n" +
+            "            $statements;\n" +
+            "            return sb.toString();\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+        
+//        String src =
+//            "class {\n" +
+//            "    fields=;\n" +
+//            "    \n" +
+//            "    +public int getDescription() ${\n" +
+//            "        int i = 0;\n" +
+//            "        while(i < 10) {\n" +
+//            "            i = i + 1;\n" +
+//            "        }\n" +
+//            "        return #return $i;\n" +
+//            "    }\n" +
+//            "}\n";
+        
+//        String src =
+//            "class {\n" +
+//            "    fields=;\n" +
+//            "    \n" +
+//            "    +public int getDescription() ${\n" +
+//            "        int i = 0;\n" +
+//            "        if(i > 1) {\n" +
+//            "            i = i + 1;\n" +
+//            "        } else {\n" +
+//            "            i = i - 1;\n" +
+//            "        }\n" +
+//            "        return #return $i;\n" +
+//            "    }\n" +
+//            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass2"}, 
+            src, 
+            forClass("jasy.TestClass2", 
+                forInstance(imethod("getDescription", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodReturnNameAndValueOfFirstField() throws IOException {
         Field singleField = TestClass1.class.getDeclaredFields()[0];
         int expectedValue = 0;
@@ -1110,7 +1194,7 @@ public class SourceToClassTest {
         return (i, m) -> {
             try {
                 Object result = m.invoke(i, args);
-                System.out.println("Invocation result: " + result);
+                System.out.println("Invocation result:\n" + result);
                 return predicate.test(result);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
