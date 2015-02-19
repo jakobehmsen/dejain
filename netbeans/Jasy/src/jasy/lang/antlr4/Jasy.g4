@@ -22,7 +22,9 @@ block: OPEN_BRA statements CLOSE_BRA;
 parameters: (parameter (COMMA parameter)*)?;
 parameter: typeQualifier identifier;
 expression: variableAssignment;
-variableAssignment: identifier ASSIGN_OP value=variableAssignment | equalityExpression;
+variableAssignment: identifier assignmentOperator value=variableAssignment | equalityExpression;
+assignmentOperator: 
+    operator=(ASSIGN_OP | ASSIGN_ADD | ASSIGN_SUB | ASSIGN_MULT | ASSIGN_DIV);
 equalityExpression: first=relationalExpression (equalityOperator rest=relationalExpression)*;
 equalityOperator: operator=(EQUALS | NOT_EQUALS);
 relationalExpression: 
@@ -108,6 +110,10 @@ GTE: '>=';
 EQUALS: '==';
 NOT_EQUALS: '!=';
 ASSIGN_OP: '=';
+ASSIGN_ADD: '+=';
+ASSIGN_SUB: '-=';
+ASSIGN_MULT: '*=';
+ASSIGN_DIV: '/=';
 REPLACE_OP: '=>';
 KW_THIS_RESULT: 'thisResult';
 KW_NEW: 'new';

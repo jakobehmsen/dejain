@@ -33,6 +33,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitNonDelimitedStatement(@NotNull JasyParser.NonDelimitedStatementContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#assignmentOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignmentOperator(@NotNull JasyParser.AssignmentOperatorContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#annotations}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
