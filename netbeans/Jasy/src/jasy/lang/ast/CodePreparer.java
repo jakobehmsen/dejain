@@ -282,7 +282,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
     public PreparedAST visitIfElse(IfElseAST ctx) {
         PreparedExpressionAST condition = MethodAST.toExpression(thisClass, ctx.condition, parameters, variables);
         PreparedAST ifTrueBody = ctx.ifTrueBody.accept(this);
-        PreparedAST ifFalseBody = ctx.ifFalseBody.accept(this);
+        PreparedAST ifFalseBody = ctx.ifFalseBody != null ? ctx.ifFalseBody.accept(this) : null;
         
         return new PreparedAST() {
             @Override
@@ -290,9 +290,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 //                Label end = new Label();
 //                Label ifFalseBodyStart = end;
                 
-                boolean hasFalseBody = !((BlockAST)ctx.ifFalseBody).statements.isEmpty();
-                
-                if(!hasFalseBody) {
+                if(ctx.ifFalseBody == null) {
                     Label end = new Label();
                     condition.generate(c, generator, originalIl, end);
                     ifTrueBody.generate(c, generator, originalIl);

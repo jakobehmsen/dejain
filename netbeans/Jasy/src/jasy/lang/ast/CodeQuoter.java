@@ -225,7 +225,7 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
     public ExpressionAST visitIfElse(IfElseAST ctx) {
         ExpressionAST quotedCondition = ctx.condition.accept(this);
         ExpressionAST quotedIfTrueBody = ctx.ifTrueBody.accept(this);
-        ExpressionAST quotedIfFalseBody = ctx.ifFalseBody.accept(this);
+        ExpressionAST quotedIfFalseBody = ctx.ifFalseBody != null ? ctx.ifFalseBody.accept(this) : new NullAST(null);
         
         return new NewAST(
             ctx.getRegion(), 

@@ -20,7 +20,8 @@ public class IfElseAST extends AbstractAST implements CodeAST {
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         condition.resolve(thisClass, expectedResultType, resolver, errorMessages);
         ifTrueBody.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        ifFalseBody.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        if(ifFalseBody != null)
+            ifFalseBody.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
     @Override

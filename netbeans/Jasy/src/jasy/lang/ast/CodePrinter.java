@@ -286,8 +286,10 @@ public class CodePrinter implements CodeVisitor<Object> {
         ctx.condition.accept(this);
         print(")");
         ctx.ifTrueBody.accept(this);
-        print(" else ");
-        ctx.ifFalseBody.accept(this);
+        if(ctx.ifFalseBody != null) {
+            print(" else ");
+            ctx.ifFalseBody.accept(this);
+        }
         return null;
     }
 }

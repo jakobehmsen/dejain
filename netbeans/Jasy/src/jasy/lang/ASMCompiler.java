@@ -320,8 +320,7 @@ public class ASMCompiler {
                 ExpressionAST condition = getExpression(ctx.condition, mp);
                 CodeAST ifTrueBody = getBody(ctx.ifTrueBlock);
                 CodeAST ifFalseBody = ctx.ifFalseBlock != null
-                    ? getBody(ctx.ifFalseBlock)
-                    : new BlockAST(new Region(new Position(ctx.ifTrueBlock.stop), new Position(ctx.ifTrueBlock.stop)), Collections.emptyList());
+                    ? getBody(ctx.ifFalseBlock) : null;
                 
                 return new IfElseAST(new Region(ctx), condition, ifTrueBody, ifFalseBody);
             }
