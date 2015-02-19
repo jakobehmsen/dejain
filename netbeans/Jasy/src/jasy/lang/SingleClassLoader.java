@@ -11,7 +11,7 @@ public class SingleClassLoader extends ClassLoader {
     }
     
     public Class<?> loadClass() {
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
         classNode.accept(classWriter);
         
         byte[] bytes = classWriter.toByteArray();
