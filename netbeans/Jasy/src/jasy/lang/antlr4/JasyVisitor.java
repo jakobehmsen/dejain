@@ -33,6 +33,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitNonDelimitedStatement(@NotNull JasyParser.NonDelimitedStatementContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#unaryPrefixExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnaryPrefixExpression(@NotNull JasyParser.UnaryPrefixExpressionContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#assignmentOperator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -45,6 +52,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAnnotations(@NotNull JasyParser.AnnotationsContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#unaryPostfixExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnaryPostfixExpression(@NotNull JasyParser.UnaryPostfixExpressionContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#program}.
@@ -229,6 +243,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitQuotedExpression(@NotNull JasyParser.QuotedExpressionContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#unaryPrefixOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnaryPrefixOperator(@NotNull JasyParser.UnaryPrefixOperatorContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#literal}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -402,6 +423,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitEqualityOperator(@NotNull JasyParser.EqualityOperatorContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#unaryPostfixOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnaryPostfixOperator(@NotNull JasyParser.UnaryPostfixOperatorContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#modStatic}.

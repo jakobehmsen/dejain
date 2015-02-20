@@ -32,8 +32,13 @@ relationalExpression:
 relationalOperator: operator=(LT | LTE | GT | GTE);
 additiveExpression: first=multiplicativeExpression (additiveOperator rest=multiplicativeExpression)*;
 additiveOperator: operator=(PLUS | MINUS);
-multiplicativeExpression: first=leafExpression (multiplicativeOperator rest=leafExpression)*;
+multiplicativeExpression: first=unaryPrefixExpression (multiplicativeOperator rest=unaryPrefixExpression)*;
 multiplicativeOperator: operator=(MULT | DIV);
+unaryPrefixExpression: 
+    (unaryPrefixOperator operand=unaryPrefixExpression) | unaryPostfixExpression;
+unaryPrefixOperator: operator=(INC | DEC | PLUS | MINUS | TILDE | EXCLA);
+unaryPostfixExpression: leafExpression unaryPostfixOperator?;
+unaryPostfixOperator: operator=(INC | DEC);
 leafExpression: 
     (invocation | literal | lookup | thisResult | proceedStatement | 
     metaExpression | quotedExpression | newExpression | 
@@ -106,6 +111,10 @@ OPEN_PAR: '(';
 CLOSE_PAR: ')';
 HAT: '^';
 AT: '@';
+INC: '++';
+DEC: '--';
+TILDE: '~';
+EXCLA: '!';
 DOLLAR: '$';
 HASH: '#';
 PLUS: '+';
@@ -152,7 +161,7 @@ ID: (LETTER | '_') (LETTER | '_' | DIGIT)*;
 OPEN_BRA: '{';
 CLOSE_BRA: '}';
 INTEGER: DIGIT+;
-LONG: DIGIT+ 'L';
+LONG: DIGIT+ ('L' | 'l');
 STRING: '"' (EscapeSequence | ~[\\"])* '"';
 fragment HexDigit: [0-9a-fA-F];
 fragment EscapeSequence: '\\' [btnfr"'\\] | UnicodeEscape | OctalEscape;
