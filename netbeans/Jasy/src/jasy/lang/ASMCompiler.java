@@ -33,6 +33,7 @@ import jasy.lang.ast.CodePrinter;
 import jasy.lang.ast.RootExpressionAST;
 import jasy.lang.ast.FieldGetAST;
 import jasy.lang.ast.IfElseAST;
+import jasy.lang.ast.IncDecExpression;
 import jasy.lang.ast.InjectAST;
 import jasy.lang.ast.IntLiteralAST;
 import jasy.lang.ast.InvocationAST;
@@ -50,6 +51,7 @@ import jasy.lang.ast.StatementFlattener;
 import jasy.lang.ast.StatementProcessor;
 import jasy.lang.ast.StringLiteralAST;
 import jasy.lang.ast.TypeAST;
+import jasy.lang.ast.UnaryExpression;
 import jasy.lang.ast.VariableAssignmentAST;
 import jasy.lang.ast.VariableDeclarationAST;
 import jasy.lang.ast.WhileAST;
@@ -507,7 +509,7 @@ public class ASMCompiler {
 
             @Override
             public ExpressionAST visitMultiplicativeExpression(JasyParser.MultiplicativeExpressionContext ctx) {
-                return parseBinaryExpressionRule(ctx.first, ctx.leafExpression(), ctx.multiplicativeOperator(), multiplicativeOperator -> {
+                return parseBinaryExpressionRule(ctx.first, ctx.unaryPrefixExpression(), ctx.multiplicativeOperator(), multiplicativeOperator -> {
                     switch(multiplicativeOperator.operator.getType()) {
                         case JasyLexer.MULT:
                             return BinaryExpressionAST.OPERATOR_MULT;
@@ -517,6 +519,71 @@ public class ASMCompiler {
                             return -1;
                     }
                 });
+            }
+
+            @Override
+            public ExpressionAST visitUnaryPrefixExpression(JasyParser.UnaryPrefixExpressionContext ctx) {
+                if(ctx.unaryPrefixOperator() != null) {
+                    int operatorType = ctx.unaryPrefixOperator().operator.getType();
+                    ExpressionAST operand = ctx.operand.accept(this);
+                    
+                    switch(operatorType) {
+                        case JasyLexer.INC: 
+                        case JasyLexer.DEC: {
+                            int operator;
+                            
+                            switch(operatorType) {
+                            case JasyLexer.INC: 
+                                operator = IncDecExpression.OPERATOR_INC;
+                                break;
+                            case JasyLexer.DEC: 
+                                operator = IncDecExpression.OPERATOR_DEC;
+                                break;
+                            default:
+                                operator = -1;
+                            }
+                            
+                            return new IncDecExpression(null, IncDecExpression.TIMING_PRE, operator, operand);
+                        } case JasyLexer.PLUS:
+                        case JasyLexer.MINUS:
+                        case JasyLexer.TILDE:
+                        case JasyLexer.EXCLA: {
+                            int operator;
+                            
+                            switch(operatorType) {
+                            case JasyLexer.PLUS: 
+                                operator = UnaryExpression.OPERATOR_SIGN_POS;
+                                break;
+                            case JasyLexer.MINUS: 
+                                operator = UnaryExpression.OPERATOR_SIGN_NEG;
+                                break;
+                            case JasyLexer.TILDE: 
+                                operator = UnaryExpression.OPERATOR_BIN_COMP;
+                                break;
+                            case JasyLexer.EXCLA: 
+                                operator = UnaryExpression.OPERATOR_LOG_COMP;
+                                break;
+                            default:
+                                operator = -1;
+                            }
+                            
+                            return new UnaryExpression(new Region(ctx), operator, operand);
+                        }
+                    }
+                }
+                
+                return ctx.getChild(0).accept(this);
+            }
+
+            @Override
+            public ExpressionAST visitUnaryPostfixExpression(JasyParser.UnaryPostfixExpressionContext ctx) {
+                ExpressionAST expression = ctx.leafExpression().accept(this);
+                
+                if(ctx.unaryPostfixOperator() != null) {
+                    
+                }
+                
+                return expression;
             }
             
             @Override
