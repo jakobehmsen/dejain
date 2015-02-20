@@ -988,7 +988,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 if(ctx.timing == IncDecExpression.TIMING_PRE)
                     generateOperation(generator, varId);
                 
-                generator.methodNode.loadLocal(varId);
+                if(asExpression)
+                    generator.methodNode.loadLocal(varId);
                 
                 if(ctx.timing == IncDecExpression.TIMING_POST)
                     generateOperation(generator, varId);
