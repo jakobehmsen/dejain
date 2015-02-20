@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static jasy.Assertion.*;
+import static jasy.TemplateSource.*;
 import jasy.lang.ASMCompiler;
 import jasy.lang.ASMCompiler.Message;
 import jasy.lang.ClassResolver;
@@ -31,10 +32,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
@@ -845,7 +851,7 @@ public class SourceToClassTest {
             "    \n" +
             "    +public String getDescription() ${\n" +
             "        CodeAST statements = #{};\n" +
-            "        for(int i = 0; i < fields.size(); i += 1) {\n" +
+            "        for(int i = 0; i < fields.size(); i++) {\n" +
             "            FieldNode f = fields.get(i);\n" +
             "            if(i > 0)\n" +
             "                statements += #sb.append(\", \");\n" +
@@ -1160,61 +1166,83 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodWithWhileCountingToX() throws IOException {
+    public void testAllClassesAddMethodWithWhileCounting() throws IOException {
         int counterStart = 0;
         int counterEnd = 10;
         int valueStart = 0;
         int valueIncrement = 6;
         int expectedResult = valueStart + (counterEnd - counterStart) * valueIncrement;
         
-        String src =
+        String templaceSrc =
             "class {\n" +
             "    +public int getValue() {\n" +
-            "        int i = " + counterStart + ";\n" +
+            "        int i = <<init>>;\n" +
             "        int value = " + valueStart + ";\n" +
-            "        while(i < " + counterEnd + ") {\n" +
-            "           value = value + " + valueIncrement + ";\n" +
-            "           i = i + 1;\n" +
+            "        while(<<cond>>) {\n" +
+            "           value += " + valueIncrement + ";\n" +
+            "           <<inc>>;\n" +
             "        }\n" +
             "        return value;\n" +
             "    }\n" +
             "}\n";
         
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
-            )
-        );
+        combine(templaceSrc, 
+            map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "i++")),
+            map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "++i")),
+            map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "i--")),
+            map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "--i"))
+        ).forEach(src -> {
+            try {
+                testSourceToClasses(
+                    new String[]{"jasy.TestClass1"},
+                    src,
+                    forClass("jasy.TestClass1",
+                        forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+                    )
+                );
+            } catch (IOException ex) {
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
     
     @Test
-    public void testAllClassesAddMethodWithForCountingToX() throws IOException {
+    public void testAllClassesAddMethodWithForCounting() throws IOException {
         int counterStart = 0;
         int counterEnd = 10;
         int valueStart = 0;
         int valueIncrement = 6;
         int expectedResult = valueStart + (counterEnd - counterStart) * valueIncrement;
         
-        String src =
+        String templaceSrc =
             "class {\n" +
             "    +public int getValue() {\n" +
             "        int value = " + valueStart + ";\n" +
-            "        for(int i = " + counterStart + "; i < " + counterEnd + "; i += 1) {\n" +
+            "        for(int i = <<init>>; <<cond>>; <<inc>>) {\n" +
             "           value += " + valueIncrement + ";\n" +
             "        }\n" +
             "        return value;\n" +
             "    }\n" +
             "}\n";
         
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getValue", invocationResult(is(expectedResult))))
-            )
-        );
+        combine(templaceSrc, 
+            map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "i++")),
+            map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "++i")),
+            map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "i--")),
+            map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "--i"))
+        ).forEach(src -> {
+            try {
+                testSourceToClasses(
+                    new String[]{"jasy.TestClass1"},
+                    src,
+                    forClass("jasy.TestClass1",
+                        forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+                    )
+                );
+            } catch (IOException ex) {
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
     
     @Test
