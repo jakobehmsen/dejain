@@ -580,7 +580,22 @@ public class ASMCompiler {
                 ExpressionAST expression = ctx.leafExpression().accept(this);
                 
                 if(ctx.unaryPostfixOperator() != null) {
-                    
+                    ExpressionAST operand = expression;
+                    int operatorType = ctx.unaryPostfixOperator().operator.getType();
+                    int operator;
+                            
+                    switch(operatorType) {
+                    case JasyLexer.INC: 
+                        operator = IncDecExpression.OPERATOR_INC;
+                        break;
+                    case JasyLexer.DEC: 
+                        operator = IncDecExpression.OPERATOR_DEC;
+                        break;
+                    default:
+                        operator = -1;
+                    }
+
+                    return new IncDecExpression(null, IncDecExpression.TIMING_POST, operator, operand);
                 }
                 
                 return expression;
