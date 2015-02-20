@@ -615,6 +615,54 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodWithPrefixIntInc() throws IOException {
+        int i = 0;
+        int j = ++i;
+        int expectedResult = i + j;
+        
+        String src =
+            "class {\n" +
+            "    +public int getInt() {\n" +
+            "        int i = 0;\n" +
+            "        int j = ++i;\n" +
+            "        return i + j;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getInt", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithPrefixLongInc() throws IOException {
+        long i = 0;
+        long j = ++i;
+        long expectedResult = i + j;
+        
+        String src =
+            "class {\n" +
+            "    +public long getLong() {\n" +
+            "        long i = 0L;\n" +
+            "        long j = ++i;\n" +
+            "        return i + j;\n" +
+            "    }\n" +
+            "}\n";
+        
+        testSourceToClasses(
+            new String[]{"jasy.TestClass1"}, 
+            src, 
+            forClass("jasy.TestClass1", 
+                forInstance(imethod("getLong", invocationResult(is(expectedResult))))
+            )
+        );
+    }
+    
+    @Test
     public void testAllClassesAddMethodWithNewWithArguments() throws IOException {
         String expectedResult = "Some text";
         
