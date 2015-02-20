@@ -575,27 +575,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
                 @Override
                 public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
-                    int ordinal = generator.getVariableIndex(name);
-                    switch (resultType.getSimpleName()) {
-                        case "boolean":
-                        case "byte":
-                        case "short":
-                        case "int":
-                            generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
-                            break;
-                        case "long":
-                            generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
-                            break;
-                        case "float":
-                            generator.methodNode.visitVarInsn(Opcodes.FLOAD, ordinal);
-                            break;
-                        case "double":
-                            generator.methodNode.visitVarInsn(Opcodes.DLOAD, ordinal);
-                            break;
-                        default:
-                            generator.methodNode.visitVarInsn(Opcodes.ALOAD, ordinal);
-                            break;
-                    }
+                    int varId = generator.getVariableId(name);
+                    generator.methodNode.loadLocal(varId);
                 }
             };
         } else {
@@ -618,9 +599,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 if (asExpression) {
                     generator.methodNode.dup();
                 }
-                int index = generator.getVariableIndex(ctx.name);
+                int varId = generator.getVariableId(ctx.name);
                 TypeAST type = generator.getVariableType(ctx.name);
-                MethodAST.appendStore(generator, index, type);
+                generator.methodNode.storeLocal(varId);
             }
         };
     }
@@ -965,20 +946,20 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 return resultType;
             }
             
-            private void generateOperation(MethodCodeGenerator generator, int ordinal) {
+            private void generateOperation(MethodCodeGenerator generator, int varId) {
                 switch(ctx.operator) {
                     case IncDecExpression.OPERATOR_INC:
                         switch(resultType.getSimpleName()) {
                             case "byte":
                             case "short":
                             case "int":
-                                generator.methodNode.visitIincInsn(ordinal, 1);
+                                generator.methodNode.iinc(varId, 1);
                                 break;
                             case "long":
-                                generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
+                                generator.methodNode.loadLocal(varId);
                                 generator.methodNode.push((long)1);
                                 generator.methodNode.visitInsn(Opcodes.LADD);
-                                generator.methodNode.visitVarInsn(Opcodes.LSTORE, ordinal);
+                                generator.methodNode.storeLocal(varId);
                                 break;
                         }
                         break;
@@ -987,13 +968,13 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                             case "byte":
                             case "short":
                             case "int":
-                                generator.methodNode.visitIincInsn(ordinal, -1);
+                                generator.methodNode.iinc(varId, -1);
                                 break;
                             case "long":
-                                generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
+                                generator.methodNode.loadLocal(varId);
                                 generator.methodNode.push((long)1);
                                 generator.methodNode.visitInsn(Opcodes.LSUB);
-                                generator.methodNode.visitVarInsn(Opcodes.LSTORE, ordinal);
+                                generator.methodNode.storeLocal(varId);
                                 break;
                         }
                         break;
@@ -1002,26 +983,15 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
-                int ordinal = generator.getVariableIndex(variableName);
+                int varId = generator.getVariableId(variableName);
                 
                 if(ctx.timing == IncDecExpression.TIMING_PRE)
-                    generateOperation(generator, ordinal);
+                    generateOperation(generator, varId);
                 
-//                generator.methodNode.loadLocal(ordinal);
-                
-                switch(resultType.getSimpleName()) {
-                    case "byte":
-                    case "short":
-                    case "int":
-                        generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
-                        break;
-                    case "long":
-                        generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
-                        break;
-                }
+                generator.methodNode.loadLocal(varId);
                 
                 if(ctx.timing == IncDecExpression.TIMING_POST)
-                    generateOperation(generator, ordinal);
+                    generateOperation(generator, varId);
             }
         };
     }

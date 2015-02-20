@@ -38,10 +38,10 @@ public class MethodCodeGenerator {
         return index;
     }
 
-    public int getVariableIndex(String name) {
+    public int getVariableId(String name) {
         return localNameToIndexMap.get(name).index;
     }
-
+    
     private boolean isVariable(String name) {
         return localNameToIndexMap.containsKey(name);
     }

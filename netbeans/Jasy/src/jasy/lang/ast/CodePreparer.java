@@ -156,10 +156,10 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
         return new PreparedAST() {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
-                int ordinal = generator.declareVariable(ctx.name, ctx.type.getDescriptor(), ctx.type);
+                int varId = generator.declareVariable(ctx.name, ctx.type.getDescriptor(), ctx.type);
                 if (value != null) {
                     value.generate(c, generator, originalIl);
-                    MethodAST.appendStore(generator, ordinal, ctx.type);
+                    generator.methodNode.storeLocal(varId);
                 }
             }
         };
