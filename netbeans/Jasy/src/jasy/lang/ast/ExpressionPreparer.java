@@ -131,13 +131,19 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     resultType = null;
                     break;
             }
-        } else if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int")) {
+        } else if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int") || 
+                lhsTmp.resultType().getSimpleName().equals("long") && rhsTmp.resultType().getSimpleName().equals("long")) {
             switch (ctx.operator) {
                 case BinaryExpressionAST.OPERATOR_ADD:
                 case BinaryExpressionAST.OPERATOR_SUB:
                 case BinaryExpressionAST.OPERATOR_MULT:
                 case BinaryExpressionAST.OPERATOR_DIV:
-                    resultType = new NameTypeAST(ctx.getRegion(), int.class);
+                    if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int"))
+                        resultType = new NameTypeAST(ctx.getRegion(), int.class);
+                    else if (lhsTmp.resultType().getSimpleName().equals("long") && rhsTmp.resultType().getSimpleName().equals("long"))
+                        resultType = new NameTypeAST(ctx.getRegion(), long.class);
+                    else
+                        resultType = null;
                     break;
                 case BinaryExpressionAST.OPERATOR_LT:
                 case BinaryExpressionAST.OPERATOR_LTE:
@@ -538,8 +544,20 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                     int ordinal = parameters.get(name).index;
                     switch (resultType.getSimpleName()) {
+                        case "boolean":
+                        case "byte":
+                        case "short":
                         case "int":
                             generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
+                            break;
+                        case "long":
+                            generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
+                            break;
+                        case "float":
+                            generator.methodNode.visitVarInsn(Opcodes.FLOAD, ordinal);
+                            break;
+                        case "double":
+                            generator.methodNode.visitVarInsn(Opcodes.DLOAD, ordinal);
                             break;
                         default:
                             generator.methodNode.visitVarInsn(Opcodes.ALOAD, ordinal);
@@ -559,8 +577,20 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                     int ordinal = generator.getVariableIndex(name);
                     switch (resultType.getSimpleName()) {
+                        case "boolean":
+                        case "byte":
+                        case "short":
                         case "int":
                             generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
+                            break;
+                        case "long":
+                            generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
+                            break;
+                        case "float":
+                            generator.methodNode.visitVarInsn(Opcodes.FLOAD, ordinal);
+                            break;
+                        case "double":
+                            generator.methodNode.visitVarInsn(Opcodes.DLOAD, ordinal);
                             break;
                         default:
                             generator.methodNode.visitVarInsn(Opcodes.ALOAD, ordinal);
@@ -841,6 +871,157 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 if(ifFalseLabel != null) {
                     generator.methodNode.ifZCmp(GeneratorAdapter.EQ, ifFalseLabel);
                 }
+            }
+        };
+    }
+
+    @Override
+    public PreparedExpressionAST visitUnary(UnaryExpression ctx) {
+        PreparedExpressionAST operand = ctx.operand.accept(this);
+        
+        TypeAST resultType = operand.resultType();
+        
+        return new PreparedExpressionAST() {
+            @Override
+            public TypeAST resultType() {
+                return resultType;
+            }
+
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
+                operand.generate(c, generator, originalIl, ifFalseLabel);
+                
+                switch(ctx.operator) {
+                    case UnaryExpression.OPERATOR_SIGN_POS:
+                        break;
+                    case UnaryExpression.OPERATOR_SIGN_NEG:
+                        generator.methodNode.math(GeneratorAdapter.NEG, Type.getType(resultType.getDescriptor()));
+//                        switch(resultType.getSimpleName()) {
+//                            case "byte":
+//                            case "short":
+//                            case "int":
+//                                generator.methodNode.visitInsn(Opcodes.INEG);
+//                                break;
+//                            case "long":
+//                                generator.methodNode.visitInsn(Opcodes.LNEG);
+//                                break;
+//                            case "float":
+//                                generator.methodNode.visitInsn(Opcodes.FNEG);
+//                                break;
+//                            case "double":
+//                                generator.methodNode.visitInsn(Opcodes.DNEG);
+//                                break;
+//                        }
+                        
+                        break;
+                    case UnaryExpression.OPERATOR_BIN_COMP:
+                        switch(resultType.getSimpleName()) {
+                            case "byte":
+                            case "short":
+                            case "int":
+                                generator.methodNode.push(-1);
+                                generator.methodNode.visitInsn(Opcodes.IXOR);
+                                break;
+                            case "long":
+                                generator.methodNode.push((long)-1);
+                                generator.methodNode.visitInsn(Opcodes.LXOR);
+                                break;
+                        }
+                        
+                        break;
+                    case UnaryExpression.OPERATOR_LOG_COMP:
+                        switch(resultType.getSimpleName()) {
+                            case "boolean":
+                                if(ifFalseLabel != null) {
+                                    generator.methodNode.ifZCmp(GeneratorAdapter.NE, ifFalseLabel);
+                                } else {
+                                    ifFalseLabel = new Label();
+                                    Label end = new Label();
+                                    generator.methodNode.ifZCmp(GeneratorAdapter.NE, ifFalseLabel);
+                                    generator.methodNode.push(true);
+                                    generator.methodNode.goTo(end);
+                                    generator.methodNode.visitLabel(ifFalseLabel);
+                                    generator.methodNode.push(false);
+                                    generator.methodNode.visitLabel(end);
+                                }
+                                
+                                break;
+                        }
+                        
+                        break;
+                }
+            }
+        };
+    }
+
+    @Override
+    public PreparedExpressionAST visitIncDec(IncDecExpression ctx) {
+        String variableName = ((StringLiteralAST)((LookupAST)ctx.operand).name).value;
+        TypeAST resultType = variables.get(variableName);
+        
+        return new PreparedExpressionAST() {
+            @Override
+            public TypeAST resultType() {
+                return resultType;
+            }
+            
+            private void generateOperation(MethodCodeGenerator generator, int ordinal) {
+                switch(ctx.operator) {
+                    case IncDecExpression.OPERATOR_INC:
+                        switch(resultType.getSimpleName()) {
+                            case "byte":
+                            case "short":
+                            case "int":
+                                generator.methodNode.visitIincInsn(ordinal, 1);
+                                break;
+                            case "long":
+                                generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
+                                generator.methodNode.push((long)1);
+                                generator.methodNode.visitInsn(Opcodes.LADD);
+                                generator.methodNode.visitVarInsn(Opcodes.LSTORE, ordinal);
+                                break;
+                        }
+                        break;
+                    case IncDecExpression.OPERATOR_DEC:
+                        switch(resultType.getSimpleName()) {
+                            case "byte":
+                            case "short":
+                            case "int":
+                                generator.methodNode.visitIincInsn(ordinal, -1);
+                                break;
+                            case "long":
+                                generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
+                                generator.methodNode.push((long)1);
+                                generator.methodNode.visitInsn(Opcodes.LSUB);
+                                generator.methodNode.visitVarInsn(Opcodes.LSTORE, ordinal);
+                                break;
+                        }
+                        break;
+                }
+            }
+
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
+                int ordinal = generator.getVariableIndex(variableName);
+                
+                if(ctx.timing == IncDecExpression.TIMING_PRE)
+                    generateOperation(generator, ordinal);
+                
+//                generator.methodNode.loadLocal(ordinal);
+                
+                switch(resultType.getSimpleName()) {
+                    case "byte":
+                    case "short":
+                    case "int":
+                        generator.methodNode.visitVarInsn(Opcodes.ILOAD, ordinal);
+                        break;
+                    case "long":
+                        generator.methodNode.visitVarInsn(Opcodes.LLOAD, ordinal);
+                        break;
+                }
+                
+                if(ctx.timing == IncDecExpression.TIMING_POST)
+                    generateOperation(generator, ordinal);
             }
         };
     }

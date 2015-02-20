@@ -212,8 +212,20 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
     public static void appendStore(MethodCodeGenerator generator, int ordinal, TypeAST type) {
         switch(type.getSimpleName()) {
+            case "boolean":
+            case "byte":
+            case "short":
             case "int":
                 generator.methodNode.visitVarInsn(Opcodes.ISTORE, ordinal);
+                break;
+            case "long":
+                generator.methodNode.visitVarInsn(Opcodes.LSTORE, ordinal);
+                break;
+            case "float":
+                generator.methodNode.visitVarInsn(Opcodes.FSTORE, ordinal);
+                break;
+            case "double":
+                generator.methodNode.visitVarInsn(Opcodes.DSTORE, ordinal);
                 break;
             default:
                 generator.methodNode.visitVarInsn(Opcodes.ASTORE, ordinal);

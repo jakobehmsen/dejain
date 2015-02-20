@@ -246,4 +246,14 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
             Arrays.asList(new NullAST(null), quotedCondition, quotedIfTrueBody, quotedIfFalseBody)
         );
     }
+
+    @Override
+    public ExpressionAST visitUnary(UnaryExpression ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ExpressionAST visitIncDec(IncDecExpression ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

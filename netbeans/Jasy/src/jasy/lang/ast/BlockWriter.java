@@ -159,5 +159,15 @@ public class BlockWriter implements CodeVisitor<Object> {
         statements.add(ctx);
         return null;
     }
+
+    @Override
+    public Object visitUnary(UnaryExpression ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object visitIncDec(IncDecExpression ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

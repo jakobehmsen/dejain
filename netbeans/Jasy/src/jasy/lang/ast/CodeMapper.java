@@ -162,4 +162,14 @@ public class CodeMapper implements CodeVisitor<CodeAST> {
     public CodeAST visitIfElse(IfElseAST ctx) {
         return new IfElseAST(ctx.getRegion(), getExpression(ctx.condition), getStatement(ctx.ifTrueBody), getStatement(ctx.ifFalseBody));
     }
+
+    @Override
+    public CodeAST visitUnary(UnaryExpression ctx) {
+        return new UnaryExpression(ctx.getRegion(), ctx.operator, getExpression(ctx.operand));
+    }
+
+    @Override
+    public CodeAST visitIncDec(IncDecExpression ctx) {
+        return new IncDecExpression(ctx.getRegion(), ctx.timing, ctx.operator, getExpression(ctx.operand));
+    }
 }

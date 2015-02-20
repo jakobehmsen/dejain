@@ -2,7 +2,6 @@ package jasy.lang.ast;
 
 import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -290,6 +289,23 @@ public class CodePrinter implements CodeVisitor<Object> {
             print(" else ");
             ctx.ifFalseBody.accept(this);
         }
+        return null;
+    }
+
+    @Override
+    public Object visitUnary(UnaryExpression ctx) {
+        print(ctx.getOperatorText());
+        ctx.operand.accept(this);
+        return null;
+    }
+
+    @Override
+    public Object visitIncDec(IncDecExpression ctx) {
+        if(ctx.timing == IncDecExpression.TIMING_PRE)
+            print(ctx.getOperatorText());
+        ctx.operand.accept(this);
+        if(ctx.timing == IncDecExpression.TIMING_POST)
+            print(ctx.getOperatorText());
         return null;
     }
 }

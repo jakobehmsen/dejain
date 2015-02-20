@@ -233,4 +233,26 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
             Arrays.asList(new NullAST(null), quotedCondition, quotedIfTrueBody, quotedIfFalseBody)
         );
     }
+
+    @Override
+    public ExpressionAST visitUnary(UnaryExpression ctx) {
+        ExpressionAST quotedOperand = ctx.operand.accept(this);
+        
+        return new NewAST(
+            ctx.getRegion(), 
+            new NameTypeAST(null, UnaryExpression.class), 
+            Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.operator), quotedOperand)
+        );
+    }
+
+    @Override
+    public ExpressionAST visitIncDec(IncDecExpression ctx) {
+        ExpressionAST quotedOperand = ctx.operand.accept(this);
+        
+        return new NewAST(
+            ctx.getRegion(), 
+            new NameTypeAST(null, IncDecExpression.class), 
+            Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.timing), new IntLiteralAST(null, ctx.operator), quotedOperand)
+        );
+    }
 }

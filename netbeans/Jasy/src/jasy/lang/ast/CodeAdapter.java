@@ -141,4 +141,14 @@ public class CodeAdapter<T> implements CodeVisitor<T> {
     public T visitIfElse(IfElseAST ctx) {
         return visitor.visitIfElse(ctx);
     }
+
+    @Override
+    public T visitUnary(UnaryExpression ctx) {
+        return visitor.visitUnary(ctx);
+    }
+
+    @Override
+    public T visitIncDec(IncDecExpression ctx) {
+        return visitor.visitIncDec(ctx);
+    }
 }
