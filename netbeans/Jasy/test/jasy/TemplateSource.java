@@ -5,10 +5,21 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TemplateSource {
-    public static List<String> combine(String templaceSrc, Map<String, String>... argumentMaps) {
-        ArrayList<String> srcs = new ArrayList<>();
+    public static class SourceCode {
+        public final Map<String, String> argumentMap;
+        public final String src;
+
+        public SourceCode(Map<String, String> argumentMap, String src) {
+            this.argumentMap = argumentMap;
+            this.src = src;
+        }
+    }
+    
+    public static List<SourceCode> combine(String templaceSrc, Map<String, String>... argumentMaps) {
+        ArrayList<SourceCode> srcs = new ArrayList<>();
         
         for(Map<String, String> argumentMap: argumentMaps) {
             String src = templaceSrc;
@@ -20,7 +31,7 @@ public class TemplateSource {
                 src = src.replace("<<" + name + ">>", value);
             }
             
-            srcs.add(src);
+            srcs.add(new SourceCode(argumentMap, src));
         }
         
         return srcs;

@@ -620,6 +620,59 @@ public class SourceToClassTest {
         );
     }
     
+    private static Number toNumber(long value, String type) {
+        switch(type) {
+            case "byte":
+                return (byte)value;
+            case "short":
+                return (short)value;
+            case "int":
+                return (int)value;
+            case "long":
+                return value;
+        }
+        
+        return null;
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithPrefixInc() throws IOException {
+        long i = 0;
+        long j = ++i;
+        long expectedResultBase = i + j;
+            
+        String templateSrc =
+            "class {\n" +
+            "    +public <<type>> get() {\n" +
+            "        <<type>> i = <<zero>>;\n" +
+            "        <<type>> j = ++i;\n" +
+            "        return i + j;\n" +
+            "    }\n" +
+            "}\n";
+        
+        combine(templateSrc,
+            map(entry("type", "byte"), entry("zero", "0")),
+            map(entry("type", "short"), entry("zero", "0")),
+            map(entry("type", "int"), entry("zero", "0")),
+            map(entry("type", "long"), entry("zero", "0L"))
+        ).forEach(combination -> {
+            try {
+                String type = combination.argumentMap.get("type");
+                Number expectedResult = toNumber(expectedResultBase, type);
+                
+                testSourceToClasses(
+                    new String[]{"jasy.TestClass1"},
+                    combination.src,
+                    forClass("jasy.TestClass1",
+                        forInstance(imethod("get", invocationResult(is(expectedResult))))
+                    )
+                );
+            } catch (IOException ex) {
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }
+    
     @Test
     public void testAllClassesAddMethodWithPrefixIntInc() throws IOException {
         int i = 0;
@@ -1191,11 +1244,11 @@ public class SourceToClassTest {
             map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "++i")),
             map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "i--")),
             map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "--i"))
-        ).forEach(src -> {
+        ).forEach(combination -> {
             try {
                 testSourceToClasses(
                     new String[]{"jasy.TestClass1"},
-                    src,
+                    combination.src,
                     forClass("jasy.TestClass1",
                         forInstance(imethod("getValue", invocationResult(is(expectedResult))))
                     )
@@ -1230,11 +1283,11 @@ public class SourceToClassTest {
             map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "++i")),
             map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "i--")),
             map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "--i"))
-        ).forEach(src -> {
+        ).forEach(combination -> {
             try {
                 testSourceToClasses(
                     new String[]{"jasy.TestClass1"},
-                    src,
+                    combination.src,
                     forClass("jasy.TestClass1",
                         forInstance(imethod("getValue", invocationResult(is(expectedResult))))
                     )

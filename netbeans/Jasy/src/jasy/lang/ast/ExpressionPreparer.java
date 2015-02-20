@@ -131,14 +131,20 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     resultType = null;
                     break;
             }
-        } else if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int") || 
+        } else if (lhsTmp.resultType().getSimpleName().equals("byte") && rhsTmp.resultType().getSimpleName().equals("byte") || 
+                lhsTmp.resultType().getSimpleName().equals("short") && rhsTmp.resultType().getSimpleName().equals("short") || 
+                lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int") || 
                 lhsTmp.resultType().getSimpleName().equals("long") && rhsTmp.resultType().getSimpleName().equals("long")) {
             switch (ctx.operator) {
                 case BinaryExpressionAST.OPERATOR_ADD:
                 case BinaryExpressionAST.OPERATOR_SUB:
                 case BinaryExpressionAST.OPERATOR_MULT:
                 case BinaryExpressionAST.OPERATOR_DIV:
-                    if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int"))
+                    if (lhsTmp.resultType().getSimpleName().equals("byte") && rhsTmp.resultType().getSimpleName().equals("byte"))
+                        resultType = new NameTypeAST(ctx.getRegion(), byte.class);
+                    else if (lhsTmp.resultType().getSimpleName().equals("short") && rhsTmp.resultType().getSimpleName().equals("short"))
+                        resultType = new NameTypeAST(ctx.getRegion(), short.class);
+                    else if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int"))
                         resultType = new NameTypeAST(ctx.getRegion(), int.class);
                     else if (lhsTmp.resultType().getSimpleName().equals("long") && rhsTmp.resultType().getSimpleName().equals("long"))
                         resultType = new NameTypeAST(ctx.getRegion(), long.class);
@@ -181,20 +187,29 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                                 case "CodeAST":
                                     generator.methodNode.invokeInterface(Type.getType("jasy/lang/ast/CodeAST"), new Method("concat", "(Ljasy/lang/ast/CodeAST;)Ljasy/lang/ast/CodeAST;"));
                                     break;
+//                                case "short":
+//                                    generator.methodNode.visitInsn(Opcodes.IADD);
+//                                    break;
+//                                case "int":
+//                                    generator.methodNode.visitInsn(Opcodes.IADD);
+//                                    break;
+//                                case "long":
+//                                    generator.methodNode.visitInsn(Opcodes.LADD);
+//                                    break;
+//                                case "float":
+//                                    generator.methodNode.visitInsn(Opcodes.FADD);
+//                                    break;
+//                                case "double":
+//                                    generator.methodNode.visitInsn(Opcodes.DADD);
+//                                    break;
+                                    
+                                case "byte":
                                 case "short":
-                                    generator.methodNode.visitInsn(Opcodes.IADD);
-                                    break;
                                 case "int":
-                                    generator.methodNode.visitInsn(Opcodes.IADD);
-                                    break;
                                 case "long":
-                                    generator.methodNode.visitInsn(Opcodes.LADD);
-                                    break;
                                 case "float":
-                                    generator.methodNode.visitInsn(Opcodes.FADD);
-                                    break;
                                 case "double":
-                                    generator.methodNode.visitInsn(Opcodes.DADD);
+                                    generator.methodNode.math(GeneratorAdapter.ADD, Type.getType(resultType().getDescriptor()));
                                     break;
                             }
                             break;
