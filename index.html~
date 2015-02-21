@@ -103,7 +103,7 @@ In some cases, it is practical to generate statements - perhaps even in a varyin
         StringBuilder sb = new StringBuilder();
 	
         $fields.map(s ->
-            #sb.append($f.name + " = " + $f.value);
+            #sb.append(($f.name) + " = " + ($f.value))
         );
 		
         return sb.toString();
