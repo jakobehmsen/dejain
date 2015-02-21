@@ -996,6 +996,18 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                                 generator.methodNode.visitInsn(Opcodes.LADD);
                                 generator.methodNode.storeLocal(varId);
                                 break;
+                            case "float":
+                                generator.methodNode.loadLocal(varId);
+                                generator.methodNode.push((float)1);
+                                generator.methodNode.visitInsn(Opcodes.FADD);
+                                generator.methodNode.storeLocal(varId);
+                                break;
+                            case "double":
+                                generator.methodNode.loadLocal(varId);
+                                generator.methodNode.push((double)1);
+                                generator.methodNode.visitInsn(Opcodes.DADD);
+                                generator.methodNode.storeLocal(varId);
+                                break;
                         }
                         break;
                     case IncDecExpression.OPERATOR_DEC:
@@ -1009,6 +1021,18 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                                 generator.methodNode.loadLocal(varId);
                                 generator.methodNode.push((long)1);
                                 generator.methodNode.visitInsn(Opcodes.LSUB);
+                                generator.methodNode.storeLocal(varId);
+                                break;
+                            case "float":
+                                generator.methodNode.loadLocal(varId);
+                                generator.methodNode.push((float)1);
+                                generator.methodNode.visitInsn(Opcodes.FSUB);
+                                generator.methodNode.storeLocal(varId);
+                                break;
+                            case "double":
+                                generator.methodNode.loadLocal(varId);
+                                generator.methodNode.push((double)1);
+                                generator.methodNode.visitInsn(Opcodes.DSUB);
                                 generator.methodNode.storeLocal(varId);
                                 break;
                         }
