@@ -641,233 +641,83 @@ public class SourceToClassTest {
     }
     
     @Test
-    public void testAllClassesAddMethodWithPrefixInc() throws IOException {
-        long i = 0;
+    public void testAllClassesAddMethodWithPrefixInc2() {
+        long start = 0;
+        
+        long i = start;
         long j = ++i;
         long expectedResultBase = i + j;
-            
-        String templateSrc =
-            "class {\n" +
-            "    +public <<type>> get() {\n" +
-            "        <<type>> i = <<zero>>;\n" +
-            "        <<type>> j = ++i;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
         
-        expand(templateSrc,
-            map(entry("type", "byte"), entry("zero", "0")),
-            map(entry("type", "short"), entry("zero", "0")),
-            map(entry("type", "int"), entry("zero", "0")),
-            map(entry("type", "long"), entry("zero", "0L"))
-        ).forEach(combination -> {
+        testAllClassesAddMethodWithIncDec(start, expectedResultBase, "++i");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithPostfixInc2() {
+        long start = 0;
+        
+        long i = start;
+        long j = i++;
+        long expectedResultBase = i + j;
+        
+        testAllClassesAddMethodWithIncDec(start, expectedResultBase, "i++");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithPrefixDec2() {
+        long start = 0;
+        
+        long i = start;
+        long j = --i;
+        long expectedResultBase = i + j;
+        
+        testAllClassesAddMethodWithIncDec(start, expectedResultBase, "--i");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithPostfixDec2() {
+        long start = 0;
+        
+        long i = start;
+        long j = i--;
+        long expectedResultBase = i + j;
+        
+        testAllClassesAddMethodWithIncDec(start, expectedResultBase, "i--");
+    }
+    
+    private static final String incDecTemplateSrcMethodName = "incDec";
+    private static final String incDecTemplateSrc =
+        "class {\n" +
+        "    +public <<type>> " + incDecTemplateSrcMethodName + "() {\n" +
+        "        <<type>> i = <<start>>;\n" +
+        "        <<type>> j = <<incDec>>;\n" +
+        "        return i + j;\n" +
+        "    }\n" +
+        "}\n";
+    
+    public void testAllClassesAddMethodWithIncDec(long start, long expectedResultBase, String incDec) {
+        SourceCode sourceCodeBase = 
+            TemplateSource.expand(incDecTemplateSrc, map(entry("incDec", incDec))).get(0);
+        
+        primitiveNumberTypes.forEach(type -> {
+            String resultType = type;
+            String value = toSourceCode(start, type);
+            
+            SourceCode sourceCode = TemplateSource.expand(sourceCodeBase.src, 
+                map(entry("type", type), entry("start", value))
+            ).get(0);
+            
+            Number expectedValue = toNumber(expectedResultBase, resultType);
             try {
-                String type = combination.argumentMap.get("type");
-                Number expectedResult = toNumber(expectedResultBase, type);
-                
-                testSourceToClasses(
-                    new String[]{"jasy.TestClass1"},
-                    combination.src,
+                testSourceToClasses(new String[]{"jasy.TestClass1"},
+                    sourceCode.src,
                     forClass("jasy.TestClass1",
-                        forInstance(imethod("get", invocationResult(is(expectedResult))))
+                        forInstance(imethod(incDecTemplateSrcMethodName, invocationResult(is(expectedValue))))
                     )
                 );
             } catch (IOException ex) {
                 Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPrefixIntInc() throws IOException {
-        int i = 0;
-        int j = ++i;
-        int expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public int getInt() {\n" +
-            "        int i = 0;\n" +
-            "        int j = ++i;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getInt", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPrefixDecInc() throws IOException {
-        int i = 0;
-        int j = --i;
-        int expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public int getInt() {\n" +
-            "        int i = 0;\n" +
-            "        int j = --i;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getInt", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPostfixIntInc() throws IOException {
-        int i = 0;
-        int j = i++;
-        int expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public int getInt() {\n" +
-            "        int i = 0;\n" +
-            "        int j = i++;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getInt", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPostfixIntDec() throws IOException {
-        int i = 0;
-        int j = i--;
-        int expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public int getInt() {\n" +
-            "        int i = 0;\n" +
-            "        int j = i--;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getInt", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPrefixLongInc() throws IOException {
-        long i = 0;
-        long j = ++i;
-        long expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public long getLong() {\n" +
-            "        long i = 0L;\n" +
-            "        long j = ++i;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getLong", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPrefixLongDec() throws IOException {
-        long i = 0;
-        long j = --i;
-        long expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public long getLong() {\n" +
-            "        long i = 0L;\n" +
-            "        long j = --i;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getLong", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPostfixLongInc() throws IOException {
-        long i = 0;
-        long j = i++;
-        long expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public long getLong() {\n" +
-            "        long i = 0L;\n" +
-            "        long j = i++;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getLong", invocationResult(is(expectedResult))))
-            )
-        );
-    }
-    
-    @Test
-    public void testAllClassesAddMethodWithPostfixLongDec() throws IOException {
-        long i = 0;
-        long j = i--;
-        long expectedResult = i + j;
-        
-        String src =
-            "class {\n" +
-            "    +public long getLong() {\n" +
-            "        long i = 0L;\n" +
-            "        long j = i--;\n" +
-            "        return i + j;\n" +
-            "    }\n" +
-            "}\n";
-        
-        testSourceToClasses(
-            new String[]{"jasy.TestClass1"}, 
-            src, 
-            forClass("jasy.TestClass1", 
-                forInstance(imethod("getLong", invocationResult(is(expectedResult))))
-            )
-        );
     }
     
     @Test
