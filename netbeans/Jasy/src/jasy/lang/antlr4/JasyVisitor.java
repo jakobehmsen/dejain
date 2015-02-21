@@ -103,6 +103,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitEmbeddedExpression(@NotNull JasyParser.EmbeddedExpressionContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#floatLiteral}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFloatLiteral(@NotNull JasyParser.FloatLiteralContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -164,6 +171,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitEqualityExpression(@NotNull JasyParser.EqualityExpressionContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JasyParser#doubleLiteral}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDoubleLiteral(@NotNull JasyParser.DoubleLiteralContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link JasyParser#classTransformerMembers}.

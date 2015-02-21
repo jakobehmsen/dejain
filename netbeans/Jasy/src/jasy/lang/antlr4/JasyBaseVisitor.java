@@ -122,6 +122,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitFloatLiteral(@NotNull JasyParser.FloatLiteralContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitBlock(@NotNull JasyParser.BlockContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -187,6 +195,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitEqualityExpression(@NotNull JasyParser.EqualityExpressionContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitDoubleLiteral(@NotNull JasyParser.DoubleLiteralContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

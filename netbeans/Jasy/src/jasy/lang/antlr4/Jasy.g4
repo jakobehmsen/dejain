@@ -88,10 +88,14 @@ delimitedStatement:
 variableDeclaration: typeQualifier id=identifier (ASSIGN_OP value=expression)?;
 returnStatement: KW_RETURN expression;
 throwStatement: KW_THROW expression;
-literal: stringLiteral | integerLiteral | longLiteral | booleanLiteral;
+literal: 
+    stringLiteral | integerLiteral | longLiteral | booleanLiteral |
+    floatLiteral | doubleLiteral;
 stringLiteral: STRING;
 integerLiteral: INTEGER;
 longLiteral: LONG;
+floatLiteral: FLOAT;
+doubleLiteral: DOUBLE;
 booleanLiteral: KW_TRUE | KW_FALSE;
 metaBlock: DOLLAR OPEN_BRA statements CLOSE_BRA;
 
@@ -163,6 +167,8 @@ OPEN_BRA: '{';
 CLOSE_BRA: '}';
 INTEGER: DIGIT+;
 LONG: DIGIT+ ('L' | 'l');
+DOUBLE: DIGIT* DOT DIGIT+;
+FLOAT: DIGIT* DOT DIGIT+ ('F' | 'f');
 STRING: '"' (EscapeSequence | ~[\\"])* '"';
 fragment HexDigit: [0-9a-fA-F];
 fragment EscapeSequence: '\\' [btnfr"'\\] | UnicodeEscape | OctalEscape;
