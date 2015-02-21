@@ -631,6 +631,10 @@ public class SourceToClassTest {
                 return (int)value;
             case "long":
                 return value;
+            case "float":
+                return (float)value;
+            case "double":
+                return (double)value;
         }
         
         return null;
@@ -1405,7 +1409,8 @@ public class SourceToClassTest {
         "        return x <<op>> y;\n" +
         "    }\n" +
         "}\n";
-    private static final List<String> primitiveNumberTypes = Arrays.asList("byte", "short", "int", "long");
+    private static final List<String> primitiveNumberTypes = 
+        Arrays.asList("byte", "short", "int", "long", "float", "double");
     
     private static String toSourceCode(long value, String type) {
         switch(type) {
@@ -1415,6 +1420,10 @@ public class SourceToClassTest {
                 return "" + value;
             case "long":
                 return "" + value + "L";
+            case "float":
+                return "" + value + ".0F";
+            case "double":
+                return "" + value + ".0";
         }
         
         throw new IllegalArgumentException("Cannot convert '" + type + "' into source code.");
