@@ -172,4 +172,14 @@ public class CodeMapper implements CodeVisitor<CodeAST> {
     public CodeAST visitIncDec(IncDecExpression ctx) {
         return new IncDecExpression(ctx.getRegion(), ctx.timing, ctx.operator, getExpression(ctx.operand));
     }
+
+    @Override
+    public CodeAST visitFloatLiteral(FloatLiteralAST ctx) {
+        return ctx;
+    }
+
+    @Override
+    public CodeAST visitDoubleLiteral(DoubleLiteralAST ctx) {
+        return ctx;
+    }
 }

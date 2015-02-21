@@ -30,8 +30,10 @@ import jasy.lang.ast.ReturnAST;
 import jasy.lang.ast.MetaExpressionAST;
 import jasy.lang.ast.CodeAST;
 import jasy.lang.ast.CodePrinter;
+import jasy.lang.ast.DoubleLiteralAST;
 import jasy.lang.ast.RootExpressionAST;
 import jasy.lang.ast.FieldGetAST;
+import jasy.lang.ast.FloatLiteralAST;
 import jasy.lang.ast.IfElseAST;
 import jasy.lang.ast.IncDecExpression;
 import jasy.lang.ast.InjectAST;
@@ -396,6 +398,19 @@ public class ASMCompiler {
                 String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
                 long value = Long.parseLong(valueStr);
                 return new LongLiteralAST(new Region(ctx), value);
+            }
+
+            @Override
+            public ExpressionAST visitFloatLiteral(JasyParser.FloatLiteralContext ctx) {
+                String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
+                float value = Float.parseFloat(valueStr);
+                return new FloatLiteralAST(new Region(ctx), value);
+            }
+
+            @Override
+            public ExpressionAST visitDoubleLiteral(JasyParser.DoubleLiteralContext ctx) {
+                double value = Double.parseDouble(ctx.getText());
+                return new DoubleLiteralAST(new Region(ctx), value);
             }
 
             @Override

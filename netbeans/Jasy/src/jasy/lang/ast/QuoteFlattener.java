@@ -256,4 +256,14 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
     public ExpressionAST visitIncDec(IncDecExpression ctx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public ExpressionAST visitFloatLiteral(FloatLiteralAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ExpressionAST visitDoubleLiteral(DoubleLiteralAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

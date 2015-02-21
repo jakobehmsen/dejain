@@ -45,6 +45,16 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
     }
 
     @Override
+    public ExpressionAST visitFloatLiteral(FloatLiteralAST ctx) {
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, FloatLiteralAST.class), Arrays.asList(new NullAST(null), new FloatLiteralAST(null, ctx.value)));
+    }
+
+    @Override
+    public ExpressionAST visitDoubleLiteral(DoubleLiteralAST ctx) {
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, DoubleLiteralAST.class), Arrays.asList(new NullAST(null), new DoubleLiteralAST(null, ctx.value)));
+    }
+
+    @Override
     public ExpressionAST visitBoolean(BooleanLiteralAST ctx) {
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, BooleanLiteralAST.class), Arrays.asList(new NullAST(null), new BooleanLiteralAST(null, ctx.value)));
     }

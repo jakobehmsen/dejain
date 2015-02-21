@@ -30,4 +30,6 @@ public interface CodeVisitor<T> {
     T visitIfElse(IfElseAST ctx);
     T visitUnary(UnaryExpression ctx);
     T visitIncDec(IncDecExpression ctx);
+    T visitFloatLiteral(FloatLiteralAST ctx);
+    T visitDoubleLiteral(DoubleLiteralAST ctx);
 }

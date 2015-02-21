@@ -308,4 +308,17 @@ public class CodePrinter implements CodeVisitor<Object> {
             print(ctx.getOperatorText());
         return null;
     }
+
+    @Override
+    public Object visitFloatLiteral(FloatLiteralAST ctx) {
+        print(ctx.value);
+        print("f");
+        return null;
+    }
+
+    @Override
+    public Object visitDoubleLiteral(DoubleLiteralAST ctx) {
+        print(ctx.value);
+        return null;
+    }
 }

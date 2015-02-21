@@ -151,4 +151,14 @@ public class CodeAdapter<T> implements CodeVisitor<T> {
     public T visitIncDec(IncDecExpression ctx) {
         return visitor.visitIncDec(ctx);
     }
+
+    @Override
+    public T visitFloatLiteral(FloatLiteralAST ctx) {
+        return visitor.visitFloatLiteral(ctx);
+    }
+
+    @Override
+    public T visitDoubleLiteral(DoubleLiteralAST ctx) {
+        return visitor.visitDoubleLiteral(ctx);
+    }
 }

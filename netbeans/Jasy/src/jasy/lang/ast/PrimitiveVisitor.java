@@ -5,4 +5,6 @@ public interface PrimitiveVisitor<T> {
     T visitShort();
     T visitInt();
     T visitLong();
+    T visitFloat();
+    T visitDouble();
 }
