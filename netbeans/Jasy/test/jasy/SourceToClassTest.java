@@ -1374,16 +1374,6 @@ public class SourceToClassTest {
         );
     }
     
-    private static final String binaryExpressionTemplateSrcMethodName = "reduce";
-    private static final String binaryExpressionTemplateSrc =
-        "class {\n" +
-        "    +public <<type>> " + binaryExpressionTemplateSrcMethodName + "() {\n" +
-        "        <<lhsType>> x = <<lhs>>;\n" +
-        "        <<rhsType>> y = <<rhs>>;\n" +
-        "        return x <<op>> y;\n" +
-        "    }\n" +
-        "}\n";
-    private static final List<String> primitiveNumberTypes = Arrays.asList("byte", "short", "int", "long");
     private static class Combination<T> {
         public final T first;
         public final T second;
@@ -1393,6 +1383,7 @@ public class SourceToClassTest {
             this.second = second;
         }
     }
+    
     private static <T> List<Combination<T>> combine(List<T> elements) {
         ArrayList<Combination<T>> combinations = new ArrayList<>();
         
@@ -1404,6 +1395,18 @@ public class SourceToClassTest {
         
         return combinations;
     }
+    
+    private static final String reductionTemplateSrcMethodName = "reduce";
+    private static final String reductionTemplateSrc =
+        "class {\n" +
+        "    +public <<type>> " + reductionTemplateSrcMethodName + "() {\n" +
+        "        <<lhsType>> x = <<lhs>>;\n" +
+        "        <<rhsType>> y = <<rhs>>;\n" +
+        "        return x <<op>> y;\n" +
+        "    }\n" +
+        "}\n";
+    private static final List<String> primitiveNumberTypes = Arrays.asList("byte", "short", "int", "long");
+    
     private static String toSourceCode(long value, String type) {
         switch(type) {
             case "byte":
@@ -1423,9 +1426,48 @@ public class SourceToClassTest {
         long rhs = 7;
         long expectedValueRaw = lhs + rhs;
         
-        SourceCode addSourceCode = TemplateSource.expand(
-            binaryExpressionTemplateSrc, 
-            map(entry("op", "+"))
+        testAllClassesAddMethodWithReduction(lhs, rhs, expectedValueRaw, "+");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithSubExpression() {
+        long lhs = 5;
+        long rhs = 7;
+        long expectedValueRaw = lhs - rhs;
+        
+        testAllClassesAddMethodWithReduction(lhs, rhs, expectedValueRaw, "-");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithMultExpression() {
+        long lhs = 5;
+        long rhs = 7;
+        long expectedValueRaw = lhs * rhs;
+        
+        testAllClassesAddMethodWithReduction(lhs, rhs, expectedValueRaw, "*");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithDivExpression() {
+        long lhs = 10;
+        long rhs = 5;
+        long expectedValueRaw = lhs / rhs;
+        
+        testAllClassesAddMethodWithReduction(lhs, rhs, expectedValueRaw, "/");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithRemExpression() {
+        long lhs = 11;
+        long rhs = 5;
+        long expectedValueRaw = lhs % rhs;
+        
+        testAllClassesAddMethodWithReduction(lhs, rhs, expectedValueRaw, "%");
+    }
+    
+    public void testAllClassesAddMethodWithReduction(long lhs, long rhs, long expectedValueRaw, String op) {
+        SourceCode addSourceCode = TemplateSource.expand(reductionTemplateSrc, 
+            map(entry("op", op))
         ).get(0);
         
         combine(primitiveNumberTypes).forEach(typeCombination -> {
@@ -1444,14 +1486,14 @@ public class SourceToClassTest {
                 testSourceToClasses(new String[]{"jasy.TestClass1"},
                     sourceCode.src,
                     forClass("jasy.TestClass1",
-                        forInstance(imethod(binaryExpressionTemplateSrcMethodName, invocationResult(is(expectedValue))))
+                        forInstance(imethod(reductionTemplateSrcMethodName, invocationResult(is(expectedValue))))
                     )
                 );
             } catch (IOException ex) {
                 Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
-    }    
+    }
     
     private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
