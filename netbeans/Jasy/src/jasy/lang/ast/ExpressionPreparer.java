@@ -95,12 +95,27 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
         };
     }
+    
+    private PreparedExpressionAST typeCast(PreparedExpressionAST expression, TypeAST to) {
+        return new PreparedExpressionAST() {
+            @Override
+            public TypeAST resultType() {
+                return to;
+            }
+
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
+                expression.generate(c, generator, originalIl, ifFalseLabel);
+                generator.methodNode.cast(Type.getType(expression.resultType().getDescriptor()), Type.getType(to.getDescriptor()));
+            }
+        };
+    }
 
     @Override
     public PreparedExpressionAST visitBinaryExpression(BinaryExpressionAST ctx) {
         PreparedExpressionAST lhsTmp = ctx.lhs.accept(this);
         PreparedExpressionAST rhsTmp = ctx.rhs.accept(this);
-        TypeAST resultType;
+        TypeAST resultTypeRaw = null;
         if (lhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;") || rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;")) {
             switch (ctx.operator) {
                 case BinaryExpressionAST.OPERATOR_ADD:
@@ -110,10 +125,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     if (!rhsTmp.resultType().getDescriptor().equals("Ljava/lang/String;")) {
                         rhsTmp = expressionAsString(rhsTmp);
                     }
-                    resultType = new NameTypeAST(ctx.getRegion(), String.class);
-                    break;
-                default:
-                    resultType = null;
+                    resultTypeRaw = new NameTypeAST(ctx.getRegion(), String.class);
                     break;
             }
         } else if (lhsTmp.resultType().derivesFrom(new NameTypeAST(null, CodeAST.class)) || rhsTmp.resultType().derivesFrom(new NameTypeAST(null, CodeAST.class))) {
@@ -125,31 +137,26 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     if (!rhsTmp.resultType().derivesFrom(new NameTypeAST(null, CodeAST.class))) {
                         rhsTmp = expressionAsStatement(rhsTmp);
                     }
-                    resultType = new NameTypeAST(ctx.getRegion(), CodeAST.class);
-                    break;
-                default:
-                    resultType = null;
+                    resultTypeRaw = new NameTypeAST(ctx.getRegion(), CodeAST.class);
                     break;
             }
-        } else if (lhsTmp.resultType().getSimpleName().equals("byte") && rhsTmp.resultType().getSimpleName().equals("byte") || 
-                lhsTmp.resultType().getSimpleName().equals("short") && rhsTmp.resultType().getSimpleName().equals("short") || 
-                lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int") || 
-                lhsTmp.resultType().getSimpleName().equals("long") && rhsTmp.resultType().getSimpleName().equals("long")) {
+        } else {
             switch (ctx.operator) {
                 case BinaryExpressionAST.OPERATOR_ADD:
                 case BinaryExpressionAST.OPERATOR_SUB:
                 case BinaryExpressionAST.OPERATOR_MULT:
                 case BinaryExpressionAST.OPERATOR_DIV:
-                    if (lhsTmp.resultType().getSimpleName().equals("byte") && rhsTmp.resultType().getSimpleName().equals("byte"))
-                        resultType = new NameTypeAST(ctx.getRegion(), byte.class);
-                    else if (lhsTmp.resultType().getSimpleName().equals("short") && rhsTmp.resultType().getSimpleName().equals("short"))
-                        resultType = new NameTypeAST(ctx.getRegion(), short.class);
-                    else if (lhsTmp.resultType().getSimpleName().equals("int") && rhsTmp.resultType().getSimpleName().equals("int"))
-                        resultType = new NameTypeAST(ctx.getRegion(), int.class);
-                    else if (lhsTmp.resultType().getSimpleName().equals("long") && rhsTmp.resultType().getSimpleName().equals("long"))
-                        resultType = new NameTypeAST(ctx.getRegion(), long.class);
-                    else
-                        resultType = null;
+                    Class<?> type = Reduction.typeOf(lhsTmp.resultType().getSimpleName(), rhsTmp.resultType().getSimpleName());
+                    
+                    if(type != null) {
+                        resultTypeRaw = new NameTypeAST(ctx.getRegion(), type);
+                        
+                        if(!lhsTmp.resultType().equals(resultTypeRaw))
+                            lhsTmp = typeCast(lhsTmp, resultTypeRaw);
+                        if(!rhsTmp.resultType().equals(resultTypeRaw))
+                            rhsTmp = typeCast(rhsTmp, resultTypeRaw);
+                    }
+                    
                     break;
                 case BinaryExpressionAST.OPERATOR_LT:
                 case BinaryExpressionAST.OPERATOR_LTE:
@@ -157,14 +164,16 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 case BinaryExpressionAST.OPERATOR_GTE:
                 case BinaryExpressionAST.OPERATOR_EQ:
                 case BinaryExpressionAST.OPERATOR_NE:
-                    resultType = new NameTypeAST(ctx.getRegion(), boolean.class);
+                    resultTypeRaw = new NameTypeAST(ctx.getRegion(), boolean.class);
                     break;
-                default:
-                    resultType = null;
             }
-        } else {
-            resultType = null;
         }
+        
+        TypeAST resultType = resultTypeRaw;
+        
+        if(resultType == null)
+            new String();
+        
         PreparedExpressionAST lhs = lhsTmp;
         PreparedExpressionAST rhs = rhsTmp;
         return new PreparedExpressionAST() {

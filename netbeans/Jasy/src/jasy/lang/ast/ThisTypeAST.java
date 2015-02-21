@@ -56,4 +56,9 @@ public class ThisTypeAST extends AbstractAST implements TypeAST {
     public boolean derivesFrom(TypeAST type) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ThisTypeAST;
+    }
 }

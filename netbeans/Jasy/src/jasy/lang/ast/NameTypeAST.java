@@ -236,4 +236,9 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         
         return false;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof NameTypeAST && this.c.equals(((NameTypeAST)obj).c);
+    }
 }
