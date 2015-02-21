@@ -25,6 +25,7 @@ import jasy.lang.CommonClassMap;
 import jasy.lang.CommonClassResolver;
 import jasy.lang.ExhaustiveClassTransformer;
 import jasy.lang.ast.ModuleAST;
+import jasy.lang.ast.Reduction;
 import jasy.lang.ast.Transformation;
 import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
@@ -1372,6 +1373,85 @@ public class SourceToClassTest {
             )
         );
     }
+    
+    private static final String binaryExpressionTemplateSrcMethodName = "reduce";
+    private static final String binaryExpressionTemplateSrc =
+        "class {\n" +
+        "    +public <<type>> " + binaryExpressionTemplateSrcMethodName + "() {\n" +
+        "        <<lhsType>> x = <<lhs>>;\n" +
+        "        <<rhsType>> y = <<rhs>>;\n" +
+        "        return x <<op>> y;\n" +
+        "    }\n" +
+        "}\n";
+    private static final List<String> primitiveNumberTypes = Arrays.asList("byte", "short", "int", "long");
+    private static class Combination<T> {
+        public final T first;
+        public final T second;
+
+        public Combination(T first, T second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+    private static <T> List<Combination<T>> combine(List<T> elements) {
+        ArrayList<Combination<T>> combinations = new ArrayList<>();
+        
+        elements.forEach(x -> 
+            elements.forEach(y -> 
+                combinations.add(new Combination<>(x, y))
+            )
+        );
+        
+        return combinations;
+    }
+    private static String toSourceCode(long value, String type) {
+        switch(type) {
+            case "byte":
+            case "short":
+            case "int":
+                return "" + value;
+            case "long":
+                return "" + value + "L";
+        }
+        
+        throw new IllegalArgumentException("Cannot convert '" + type + "' into source code.");
+    }
+    
+    @Test
+    public void testAllClassesAddMethodWithAddExpression() {
+        long lhs = 5;
+        long rhs = 7;
+        long expectedValueRaw = lhs + rhs;
+        
+        SourceCode addSourceCode = TemplateSource.expand(
+            binaryExpressionTemplateSrc, 
+            map(entry("op", "+"))
+        ).get(0);
+        
+        combine(primitiveNumberTypes).forEach(typeCombination -> {
+            String lhsType = typeCombination.first;
+            String rhsType = typeCombination.second;
+            String resultType = Reduction.typeOf(lhsType, rhsType).getSimpleName();
+            String lhsValue = toSourceCode(lhs, lhsType);
+            String rhsValue = toSourceCode(rhs, rhsType);
+            
+            SourceCode sourceCode = TemplateSource.expand(addSourceCode.src, 
+                map(entry("type", resultType), entry("lhsType", lhsType), entry("rhsType", rhsType), entry("lhs", "" + lhsValue), entry("rhs", "" + rhsValue))
+            ).get(0);
+            
+            Number expectedValue = toNumber(expectedValueRaw, resultType);
+            try {
+                testSourceToClasses(new String[]{"jasy.TestClass1"},
+                    sourceCode.src,
+                    forClass("jasy.TestClass1",
+                        forInstance(imethod(binaryExpressionTemplateSrcMethodName, invocationResult(is(expectedValue))))
+                    )
+                );
+            } catch (IOException ex) {
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }    
     
     private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
         ASMCompiler compiler = new ASMCompiler(resolver);
