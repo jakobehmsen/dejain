@@ -146,6 +146,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 case BinaryExpressionAST.OPERATOR_SUB:
                 case BinaryExpressionAST.OPERATOR_MULT:
                 case BinaryExpressionAST.OPERATOR_DIV:
+                case BinaryExpressionAST.OPERATOR_REM:
                     Class<?> type = Reduction.typeOf(lhsTmp.resultType().getSimpleName(), rhsTmp.resultType().getSimpleName());
                     
                     if(type != null) {
@@ -196,22 +197,6 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                                 case "CodeAST":
                                     generator.methodNode.invokeInterface(Type.getType("jasy/lang/ast/CodeAST"), new Method("concat", "(Ljasy/lang/ast/CodeAST;)Ljasy/lang/ast/CodeAST;"));
                                     break;
-//                                case "short":
-//                                    generator.methodNode.visitInsn(Opcodes.IADD);
-//                                    break;
-//                                case "int":
-//                                    generator.methodNode.visitInsn(Opcodes.IADD);
-//                                    break;
-//                                case "long":
-//                                    generator.methodNode.visitInsn(Opcodes.LADD);
-//                                    break;
-//                                case "float":
-//                                    generator.methodNode.visitInsn(Opcodes.FADD);
-//                                    break;
-//                                case "double":
-//                                    generator.methodNode.visitInsn(Opcodes.DADD);
-//                                    break;
-                                    
                                 case "byte":
                                 case "short":
                                 case "int":
@@ -226,20 +211,13 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     case BinaryExpressionAST.OPERATOR_SUB:
                         {
                             switch (resultType().getSimpleName(c.getTarget().name)) {
+                                case "byte":
                                 case "short":
-                                    generator.methodNode.visitInsn(Opcodes.ISUB);
-                                    break;
                                 case "int":
-                                    generator.methodNode.visitInsn(Opcodes.ISUB);
-                                    break;
                                 case "long":
-                                    generator.methodNode.visitInsn(Opcodes.LSUB);
-                                    break;
                                 case "float":
-                                    generator.methodNode.visitInsn(Opcodes.FSUB);
-                                    break;
                                 case "double":
-                                    generator.methodNode.visitInsn(Opcodes.DSUB);
+                                    generator.methodNode.math(GeneratorAdapter.SUB, Type.getType(resultType().getDescriptor()));
                                     break;
                             }
                             break;
@@ -247,20 +225,13 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     case BinaryExpressionAST.OPERATOR_MULT:
                         {
                             switch (resultType().getSimpleName(c.getTarget().name)) {
+                                case "byte":
                                 case "short":
-                                    generator.methodNode.visitInsn(Opcodes.IMUL);
-                                    break;
                                 case "int":
-                                    generator.methodNode.visitInsn(Opcodes.IMUL);
-                                    break;
                                 case "long":
-                                    generator.methodNode.visitInsn(Opcodes.LMUL);
-                                    break;
                                 case "float":
-                                    generator.methodNode.visitInsn(Opcodes.FMUL);
-                                    break;
                                 case "double":
-                                    generator.methodNode.visitInsn(Opcodes.DMUL);
+                                    generator.methodNode.math(GeneratorAdapter.MUL, Type.getType(resultType().getDescriptor()));
                                     break;
                             }
                             break;
@@ -268,20 +239,27 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     case BinaryExpressionAST.OPERATOR_DIV:
                         {
                             switch (resultType().getSimpleName(c.getTarget().name)) {
+                                case "byte":
                                 case "short":
-                                    generator.methodNode.visitInsn(Opcodes.IDIV);
-                                    break;
                                 case "int":
-                                    generator.methodNode.visitInsn(Opcodes.IDIV);
-                                    break;
                                 case "long":
-                                    generator.methodNode.visitInsn(Opcodes.LDIV);
-                                    break;
                                 case "float":
-                                    generator.methodNode.visitInsn(Opcodes.FDIV);
-                                    break;
                                 case "double":
-                                    generator.methodNode.visitInsn(Opcodes.DDIV);
+                                    generator.methodNode.math(GeneratorAdapter.DIV, Type.getType(resultType().getDescriptor()));
+                                    break;
+                            }
+                            break;
+                        }
+                    case BinaryExpressionAST.OPERATOR_REM:
+                        {
+                            switch (resultType().getSimpleName(c.getTarget().name)) {
+                                case "byte":
+                                case "short":
+                                case "int":
+                                case "long":
+                                case "float":
+                                case "double":
+                                    generator.methodNode.math(GeneratorAdapter.REM, Type.getType(resultType().getDescriptor()));
                                     break;
                             }
                             break;
