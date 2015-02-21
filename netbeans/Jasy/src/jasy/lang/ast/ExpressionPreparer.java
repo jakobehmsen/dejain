@@ -432,7 +432,40 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
-                System.out.println("visitLongLiteral");
+                if (asExpression) {
+                    generator.methodNode.push(ctx.value);
+                }
+            }
+        };
+    }
+
+    @Override
+    public PreparedExpressionAST visitFloatLiteral(FloatLiteralAST ctx) {
+        return new PreparedExpressionAST() {
+            @Override
+            public TypeAST resultType() {
+                return new NameTypeAST(ctx.getRegion(), float.class);
+            }
+
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
+                if (asExpression) {
+                    generator.methodNode.push(ctx.value);
+                }
+            }
+        };
+    }
+
+    @Override
+    public PreparedExpressionAST visitDoubleLiteral(DoubleLiteralAST ctx) {
+        return new PreparedExpressionAST() {
+            @Override
+            public TypeAST resultType() {
+                return new NameTypeAST(ctx.getRegion(), double.class);
+            }
+
+            @Override
+            public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 if (asExpression) {
                     generator.methodNode.push(ctx.value);
                 }
