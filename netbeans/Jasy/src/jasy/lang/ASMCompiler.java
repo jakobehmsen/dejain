@@ -515,6 +515,8 @@ public class ASMCompiler {
                             return BinaryExpressionAST.OPERATOR_MULT;
                         case JasyLexer.DIV:
                             return BinaryExpressionAST.OPERATOR_DIV;
+                        case JasyLexer.REM:
+                            return BinaryExpressionAST.OPERATOR_REM;
                         default:
                             return -1;
                     }
