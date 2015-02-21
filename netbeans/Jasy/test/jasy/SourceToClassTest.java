@@ -650,7 +650,7 @@ public class SourceToClassTest {
             "    }\n" +
             "}\n";
         
-        combine(templateSrc,
+        expand(templateSrc,
             map(entry("type", "byte"), entry("zero", "0")),
             map(entry("type", "short"), entry("zero", "0")),
             map(entry("type", "int"), entry("zero", "0")),
@@ -1239,7 +1239,7 @@ public class SourceToClassTest {
             "    }\n" +
             "}\n";
         
-        combine(templaceSrc, 
+        expand(templaceSrc, 
             map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "i++")),
             map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "++i")),
             map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "i--")),
@@ -1278,7 +1278,7 @@ public class SourceToClassTest {
             "    }\n" +
             "}\n";
         
-        combine(templaceSrc, 
+        expand(templaceSrc, 
             map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "i++")),
             map(entry("init", "" + counterStart), entry("cond", "i < " + counterEnd), entry("inc", "++i")),
             map(entry("init", "" + counterEnd), entry("cond", "i > " + counterStart), entry("inc", "i--")),

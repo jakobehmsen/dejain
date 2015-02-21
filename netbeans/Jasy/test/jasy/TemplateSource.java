@@ -18,7 +18,7 @@ public class TemplateSource {
         }
     }
     
-    public static List<SourceCode> combine(String templaceSrc, Map<String, String>... argumentMaps) {
+    public static List<SourceCode> expand(String templaceSrc, Map<String, String>... argumentMaps) {
         ArrayList<SourceCode> srcs = new ArrayList<>();
         
         for(Map<String, String> argumentMap: argumentMaps) {
