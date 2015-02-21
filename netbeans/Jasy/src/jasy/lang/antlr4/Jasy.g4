@@ -33,7 +33,7 @@ relationalOperator: operator=(LT | LTE | GT | GTE);
 additiveExpression: first=multiplicativeExpression (additiveOperator rest=multiplicativeExpression)*;
 additiveOperator: operator=(PLUS | MINUS);
 multiplicativeExpression: first=unaryPrefixExpression (multiplicativeOperator rest=unaryPrefixExpression)*;
-multiplicativeOperator: operator=(MULT | DIV);
+multiplicativeOperator: operator=(MULT | DIV | REM);
 unaryPrefixExpression: 
     (unaryPrefixOperator operand=unaryPrefixExpression) | unaryPostfixExpression;
 unaryPrefixOperator: operator=(INC | DEC | PLUS | MINUS | TILDE | EXCLA);
@@ -121,6 +121,7 @@ PLUS: '+';
 MINUS: '-';
 MULT: '*';
 DIV: '/';
+REM: '%';
 LT: '<';
 LTE: '<=';
 GT: '>';
