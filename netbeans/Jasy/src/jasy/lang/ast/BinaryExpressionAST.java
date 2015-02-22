@@ -89,9 +89,9 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     private ExpressionAST expressionAsString(ExpressionAST ctx) {
         switch(ctx.resultType().getSimpleName()) {
             case "int":
-                return new InvocationAST(ctx.getRegion(), null, new NameTypeAST(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx), new NameTypeAST(ctx.getRegion(), String.class));
+                return new InvocationAST(ctx.getRegion(), new NameTypeAST(ctx.getRegion(), Integer.class), "toString", Arrays.asList(ctx));
             default:
-                return new InvocationAST(ctx.getRegion(), ctx, null, "toString", Collections.emptyList(), new NameTypeAST(ctx.getRegion(), String.class));
+                return new InvocationAST(ctx.getRegion(), ctx, "toString", Collections.emptyList());
         }
     }
 }

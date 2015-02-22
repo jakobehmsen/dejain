@@ -132,10 +132,8 @@ public class StatementFlattener implements CodeVisitor<Object> {
         quoteFlattener.flattenedCode.add(new InvocationAST(
             null, 
             new LookupAST(null, new StringLiteralAST(null, statementVarName)), 
-            null, 
             "add", 
-            Arrays.asList(getExpression(ctx.expression)), 
-            null
+            Arrays.asList(getExpression(ctx.expression))
         ));
 
         return null;
@@ -190,6 +188,11 @@ public class StatementFlattener implements CodeVisitor<Object> {
 
     @Override
     public Object visitDoubleLiteral(DoubleLiteralAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object visitAmbiguousName(AmbiguousNameAST aThis) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

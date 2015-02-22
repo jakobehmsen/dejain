@@ -55,11 +55,11 @@ public class MethodAST extends AbstractAST implements MemberAST {
         body.resolve(thisClass, expectedResultType, resolver, errorMessages);
     }
 
-    public void populate(CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<MethodNode>> transformer) {
+    public void populate(ClassResolver classResolver, CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<MethodNode>> transformer) {
         if(!isAdd) {
             selector.populate(transformer);
         } else {
-            java.lang.reflect.Method astGeneratorMethod = createASTGeneratorMethod();
+            java.lang.reflect.Method astGeneratorMethod = createASTGeneratorMethod(classResolver);
             
             classTransformer.addTransformer(c -> {
                 return () -> {
@@ -79,6 +79,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
                         }
                         
                         CodeAST body = (CodeAST)astGeneratorMethod.invoke(astGenerator, new Object[0]);
+                        
+                        // Body is not resolved? Necessary?
                         
                         System.out.println("Synthesized body:");
                         body.accept(new CodePrinter(System.out));
@@ -107,7 +109,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
 
                         methodNode.visitCode();
                         generator.start();
-                        toCode(c, body, generator, parameters, new InsnList() /*Something that generates a default values for non-void returns?*/);
+                        toCode(c, body, generator, classResolver, parameters, new InsnList() /*Something that generates a default values for non-void returns?*/);
                         generator.end();
                         methodNode.visitEnd();
 
@@ -129,7 +131,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
     }
 
-    private java.lang.reflect.Method createASTGeneratorMethod() {
+    private java.lang.reflect.Method createASTGeneratorMethod(ClassResolver classResolver) {
         // 1) Generate code to generate code
         ClassNode metaObjectClassNode = new ClassNode(Opcodes.ASM5);
         
@@ -137,7 +139,7 @@ public class MethodAST extends AbstractAST implements MemberAST {
         
         Hashtable<String, ParameterInfo> metaParameters = new Hashtable<>();
         Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
-        PreparedAST pbody = toCode(mp.metaScope, body, metaParameters, metaVariables);
+        PreparedAST pbody = toCode(mp.metaScope, body, classResolver, metaParameters, metaVariables);
 //        ArrayList<TypeAST> returnTypes = new ArrayList<>();
 //        pbody.returns(returnTypes);
         // Must return CodeAST
@@ -195,19 +197,19 @@ public class MethodAST extends AbstractAST implements MemberAST {
     }
     
 
-    public static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, Hashtable<String, ParameterInfo> parameters) {
-        toCode(c, body, generator, parameters, new InsnList());
+    public static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters) {
+        toCode(c, body, generator, classResolver, parameters, new InsnList());
     }
 
-    private static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, Hashtable<String, ParameterInfo> parameters, InsnList originalIl) {
+    private static void toCode(Transformation<ClassNode> c, CodeAST body, MethodCodeGenerator generator, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, InsnList originalIl) {
         Hashtable<String, TypeAST> variables = new Hashtable<>();
         
-        PreparedAST pa = toCode(new ClassNodeScope(c.getTarget()), body, parameters, variables);
+        PreparedAST pa = toCode(new ClassNodeScope(c.getTarget()), body, classResolver, parameters, variables);
         pa.generate(c, generator, originalIl);
     }
 
-    public static PreparedAST toCode(Scope thisClass, CodeAST ctx, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
-        return ctx.accept(new CodePreparer(thisClass, ctx, parameters, variables));
+    public static PreparedAST toCode(Scope thisClass, CodeAST ctx, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
+        return ctx.accept(new CodePreparer(thisClass, classResolver, parameters, variables));
     }
 
     public static void appendStore(MethodCodeGenerator generator, int ordinal, TypeAST type) {
@@ -233,12 +235,12 @@ public class MethodAST extends AbstractAST implements MemberAST {
         }
     }
     
-    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
-        return toExpression(thisClass, expression, parameters, variables, true);
+    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
+        return toExpression(thisClass, expression, classResolver, parameters, variables, true);
     }
     
-    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
-        return expression.accept(new ExpressionPreparer(thisClass, expression, parameters, variables, asExpression));
+    public static PreparedExpressionAST toExpression(Scope thisClass, ExpressionAST expression, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
+        return expression.accept(new ExpressionPreparer(thisClass, classResolver, parameters, variables, asExpression));
     }
     
     public static ExpressionAST quote(Scope thisClass, CodeAST ctx, Hashtable<String, TypeAST> variables) {

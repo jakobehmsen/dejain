@@ -15,11 +15,12 @@ public class FieldGetAST extends AbstractAST implements ExpressionAST {
 //        this.fieldName = fieldName;
 //    }
     
-    public ExpressionAST target;
+//    public ExpressionAST target;
+    public AST target; // Either ExpressionAST or TypeAST
     public ExpressionAST fieldName;
     public TypeAST fieldType;
 
-    public FieldGetAST(ASMCompiler.Region region, ExpressionAST target, ExpressionAST fieldName) {
+    public FieldGetAST(ASMCompiler.Region region, AST target, ExpressionAST fieldName) {
         super(region);
         this.target = target;
         this.fieldName = fieldName;

@@ -16,6 +16,7 @@ import jasy.lang.antlr4.JasyParser.QualifiedLookupContext;
 import jasy.lang.antlr4.JasyParser.StatementContext;
 import jasy.lang.antlr4.JasyParser.StatementsContext;
 import jasy.lang.antlr4.JasyParser.UnqualifiedLookupContext;
+import jasy.lang.ast.AmbiguousNameAST;
 import jasy.lang.ast.BinaryExpressionAST;
 import jasy.lang.ast.BlockAST;
 import jasy.lang.ast.BooleanLiteralAST;
@@ -455,7 +456,7 @@ public class ASMCompiler {
                                 String methodName = invocationCtx.identifier().getText();
                                 List<ExpressionAST> arguments = invocationCtx.arguments().expression().stream()
                                     .map(eCtx -> getExpression(eCtx, mp)).collect(Collectors.toList());
-                                result = new InvocationAST(new Region(chainCtx), result, null, methodName, arguments, null);
+                                result = new InvocationAST(new Region(chainCtx), result, /*null, */methodName, arguments/*, null*/);
                                 break;
                         }
                     }
@@ -726,6 +727,65 @@ public class ASMCompiler {
                     .collect(Collectors.toList());
                 
                 return new NewAST(new Region(ctx), c, arguments);
+            }
+
+            @Override
+            public ExpressionAST visitAmbigousName(JasyParser.AmbigousNameContext ctx) {
+                List<ParserRuleContext> partCtxs = getAmbigousNameParts(ctx);
+                // Last part is assumed to be either a field access or an invocation.
+                ParserRuleContext lastPartCtx = partCtxs.get(0);
+                // Remove last part; now, the actual parts of the ambiguous name remains.
+                // - These parts are assumed to be only lookups.
+                partCtxs.remove(partCtxs.size() - 1);
+                
+                if(partCtxs.size() > 0) {
+                    Region targetRegion = new Region(
+                        new Position(partCtxs.get(0).getStart()),
+                        new Position(partCtxs.get(partCtxs.size() - 1).getStop())
+                    );
+                    List<ExpressionAST> parts = partCtxs.stream()
+                        .map(p -> getExpression(p, mp) /*p assumed to be lookup ctx*/)
+                        .collect(Collectors.toList());
+                    AmbiguousNameAST target = new AmbiguousNameAST(targetRegion, parts);
+
+                    return lastPartCtx.accept(new JasyBaseVisitor<ExpressionAST>() {
+                        @Override
+                        public ExpressionAST visitLookup(LookupContext ctx) {
+                            ExpressionAST fieldName = getExpression((ParserRuleContext)ctx.getChild(0), mp);
+                            // Field access
+                            return new FieldGetAST(new Region(ctx), target, fieldName);
+                        }
+
+                        @Override
+                        public ExpressionAST visitInvocation(InvocationContext ctx) {
+                            String methodName = ctx.identifier().getText();
+                            List<ExpressionAST> arguments = ctx.arguments().expression().stream()
+                                .map(a -> getExpression(ctx, mp))
+                                .collect(Collectors.toList());
+                            
+                            return new InvocationAST(new Region(ctx), target, methodName, arguments);
+                        }
+                    });
+                }
+                
+                return getExpression(lastPartCtx, mp);
+            }
+            
+            private List<ParserRuleContext> getAmbigousNameParts(JasyParser.AmbigousNameContext ctx) {
+                ArrayList<ParserRuleContext> parts = new ArrayList<>();
+                
+                JasyParser.AmbigousNameContext currentPartCtx = ctx;
+                
+                while(currentPartCtx != null) {
+                    ParserRuleContext part = currentPartCtx.invocation() != null 
+                        ? currentPartCtx.invocation() : currentPartCtx.lookup();
+                    
+                    parts.add(part);
+                    
+                    currentPartCtx = currentPartCtx.next;
+                }
+                
+                return parts;
             }
         });
     }

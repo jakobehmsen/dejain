@@ -1,5 +1,6 @@
 package jasy.lang.ast;
 
+import jasy.lang.ClassResolver;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
@@ -21,14 +22,14 @@ import org.objectweb.asm.tree.InsnList;
 
 public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     private Scope thisClass;
-    private ExpressionAST expression;
+    private ClassResolver classResolver;
     private Hashtable<String, ParameterInfo> parameters;
     private Hashtable<String, TypeAST> variables;
     private boolean asExpression;
 
-    public ExpressionPreparer(Scope thisClass, ExpressionAST expression, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
+    public ExpressionPreparer(Scope thisClass, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
         this.thisClass = thisClass;
-        this.expression = expression;
+        this.classResolver = classResolver;
         this.parameters = parameters;
         this.variables = variables;
         this.asExpression = asExpression;
@@ -41,7 +42,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitMetaCode(MetaCodeAST ctx) {
-        PreparedAST body = MethodAST.toCode(thisClass, ctx.body, parameters, variables);
+        PreparedAST body = MethodAST.toCode(thisClass, ctx.body, classResolver, parameters, variables);
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -319,46 +320,55 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     private PreparedExpressionAST expressionAsString(PreparedExpressionAST ctx) {
         switch (ctx.resultType().getSimpleName()) {
             case "int":
-                return createInvocation(null, new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
+                return createInvocation(new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
             default:
-                return createInvocation(ctx, null, "toString", Collections.emptyList());
+                return createInvocation(ctx, "toString", Collections.emptyList());
         }
     }
 
     private PreparedExpressionAST expressionAsStatement(PreparedExpressionAST ctx) {
         switch (ctx.resultType().getSimpleName()) {
             case "int":
-                return createInvocation(null, new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
+                return createInvocation(new NameTypeAST(null, Integer.class), "toString", Arrays.asList(ctx));
             default:
-                return createInvocation(ctx, null, "toString", Collections.emptyList());
+                return createInvocation(ctx, "toString", Collections.emptyList());
         }
+    }
+    
+    private PreparedExpressionAST toExpression(ExpressionAST expression) {
+        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables);
+    }
+    
+    private PreparedExpressionAST toExpression(ExpressionAST expression, boolean asExpression) {
+        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables, asExpression);
     }
 
     @Override
     public PreparedExpressionAST visitInvocation(InvocationAST ctx) {
-        PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+//        PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+        Object target = ctx.target instanceof ExpressionAST ? ((ExpressionAST)ctx.target).accept(this) : ctx.target;
         List<PreparedExpressionAST> arguments = ctx.arguments.stream()
-            .map(a -> MethodAST.toExpression(thisClass, a, parameters, variables))
+            .map(a -> toExpression(a))
             .collect(Collectors.toList());
-        return createInvocation(target, ctx.declaringClass, ctx.methodName, arguments);
+        return createInvocation(target, ctx.methodName, arguments);
     }
 
-    private PreparedExpressionAST createInvocation(PreparedExpressionAST target, TypeAST declaringClass, String methodName, List<PreparedExpressionAST> arguments) {
+    private PreparedExpressionAST createInvocation(Object target, String methodName, List<PreparedExpressionAST> arguments) {
         Type tmpTargetType = null;
         List<java.lang.reflect.Method> ms;
-        if (target != null) {
-            ms = getCompatibleMethodsWith(((NameTypeAST) target.resultType()).getType(), false, methodName, arguments);
+        if (target instanceof PreparedExpressionAST) {
+            ms = getCompatibleMethodsWith(((NameTypeAST) ((PreparedExpressionAST)target).resultType()).getType(), false, methodName, arguments);
         } else {
-            ms = getCompatibleMethodsWith(((NameTypeAST) declaringClass).getType(), true, methodName, arguments);
+            ms = getCompatibleMethodsWith(((NameTypeAST) target).getType(), true, methodName, arguments);
         }
         java.lang.reflect.Method tmpMethod = ms.get(0);
-        if (target != null) {
-            tmpTargetType = Type.getType(target.resultType().getDescriptor());
+        if (target instanceof PreparedExpressionAST) {
+            tmpTargetType = Type.getType(((PreparedExpressionAST)target).resultType().getDescriptor());
         }
         TypeAST tmpCastType = null;
         if (tmpMethod.getGenericReturnType() instanceof TypeVariable) {
             TypeVariable rtv = (TypeVariable) tmpMethod.getGenericReturnType();
-            TypeAST typeArgument = target.resultType().getTypeArgument(rtv.getName());
+            TypeAST typeArgument = ((PreparedExpressionAST)target).resultType().getTypeArgument(rtv.getName());
             tmpCastType = typeArgument;
         }
         Type targetType = tmpTargetType;
@@ -373,21 +383,21 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
-                if (target != null) {
-                    target.generate(c, generator, originalIl);
+                if (target instanceof PreparedExpressionAST) {
+                    ((PreparedExpressionAST)target).generate(c, generator, originalIl);
                 }
                 arguments.forEach(a -> 
                     a.generate(c, generator, originalIl));
                 Type returnType = /*castType != null ? castType : */ Type.getType(method.getReturnType());
                 Method asmMethod = new Method(methodName, returnType, argumentTypes);
-                if (target != null) {
+                if (target instanceof PreparedExpressionAST) {
                     if (method.getDeclaringClass().isInterface()) {
                         generator.methodNode.invokeInterface(targetType, asmMethod);
                     } else {
                         generator.methodNode.invokeVirtual(targetType, asmMethod);
                     }
                 } else {
-                    generator.methodNode.invokeStatic(Type.getType(declaringClass.getDescriptor()), asmMethod);
+                    generator.methodNode.invokeStatic(Type.getType(((NameTypeAST) target).getDescriptor()), asmMethod);
                 }
                 if (asExpression && castType != null) {
                     generator.methodNode.checkCast(Type.getType(castType.getDescriptor()));
@@ -476,7 +486,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     @Override
     public PreparedExpressionAST visitMetaExpression(MetaExpressionAST ctx) {
         // Assumed, body is an expression
-        PreparedExpressionAST expressionRaw = MethodAST.toExpression(thisClass, ctx.body, parameters, variables, asExpression);
+        PreparedExpressionAST expressionRaw = toExpression(ctx.body, asExpression);
         TypeAST resultTypeRaw = expressionRaw.resultType();
         if (!ExpressionAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType())) {
             if(CodeAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType())) {
@@ -539,9 +549,10 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitFieldGet(FieldGetAST ctx) {
-        PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+//        PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
+        Object target = ctx.target instanceof ExpressionAST ? ((ExpressionAST)ctx.target).accept(this) : ctx.target;
         String fieldName = ((StringLiteralAST)ctx.fieldName).value;
-        TypeAST fieldType = target != null ? target.resultType().getFieldType(fieldName) : null /*from declared class instead*/ ;
+        TypeAST fieldType = target instanceof PreparedExpressionAST ? ((PreparedExpressionAST)target).resultType().getFieldType(fieldName) : null /*from declared class instead*/ ;
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -551,8 +562,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 if (asExpression) {
-                    target.generate(c, generator, originalIl);
-                    generator.methodNode.getField(Type.getType(target.resultType().getDescriptor(c.getTarget().name)), fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
+                    ((PreparedExpressionAST)target).generate(c, generator, originalIl);
+                    generator.methodNode.getField(Type.getType(((PreparedExpressionAST)target).resultType().getDescriptor(c.getTarget().name)), fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
                 }
             }
         };
@@ -642,7 +653,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     }
 
     private PreparedExpressionAST getAsExpression(ExpressionAST ctx) {
-        return MethodAST.toExpression(thisClass, ctx, parameters, variables, true);
+        return toExpression(ctx,true);
     }
 
     @Override
@@ -831,7 +842,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
-        List<PreparedAST> injections = ctx.injections.stream().map((jasy.lang.ast.InjectAST i) -> MethodAST.toCode(thisClass, i, parameters, variables)).collect(Collectors.toList());
+        List<PreparedAST> injections = ctx.injections.stream().map((jasy.lang.ast.InjectAST i) -> MethodAST.toCode(thisClass, i, classResolver, parameters, variables)).collect(Collectors.toList());
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -1054,5 +1065,44 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     generateOperation(generator, varId);
             }
         };
+    }
+
+    @Override
+    public PreparedExpressionAST visitAmbiguousName(AmbiguousNameAST ctx) {
+        // May not be a valid expression!!!
+        // Otherwise, is, functionally, a field get - possibly recursive
+        
+        ExpressionAST firstNamePartAsExpression = namePartAsExpression(ctx.nameParts.get(0));
+        AST target;
+        
+        if(firstNamePartAsExpression != null) {
+            target = firstNamePartAsExpression;
+        } else {
+            // Attempt to resolve start as class reference
+            
+            String className = ((StringLiteralAST)((LookupAST)ctx.nameParts.get(0)).name).value;
+            className = classResolver.resolveClassName(className);
+            try {
+                target = new NameTypeAST(null, Class.forName(className));
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ExpressionPreparer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    private ExpressionAST namePartAsExpression(ExpressionAST namePart) {
+        String firstNamePart = ((StringLiteralAST)((LookupAST)namePart).name).value;
+        
+        if(parameters.containsKey(firstNamePart)) {
+            // Is parameter
+        } else if(variables.containsKey(firstNamePart)) {
+            // Is variable
+        } else if(thisClass.getFieldType(firstNamePart) != null) {
+            // If field
+        }
+        
+        return null;
     }
 }

@@ -96,7 +96,7 @@ public class CodePrinter implements CodeVisitor<Object> {
 
     @Override
     public Object visitInvocation(InvocationAST ctx) {
-        ctx.target.accept(this);
+        printTarget(ctx.target);
         print(".");
         print(ctx.methodName);
         print("(");
@@ -106,6 +106,13 @@ public class CodePrinter implements CodeVisitor<Object> {
             .forEach(r -> r.run());
         print(")");
         return null;
+    }
+    
+    public void printTarget(AST target) {
+        if(target instanceof ExpressionAST)
+            ((ExpressionAST)target).accept(this);
+        else
+            print(((TypeAST)target).getName());
     }
 
     @Override
@@ -135,10 +142,7 @@ public class CodePrinter implements CodeVisitor<Object> {
 
     @Override
     public Object visitFieldGet(FieldGetAST ctx) {
-        if(ctx.target != null)
-            ctx.target.accept(this);
-//        else
-//            print(ctx.declaringClass.getName());
+        printTarget(ctx.target);
         
         print(".");
         printName(ctx.fieldName);
@@ -327,6 +331,17 @@ public class CodePrinter implements CodeVisitor<Object> {
     @Override
     public Object visitDoubleLiteral(DoubleLiteralAST ctx) {
         print(ctx.value);
+        return null;
+    }
+
+    @Override
+    public Object visitAmbiguousName(AmbiguousNameAST ctx) {
+        for(int i = 0; i < ctx.nameParts.size(); i++) {
+            if(i > 0)
+                print(".");
+            ctx.nameParts.get(i).accept(this);
+        }
+        
         return null;
     }
 }

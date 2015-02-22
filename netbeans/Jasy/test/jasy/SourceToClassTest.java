@@ -1154,6 +1154,38 @@ public class SourceToClassTest {
     }
     
     @Test
+    public void testAllClassesAddMethodAmbigousName() throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
+        Class<?> c = TestClassStaticField.class;
+        Field field = c.getDeclaredField("myField");
+        
+        String expectedResult = (String)field.get(null);
+        
+        String templaceSrc =
+            "class {\n" +
+            "    +public Object getValue() {\n" +
+            "        return <<ambigousClassName>>." + field.getName() + ";\n" +
+            "    }\n" +
+            "}\n";
+        
+        expand(templaceSrc, 
+            map(entry("ambigousClassName", c.getSimpleName())),
+            map(entry("ambigousClassName", c.getName()))
+        ).forEach(combination -> {
+            try {
+                testSourceToClasses(
+                    new String[]{"jasy.TestClass1"},
+                    combination.src,
+                    forClass("jasy.TestClass1",
+                        forInstance(imethod("getValue", invocationResult(is(expectedResult))))
+                    )
+                );
+            } catch (IOException ex) {
+                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }
+    
+    @Test
     public void testAllClassesAddMethodWithReturnInIfElse() throws IOException {
         int trueIfGT = 10;
         
@@ -1366,7 +1398,7 @@ public class SourceToClassTest {
                     String msg = errorMessages.stream().map(m -> m.toString()).collect(Collectors.joining("\n"));
                     throw new RuntimeException(msg);
                 } else {
-                    Function<Transformation<ClassNode>, Runnable> classTransformer = module.toClassTransformer();
+                    Function<Transformation<ClassNode>, Runnable> classTransformer = module.toClassTransformer(resolver);
                     ExhaustiveClassTransformer eTransformer = new ExhaustiveClassTransformer(classTransformer);
                     byte[] newBytes = eTransformer.transform(bytes);
                     
@@ -1394,17 +1426,20 @@ public class SourceToClassTest {
         for(String className: classNames)
             classMap.addClassName(className);
         
+        classMap.addClassName("java.lang.System");
         classMap.addClassName("java.lang.String");
         classMap.addClassName("java.lang.Object");
         classMap.addClassName("java.lang.StringBuilder");
         classMap.addClassName("jasy.lang.ast.CodeAST");
         classMap.addClassName("org.objectweb.asm.tree.FieldNode");
+        classMap.addClassName(TestClassStaticField.class.getName());
         
         CommonClassResolver resolver = new CommonClassResolver(classMap);
         
         resolver.importPackage("java.lang");
         resolver.importPackage("jasy.lang.ast");
         resolver.importPackage("org.objectweb.asm.tree");
+        resolver.importPackage("jasy");
         
         ClassLoader cl = new ProxyClassLoader(ifIn(classNames), classBytesFromName().andThen(transformClass(resolver, source)));
         

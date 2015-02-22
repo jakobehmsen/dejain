@@ -47,7 +47,7 @@ public class ClassAST extends AbstractAST implements Scope {
         members.forEach(x -> x.populate(transformer));
     }
 
-    public void populate(IfAllTransformer<Transformation<ClassNode>> transformer) {
+    public void populate(ClassResolver classResolver, IfAllTransformer<Transformation<ClassNode>> transformer) {
         IfAllTransformer<Transformation<FieldNode>> fieldTransformer = new IfAllTransformer<>();
         IfAllTransformer<Transformation<MethodNode>> methodTransformer = new IfAllTransformer<>();
         
@@ -69,12 +69,12 @@ public class ClassAST extends AbstractAST implements Scope {
             members.forEach(x -> x.accept(new MemberVisitor() {
                 @Override
                 public void visitMethod(MethodAST ctx) {
-                    ctx.populate(memberTransformer, methodTransformer);
+                    ctx.populate(classResolver, memberTransformer, methodTransformer);
                 }
 
                 @Override
                 public void visitField(FieldAST ctx) {
-                    ctx.populate(memberTransformer, fieldTransformer);
+                    ctx.populate(classResolver, memberTransformer, fieldTransformer);
                 }
             }));
 

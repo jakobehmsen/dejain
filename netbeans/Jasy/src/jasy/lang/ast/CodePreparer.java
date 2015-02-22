@@ -1,5 +1,6 @@
 package jasy.lang.ast;
 
+import jasy.lang.ClassResolver;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,21 +14,29 @@ import org.objectweb.asm.tree.InsnList;
 
 public class CodePreparer implements CodeVisitor<PreparedAST> {
     private Scope thisClass;
-    private CodeAST ctx;
+    private ClassResolver classResolver;
     private Hashtable<String, ParameterInfo> parameters;
     private Hashtable<String, TypeAST> variables;
 
-    public CodePreparer(Scope thisClass, CodeAST ctx, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
+    public CodePreparer(Scope thisClass, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
         this.thisClass = thisClass;
-        this.ctx = ctx;
+        this.classResolver = classResolver;
         this.parameters = parameters;
         this.variables = variables;
+    }
+    
+    private PreparedExpressionAST toExpression(ExpressionAST expression) {
+        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables);
+    }
+    
+    private PreparedExpressionAST toExpression(ExpressionAST expression, boolean asExpression) {
+        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables, asExpression);
     }
 
     @Override
     public PreparedAST visitReturn(ReturnAST ctx) {
         if(ctx.expression != null) {
-            PreparedExpressionAST expression = MethodAST.toExpression(thisClass, ctx.expression, parameters, variables, true);
+            PreparedExpressionAST expression = toExpression(ctx.expression, true);
             TypeAST expressionResultType = expression.resultType();
             return new PreparedAST() {
                 @Override
@@ -126,7 +135,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 
     @Override
     public PreparedAST visitInvocation(InvocationAST ctx) {
-        return MethodAST.toExpression(thisClass, ctx, parameters, variables, false);
+        return toExpression(ctx, false);
     }
 
     @Override
@@ -152,7 +161,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
     @Override
     public PreparedAST visitVariableDeclaration(VariableDeclarationAST ctx) {
         variables.put(ctx.name, ctx.type);
-        PreparedExpressionAST value = ctx.value != null ? MethodAST.toExpression(thisClass, ctx.value, parameters, variables) : null;
+        PreparedExpressionAST value = ctx.value != null ? toExpression(ctx.value) : null;
         return new PreparedAST() {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
@@ -177,7 +186,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 
     @Override
     public PreparedAST visitRootExpression(RootExpressionAST ctx) {
-        return MethodAST.toExpression(thisClass, ctx.expression, parameters, variables, false);
+        return toExpression(ctx.expression, false);
     }
 
     @Override
@@ -214,7 +223,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
     public PreparedAST visitInject(InjectAST ctx) {
         // A list for the statements of the immediate outer block being
         // built is assumed to be on the top of the stack.
-        PreparedExpressionAST expression = MethodAST.toExpression(thisClass, ctx.expression, parameters, variables, true);
+        PreparedExpressionAST expression = toExpression(ctx.expression, true);
         return new PreparedAST() {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
@@ -256,7 +265,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 
     @Override
     public PreparedAST visitWhile(WhileAST ctx) {
-        PreparedExpressionAST condition = MethodAST.toExpression(thisClass, ctx.condition, parameters, variables);
+        PreparedExpressionAST condition = toExpression(ctx.condition);
         PreparedAST body = ctx.body.accept(this);
         
         return new PreparedAST() {
@@ -280,7 +289,7 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 
     @Override
     public PreparedAST visitIfElse(IfElseAST ctx) {
-        PreparedExpressionAST condition = MethodAST.toExpression(thisClass, ctx.condition, parameters, variables);
+        PreparedExpressionAST condition = toExpression(ctx.condition);
         PreparedAST ifTrueBody = ctx.ifTrueBody.accept(this);
         PreparedAST ifFalseBody = ctx.ifFalseBody != null ? ctx.ifFalseBody.accept(this) : null;
         
@@ -342,6 +351,11 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
 
     @Override
     public PreparedAST visitDoubleLiteral(DoubleLiteralAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PreparedAST visitAmbiguousName(AmbiguousNameAST ctx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -46,11 +46,9 @@ public class CodeMapper implements CodeVisitor<CodeAST> {
     public ExpressionAST visitInvocation(InvocationAST ctx) {
         return new InvocationAST(
             ctx.getRegion(), 
-            ctx.target != null ? getExpression(ctx.target) : null, 
-            ctx.declaringClass, 
+            ctx.target, 
             ctx.methodName, 
-            ctx.arguments.stream().map(a -> getExpression(a)).collect(Collectors.toList()), 
-            null);
+            ctx.arguments.stream().map(a -> getExpression(a)).collect(Collectors.toList()));
     }
 
     @Override
@@ -77,7 +75,7 @@ public class CodeMapper implements CodeVisitor<CodeAST> {
     public ExpressionAST visitFieldGet(FieldGetAST ctx) {
         return new FieldGetAST(
             ctx.getRegion(), 
-            ctx.target != null ? getExpression(ctx.target) : null,
+            ctx.target,
             ctx.fieldName);
     }
 
@@ -181,5 +179,14 @@ public class CodeMapper implements CodeVisitor<CodeAST> {
     @Override
     public CodeAST visitDoubleLiteral(DoubleLiteralAST ctx) {
         return ctx;
+    }
+
+    @Override
+    public CodeAST visitAmbiguousName(AmbiguousNameAST ctx) {
+        List<ExpressionAST> nameParts = ctx.nameParts.stream()
+            .map(p -> getExpression(p))
+            .collect(Collectors.toList());
+        
+        return new AmbiguousNameAST(ctx.getRegion(), nameParts);
     }
 }

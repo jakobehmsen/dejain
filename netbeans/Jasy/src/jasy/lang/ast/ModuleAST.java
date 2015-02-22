@@ -22,18 +22,18 @@ public class ModuleAST extends AbstractAST {
         classes.forEach(c -> c.resolve(thisClass, expectedResultType, resolver, errorMessages));
     }
 
-    public Function<Transformation<ClassNode>, Runnable> toClassTransformer() {
+    public Function<Transformation<ClassNode>, Runnable> toClassTransformer(ClassResolver classResolver) {
         FirstByIndexTransformer<Transformation<ClassNode>, String> transformer = new FirstByIndexTransformer<>(c -> c.getTarget().name);
         
-        populate(transformer);
+        populate(classResolver, transformer);
         
         return transformer;
     }
     
-    public void populate(FirstByIndexTransformer<Transformation<ClassNode>, String> classesTransformer) {
+    public void populate(ClassResolver classResolver, FirstByIndexTransformer<Transformation<ClassNode>, String> classesTransformer) {
         classes.forEach(c -> {
             IfAllTransformer<Transformation<ClassNode>> classTransformer = new IfAllTransformer<>();
-            c.populate(classTransformer);
+            c.populate(classResolver, classTransformer);
             classesTransformer.addTransformer(classTransformer);
         });
     }

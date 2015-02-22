@@ -32,4 +32,5 @@ public interface CodeVisitor<T> {
     T visitIncDec(IncDecExpression ctx);
     T visitFloatLiteral(FloatLiteralAST ctx);
     T visitDoubleLiteral(DoubleLiteralAST ctx);
+    T visitAmbiguousName(AmbiguousNameAST ctx);
 }

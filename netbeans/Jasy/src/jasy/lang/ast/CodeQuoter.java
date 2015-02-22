@@ -68,17 +68,23 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitInvocation(InvocationAST ctx) {
-        ExpressionAST quotedTarget = ctx.target != null ? ctx.target.accept(this) : new NullAST(null);
-        ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
+        ExpressionAST quotedTarget = quoteTarget(ctx.target);
         ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
         ExpressionAST quotedArguments = quote(ctx.arguments);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, InvocationAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, new NullAST(null)));
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, InvocationAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedMethodName, quotedArguments));
+    }
+    
+    private ExpressionAST quoteTarget(AST target) {
+        if(target instanceof ExpressionAST)
+            return ((ExpressionAST)target).accept(this);
+        else // Assumed to be TypeAST
+            return MethodAST.quote((TypeAST)target);
     }
 
     private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
         List<ExpressionAST> expressionList = expressions.stream().map((a) -> a.accept(this)).collect(Collectors.toList());
         ExpressionAST quotedExpressionsAsArray = new ArrayAST(null, new NameTypeAST(null, CodeAST.class), expressionList);
-        return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
+        return new InvocationAST(null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray));
     }
 
     @Override
@@ -110,9 +116,9 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitFieldGet(FieldGetAST ctx) {
-        ExpressionAST quotedTarget = ctx.target.accept(this);
+        ExpressionAST quotedTarget = quoteTarget(ctx.target);
         ExpressionAST quotedFieldName = ctx.fieldName.accept(this);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), Arrays.asList(null, quotedTarget, quotedFieldName));
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedFieldName));
     }
 
     @Override
@@ -263,6 +269,17 @@ public class CodeQuoter implements CodeVisitor<ExpressionAST> {
             ctx.getRegion(), 
             new NameTypeAST(null, IncDecExpression.class), 
             Arrays.asList(new NullAST(null), new IntLiteralAST(null, ctx.timing), new IntLiteralAST(null, ctx.operator), quotedOperand)
+        );
+    }
+
+    @Override
+    public ExpressionAST visitAmbiguousName(AmbiguousNameAST ctx) {
+        ExpressionAST quotedParts = quote(ctx.nameParts);
+        
+        return new NewAST(
+            ctx.getRegion(), 
+            new NameTypeAST(null, AmbiguousNameAST.class), 
+            Arrays.asList(new NullAST(null), quotedParts)
         );
     }
 }

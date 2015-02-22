@@ -6,36 +6,38 @@ import jasy.lang.ClassResolver;
 import java.util.List;
 
 public class InvocationAST extends AbstractAST implements ExpressionAST {
-    public ExpressionAST target;
-    public TypeAST declaringClass;
+    public AST target; // Either ExpressionAST or TypeAST
+//    public TypeAST declaringClass;
     public String methodName;
     public List<ExpressionAST> arguments;
-    public TypeAST resultType;
+//    public TypeAST resultType;
 
-    public InvocationAST(Region region, ExpressionAST target, TypeAST declaringClass, String methodName, List<ExpressionAST> arguments, TypeAST resultType) {
+    public InvocationAST(Region region, AST target, /*TypeAST declaringClass, */String methodName, List<ExpressionAST> arguments/*, TypeAST resultType*/) {
         super(region);
         
         this.target = target;
-        this.declaringClass = declaringClass;
+//        this.declaringClass = declaringClass;
         this.methodName = methodName;
         this.arguments = arguments;
-        this.resultType = resultType;
+//        this.resultType = resultType;
     }
 
     public static InvocationAST newStatic(Region region, TypeAST declaringClass, String methodName, List<ExpressionAST> arguments) {
-        return new InvocationAST(region, null, declaringClass, methodName, arguments, null);
+//        return new InvocationAST(region, null, declaringClass, methodName, arguments, null);
+        return null;
     }
 
     public static InvocationAST newInstance(Region region, ExpressionAST target, String methodName, List<ExpressionAST> arguments) {
-        return new InvocationAST(region, target, null, methodName, arguments, null);
+//        return new/ InvocationAST(region, target, null, methodName, arguments, null);
+        return null;
     }
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
         if(target != null)
             target.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        else
-            declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
+//        else
+//            declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
         
         arguments.forEach(a -> a.resolve(thisClass, expectedResultType, resolver, errorMessages));
         
@@ -58,7 +60,8 @@ public class InvocationAST extends AbstractAST implements ExpressionAST {
 
     @Override
     public TypeAST resultType() {
-        return resultType;
+//        return resultType;
+        return null;
     }
 
     @Override

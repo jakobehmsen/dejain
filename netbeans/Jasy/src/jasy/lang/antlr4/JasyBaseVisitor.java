@@ -306,6 +306,14 @@ public class JasyBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements J
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitAmbigousName(@NotNull JasyParser.AmbigousNameContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitLiteral(@NotNull JasyParser.LiteralContext ctx) { return visitChildren(ctx); }
 
 	/**

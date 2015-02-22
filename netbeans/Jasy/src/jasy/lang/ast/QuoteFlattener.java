@@ -55,11 +55,9 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
             if(quotedStatement != null) {
                 flattenedCode.add(new InvocationAST(
                     null, 
-                    new LookupAST(null, new StringLiteralAST(null, statementVarName)), 
-                    null, 
+                    new LookupAST(null, new StringLiteralAST(null, statementVarName)),
                     "add", 
-                    Arrays.asList(quotedStatement), 
-                    null
+                    Arrays.asList(quotedStatement)
                 ));
             }
         }
@@ -115,17 +113,19 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitInvocation(InvocationAST ctx) {
-        ExpressionAST quotedTarget = ctx.target != null ? ctx.target.accept(this) : new NullAST(null);
-        ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
-        ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
-        ExpressionAST quotedArguments = quote(ctx.arguments);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, InvocationAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, new NullAST(null)));
+//        ExpressionAST quotedTarget = ctx.target != null ? ctx.target.accept(this) : new NullAST(null);
+//        ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
+//        ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
+//        ExpressionAST quotedArguments = quote(ctx.arguments);
+//        return new NewAST(ctx.getRegion(), new NameTypeAST(null, InvocationAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, new NullAST(null)));
+        
+        return null;
     }
 
     private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
         List<ExpressionAST> expressionList = expressions.stream().map((a) -> a.accept(this)).collect(Collectors.toList());
         ExpressionAST quotedExpressionsAsArray = new ArrayAST(null, new NameTypeAST(null, CodeAST.class), expressionList);
-        return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
+        return new InvocationAST(null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray));
     }
 
     @Override
@@ -149,9 +149,11 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitFieldGet(FieldGetAST ctx) {
-        ExpressionAST quotedTarget = ctx.target.accept(this);
-        ExpressionAST quotedFieldName = ctx.fieldName.accept(this);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), Arrays.asList(null, quotedTarget, quotedFieldName));
+//        ExpressionAST quotedTarget = ctx.target.accept(this);
+//        ExpressionAST quotedFieldName = ctx.fieldName.accept(this);
+//        return new NewAST(ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), Arrays.asList(null, quotedTarget, quotedFieldName));
+        
+        return null;
     }
 
     @Override
@@ -264,6 +266,11 @@ public class QuoteFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitDoubleLiteral(DoubleLiteralAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ExpressionAST visitAmbiguousName(AmbiguousNameAST aThis) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -40,7 +40,7 @@ unaryPrefixOperator: operator=(INC | DEC | PLUS | MINUS | TILDE | EXCLA);
 unaryPostfixExpression: leafExpression unaryPostfixOperator?;
 unaryPostfixOperator: operator=(INC | DEC);
 leafExpression: 
-    (invocation | literal | lookup | thisResult | proceedStatement | 
+    (/*invocation | */ ambigousName | literal | /*lookup |*/ thisResult | proceedStatement | 
     metaExpression | quotedExpression | newExpression | 
     embeddedExpression) 
     leafExpressionChain;
@@ -49,6 +49,7 @@ leafExpressionChain: (DOT (lookup|invocation))*;
 thisResult: KW_THIS_RESULT;
 invocation: identifier OPEN_PAR arguments CLOSE_PAR;
 arguments: (expression (COMMA expression)*)?;
+ambigousName: invocation | lookup (DOT next=ambigousName)?;
 lookup: unqualifiedLookup | qualifiedLookup;
 unqualifiedLookup: identifier;
 qualifiedLookup: COLON expression;

@@ -264,6 +264,13 @@ public interface JasyVisitor<T> extends ParseTreeVisitor<T> {
 	T visitUnaryPrefixOperator(@NotNull JasyParser.UnaryPrefixOperatorContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link JasyParser#ambigousName}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAmbigousName(@NotNull JasyParser.AmbigousNameContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link JasyParser#literal}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

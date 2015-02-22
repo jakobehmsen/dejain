@@ -46,17 +46,23 @@ public class QuoteProcessor extends CodeMapper {
 
     @Override
     public ExpressionAST visitInvocation(InvocationAST ctx) {
-        ExpressionAST quotedTarget = ctx.target != null ? getExpression(ctx.target) : new NullAST(null);
-        ExpressionAST quotedDeclaringClass = ctx.declaringClass != null ? MethodAST.quote(ctx.declaringClass) : new NullAST(null);
+        ExpressionAST quotedTarget = quoteTarget(ctx.target);
         ExpressionAST quotedMethodName = MethodAST.quote(ctx.methodName);
         ExpressionAST quotedArguments = quote(ctx.arguments);
-        return new NewAST(ctx.getRegion(), new NameTypeAST(null, InvocationAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedDeclaringClass, quotedMethodName, quotedArguments, new NullAST(null)));
+        return new NewAST(ctx.getRegion(), new NameTypeAST(null, InvocationAST.class), Arrays.asList(new NullAST(null), quotedTarget, quotedMethodName, quotedArguments));
+    }
+    
+    private ExpressionAST quoteTarget(AST target) {
+        if(target instanceof ExpressionAST)
+            return (ExpressionAST)((ExpressionAST)target).accept(this);
+        else // Assumed to be TypeAST
+            return MethodAST.quote((TypeAST)target);
     }
 
     private <T extends CodeAST> ExpressionAST quote(List<T> expressions) {
         List<ExpressionAST> expressionList = expressions.stream().map((a) -> getExpression(a)).collect(Collectors.toList());
         ExpressionAST quotedExpressionsAsArray = new ArrayAST(null, new NameTypeAST(null, CodeAST.class), expressionList);
-        return new InvocationAST(null, null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray), null);
+        return new InvocationAST(null, new NameTypeAST(null, Arrays.class), "asList", Arrays.asList(quotedExpressionsAsArray));
     }
 
     @Override
@@ -88,7 +94,7 @@ public class QuoteProcessor extends CodeMapper {
 
     @Override
     public ExpressionAST visitFieldGet(FieldGetAST ctx) {
-        ExpressionAST quotedTarget = getExpression(ctx.target);
+        ExpressionAST quotedTarget = quoteTarget(ctx.target);
         ExpressionAST quotedFieldName = getExpression(ctx.fieldName);
         return new NewAST(ctx.getRegion(), new NameTypeAST(null, FieldGetAST.class), Arrays.asList(null, quotedTarget, quotedFieldName));
     }

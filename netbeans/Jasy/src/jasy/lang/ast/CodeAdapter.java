@@ -161,4 +161,9 @@ public class CodeAdapter<T> implements CodeVisitor<T> {
     public T visitDoubleLiteral(DoubleLiteralAST ctx) {
         return visitor.visitDoubleLiteral(ctx);
     }
+
+    @Override
+    public T visitAmbiguousName(AmbiguousNameAST ctx) {
+        return visitor.visitAmbiguousName(ctx);
+    }
 }

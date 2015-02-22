@@ -101,7 +101,7 @@ public class Main {
                     Hashtable<String, ParameterInfo> metaParameters = new Hashtable<>();
                     Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
         
-                    PreparedAST pbody = MethodAST.toCode(new ClassNodeScope(metaObjectClassNode), applicationCode, metaParameters, metaVariables);
+                    PreparedAST pbody = MethodAST.toCode(new ClassNodeScope(metaObjectClassNode), applicationCode, classResolver, metaParameters, metaVariables);
 
                     metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
                     metaObjectClassNode.access = Opcodes.ACC_PUBLIC;

@@ -42,11 +42,9 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
     public ExpressionAST visitInvocation(InvocationAST ctx) {
         return new InvocationAST(
             ctx.getRegion(), 
-            ctx.target != null ? getExpression(ctx.target) : null, 
-            ctx.declaringClass, 
+            ctx.target instanceof ExpressionAST ? getExpression((ExpressionAST)ctx.target) : ctx.target, 
             ctx.methodName, 
-            ctx.arguments.stream().map(a -> getExpression(a)).collect(Collectors.toList()), 
-            null);
+            ctx.arguments.stream().map(a -> getExpression(a)).collect(Collectors.toList()));
     }
 
     @Override
@@ -73,7 +71,7 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
     public ExpressionAST visitFieldGet(FieldGetAST ctx) {
         return new FieldGetAST(
             ctx.getRegion(), 
-            ctx.target != null ? getExpression(ctx.target) : null,
+            ctx.target instanceof ExpressionAST ? getExpression((ExpressionAST)ctx.target) : ctx.target,
             ctx.fieldName);
     }
 
@@ -179,6 +177,11 @@ public class ExpressionFlattener implements CodeVisitor<ExpressionAST> {
 
     @Override
     public ExpressionAST visitDoubleLiteral(DoubleLiteralAST ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ExpressionAST visitAmbiguousName(AmbiguousNameAST ctx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

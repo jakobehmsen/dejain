@@ -54,7 +54,7 @@ public class FieldAST extends AbstractAST implements MemberAST {
         }
     }
 
-    public void populate(CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<FieldNode>> transformer) {
+    public void populate(ClassResolver classResolver, CompositeTransformer<Transformation<ClassNode>> classTransformer, IfAllTransformer<Transformation<FieldNode>> transformer) {
         if(!isAdd) {
             IfAllTransformer<Transformation<ClassNode>> fieldsTransformerSequence = new IfAllTransformer<>();
             
@@ -110,7 +110,7 @@ public class FieldAST extends AbstractAST implements MemberAST {
                                     if(name.equals("<init>")) {
                                         GeneratorAdapter generatorAdapter = new GeneratorAdapter(cons, cons.access, cons.name, cons.desc);
                                         generatorAdapter.loadThis();
-                                        PreparedAST pa = MethodAST.toExpression(new ClassNodeScope(c.getTarget()), FieldAST.this.value, new Hashtable<>(), new Hashtable<>());
+                                        PreparedAST pa = MethodAST.toExpression(new ClassNodeScope(c.getTarget()), FieldAST.this.value, classResolver, new Hashtable<>(), new Hashtable<>());
                                         pa.generate(c, new MethodCodeGenerator(generatorAdapter, null), new InsnList());
                                         String className = c.getTarget().name;
                                         generatorAdapter.putField(Type.getType(className), selector.name, Type.getType(selector.fieldType.getDescriptor(className)));
