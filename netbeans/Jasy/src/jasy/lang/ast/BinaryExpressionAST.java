@@ -10,15 +10,15 @@ import java.util.List;
 public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
     public static final int OPERATOR_ADD = 0;
     public static final int OPERATOR_SUB = 1;
-    public static final int OPERATOR_LT = 2;
-    public static final int OPERATOR_LTE = 3;
-    public static final int OPERATOR_GT = 4;
-    public static final int OPERATOR_GTE = 5;
-    public static final int OPERATOR_MULT = 6;
-    public static final int OPERATOR_DIV = 7;
-    public static final int OPERATOR_EQ = 8;
-    public static final int OPERATOR_NE = 9;
-    public static final int OPERATOR_REM = 10;
+    public static final int OPERATOR_MULT = 2;
+    public static final int OPERATOR_DIV = 3;
+    public static final int OPERATOR_REM = 4;
+    public static final int OPERATOR_LT = 5;
+    public static final int OPERATOR_LTE = 6;
+    public static final int OPERATOR_GT = 7;
+    public static final int OPERATOR_GTE = 8;
+    public static final int OPERATOR_EQ = 9;
+    public static final int OPERATOR_NE = 10;
     
     public int operator;
     public ExpressionAST lhs;
@@ -72,6 +72,15 @@ public class BinaryExpressionAST extends AbstractAST implements ExpressionAST {
         switch(operator) {
             case OPERATOR_ADD: return "+";
             case OPERATOR_SUB: return "-";
+            case OPERATOR_MULT: return "*";
+            case OPERATOR_DIV: return "/";
+            case OPERATOR_REM: return "%";
+            case OPERATOR_LT: return "<";
+            case OPERATOR_LTE: return "<=";
+            case OPERATOR_GT: return ">";
+            case OPERATOR_GTE: return ">=";
+            case OPERATOR_EQ: return "==";
+            case OPERATOR_NE: return "!=";
         }
         
         return null;
