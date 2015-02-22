@@ -14,6 +14,7 @@ import jasy.lang.antlr4.JasyParser.LookupContext;
 import jasy.lang.antlr4.JasyParser.ProgramContext;
 import jasy.lang.antlr4.JasyParser.QualifiedLookupContext;
 import jasy.lang.antlr4.JasyParser.StatementContext;
+import jasy.lang.antlr4.JasyParser.StatementsContext;
 import jasy.lang.antlr4.JasyParser.UnqualifiedLookupContext;
 import jasy.lang.ast.BinaryExpressionAST;
 import jasy.lang.ast.BlockAST;
@@ -92,11 +93,19 @@ public class ASMCompiler {
         this.classResolver = classResolver;
     }
     
-    private JasyParser createParser(InputStream sourceCode) throws IOException {
+    public JasyParser createParser(InputStream sourceCode) throws IOException {
         CharStream charStream = new ANTLRInputStream(sourceCode);
         JasyLexer lexer = new JasyLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         return new JasyParser(tokenStream);
+    }
+    
+    public CodeAST compileStatements(InputStream sourceCode) throws IOException {
+        JasyParser parser = createParser(sourceCode);
+        
+        StatementsContext ctx = parser.statements();
+        
+        return getStatement(ctx, new MetaProcessing(new Hashtable<>()));
     }
     
     public ModuleAST compile(InputStream sourceCode) throws IOException {
