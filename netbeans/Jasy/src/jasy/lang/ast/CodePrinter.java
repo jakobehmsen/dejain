@@ -44,7 +44,9 @@ public class CodePrinter implements CodeVisitor<Object> {
     @Override
     public Object visitReturn(ReturnAST ctx) {
         print("return ");
-        return ctx.expression.accept(this);
+        ctx.expression.accept(this);
+        print(";");
+        return null;
     }
 
     @Override
@@ -139,7 +141,7 @@ public class CodePrinter implements CodeVisitor<Object> {
 //            print(ctx.declaringClass.getName());
         
         print(".");
-        print(ctx.fieldName);
+        printName(ctx.fieldName);
         
         return null;
     }
@@ -155,18 +157,24 @@ public class CodePrinter implements CodeVisitor<Object> {
             ctx.value.accept(this);
         }
         
+        print(";");
+        
         return null;
     }
 
     @Override
     public Object visitLookup(LookupAST ctx) {
         print(":");
-        if(ctx.name instanceof StringLiteralAST)
-            print(((StringLiteralAST)ctx.name).value);
-        else
-            ctx.name.accept(this);
+        printName(ctx.name);
         
         return null;
+    }
+    
+    private void printName(CodeAST ctx) {
+        if(ctx instanceof StringLiteralAST)
+            print(((StringLiteralAST)ctx).value);
+        else
+            ctx.accept(this);
     }
 
     @Override
