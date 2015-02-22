@@ -184,8 +184,8 @@ public class MethodAST extends AbstractAST implements MemberAST {
         java.lang.reflect.Method bodyAsMethodTmp = null;
         
         try {
-                                                                                                                                                                                                                                                                                                                        bodyAsMethodTmp = metaObjectClass.getMethod("generator", new Class<?>[0]);  
-                                                                                                                                                                                                                                                                                                                    } catch (NoSuchMethodException | SecurityException ex) {
+            bodyAsMethodTmp = metaObjectClass.getMethod("generator", new Class<?>[0]);  
+        } catch (NoSuchMethodException | SecurityException ex) {
             Logger.getLogger(MetaExpressionAST.class.getName()).log(Level.SEVERE, null, ex);
         }
 
