@@ -1080,7 +1080,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         } else {
             // Attempt to resolve start as class reference
             
-            String className = ((StringLiteralAST)((LookupAST)ctx.nameParts.get(0)).name).value;
+            String className = ((StringLiteralAST)ctx.nameParts.get(0).name).value;
             className = classResolver.resolveClassName(className);
             try {
                 target = new NameTypeAST(null, Class.forName(className));
@@ -1092,8 +1092,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private ExpressionAST namePartAsExpression(ExpressionAST namePart) {
-        String firstNamePart = ((StringLiteralAST)((LookupAST)namePart).name).value;
+    private ExpressionAST namePartAsExpression(LookupAST namePart) {
+        String firstNamePart = ((StringLiteralAST)namePart.name).value;
         
         if(parameters.containsKey(firstNamePart)) {
             // Is parameter

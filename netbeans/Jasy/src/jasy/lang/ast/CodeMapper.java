@@ -183,8 +183,8 @@ public class CodeMapper implements CodeVisitor<CodeAST> {
 
     @Override
     public CodeAST visitAmbiguousName(AmbiguousNameAST ctx) {
-        List<ExpressionAST> nameParts = ctx.nameParts.stream()
-            .map(p -> getExpression(p))
+        List<LookupAST> nameParts = ctx.nameParts.stream()
+            .map(p -> (LookupAST)getExpression(p))
             .collect(Collectors.toList());
         
         return new AmbiguousNameAST(ctx.getRegion(), nameParts);

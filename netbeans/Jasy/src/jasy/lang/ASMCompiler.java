@@ -733,7 +733,7 @@ public class ASMCompiler {
             public ExpressionAST visitAmbigousName(JasyParser.AmbigousNameContext ctx) {
                 List<ParserRuleContext> partCtxs = getAmbigousNameParts(ctx);
                 // Last part is assumed to be either a field access or an invocation.
-                ParserRuleContext lastPartCtx = partCtxs.get(0);
+                ParserRuleContext lastPartCtx = partCtxs.get(partCtxs.size() - 1);
                 // Remove last part; now, the actual parts of the ambiguous name remains.
                 // - These parts are assumed to be only lookups.
                 partCtxs.remove(partCtxs.size() - 1);
@@ -743,8 +743,8 @@ public class ASMCompiler {
                         new Position(partCtxs.get(0).getStart()),
                         new Position(partCtxs.get(partCtxs.size() - 1).getStop())
                     );
-                    List<ExpressionAST> parts = partCtxs.stream()
-                        .map(p -> getExpression(p, mp) /*p assumed to be lookup ctx*/)
+                    List<LookupAST> parts = partCtxs.stream()
+                        .map(p -> (LookupAST)getExpression(p, mp) /*p assumed to be lookup ctx*/)
                         .collect(Collectors.toList());
                     AmbiguousNameAST target = new AmbiguousNameAST(targetRegion, parts);
 
