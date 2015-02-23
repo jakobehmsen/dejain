@@ -13,8 +13,8 @@ public class InjectAST extends AbstractAST implements CodeAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        expression.resolve(thisClass, expectedResultType, resolver, errorMessages);
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        expression.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
     }
 
 //    @Override

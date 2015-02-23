@@ -23,7 +23,8 @@ public class IfAllTransformer<T> implements CompositeTransformer<T> {
                 .collect(Collectors.toList());
         
         return applicableTransformers.size() == transformers.size()
-            ? () -> applicableTransformers.forEach(t -> t.run())
+            ? () -> applicableTransformers.forEach(t -> 
+                    t.run())
             : null;
     }
 }

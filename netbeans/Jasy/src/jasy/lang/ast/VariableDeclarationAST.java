@@ -18,10 +18,10 @@ public class VariableDeclarationAST extends AbstractAST implements CodeAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        type.resolve(thisClass, expectedResultType, resolver, errorMessages);
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        type.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
         if(value != null)
-            value.resolve(thisClass, expectedResultType, resolver, errorMessages);
+            value.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
     }
 
 //    @Override

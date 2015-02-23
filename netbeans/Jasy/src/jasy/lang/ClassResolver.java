@@ -10,7 +10,7 @@ package jasy.lang;
  * @author Jakob
  */
 public interface ClassResolver {
-    default Class<?> resolveType(String typeName) throws ClassNotFoundException {
+    default Class<?> resolveType(ClassLoader classLoader, String typeName) throws ClassNotFoundException {
         switch(typeName) {
             case "boolean": return boolean.class;
             case "byte": return byte.class;
@@ -24,7 +24,9 @@ public interface ClassResolver {
         String className = resolveClassName(typeName);
         
         try {
-            return Class.forName(className);
+//            return Class.forName(className);
+//            return classLoader.loadClass(className);
+            return Class.forName(className, true, classLoader);
         } catch(ClassNotFoundException e) {
             throw e;
         }

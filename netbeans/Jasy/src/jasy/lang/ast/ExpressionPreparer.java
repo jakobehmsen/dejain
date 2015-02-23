@@ -23,13 +23,15 @@ import org.objectweb.asm.tree.InsnList;
 public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     private Scope thisClass;
     private ClassResolver classResolver;
+    private ClassLoader classLoader;
     private Hashtable<String, ParameterInfo> parameters;
     private Hashtable<String, TypeAST> variables;
     private boolean asExpression;
 
-    public ExpressionPreparer(Scope thisClass, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
+    public ExpressionPreparer(Scope thisClass, ClassResolver classResolver, ClassLoader classLoader, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables, boolean asExpression) {
         this.thisClass = thisClass;
         this.classResolver = classResolver;
+        this.classLoader = classLoader;
         this.parameters = parameters;
         this.variables = variables;
         this.asExpression = asExpression;
@@ -42,7 +44,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitMetaCode(MetaCodeAST ctx) {
-        PreparedAST body = MethodAST.toCode(thisClass, ctx.body, classResolver, parameters, variables);
+        PreparedAST body = MethodAST.toCode(thisClass, ctx.body, classResolver, classLoader, parameters, variables);
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -336,11 +338,11 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     }
     
     private PreparedExpressionAST toExpression(ExpressionAST expression) {
-        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables);
+        return MethodAST.toExpression(thisClass, expression, classResolver, classLoader, parameters, variables);
     }
     
     private PreparedExpressionAST toExpression(ExpressionAST expression, boolean asExpression) {
-        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables, asExpression);
+        return MethodAST.toExpression(thisClass, expression, classResolver, classLoader, parameters, variables, asExpression);
     }
 
     @Override
@@ -552,7 +554,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 //        PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
         Object target = ctx.target instanceof ExpressionAST ? ((ExpressionAST)ctx.target).accept(this) : ctx.target;
         String fieldName = ((StringLiteralAST)ctx.fieldName).value;
-        TypeAST fieldType = target instanceof PreparedExpressionAST ? ((PreparedExpressionAST)target).resultType().getFieldType(fieldName) : null /*from declared class instead*/ ;
+        TypeAST fieldType = target instanceof PreparedExpressionAST ? ((PreparedExpressionAST)target).resultType().getFieldType(classLoader, fieldName) : null /*from declared class instead*/ ;
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -715,7 +717,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 try {
                     //                        return NameTypeAST.fromDescriptor("[" + ctx.type.getDescriptor());
                     String desc = ctx.type.getDescriptor();
-                    Class arrayClass = Class.forName("[" + desc.replace("/", "."));
+//                    Class arrayClass = Class.forName("[" + desc.replace("/", "."));
+//                    Class arrayClass = classLoader.loadClass("[" + desc.replace("/", "."));
+                    Class arrayClass = Class.forName("[" + desc.replace("/", "."), true, classLoader);
                     return new NameTypeAST(null, arrayClass);
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(MethodAST.class.getName()).log(Level.SEVERE, null, ex);
@@ -842,7 +846,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitInjectionBlock(InjectionBlockAST ctx) {
-        List<PreparedAST> injections = ctx.injections.stream().map((jasy.lang.ast.InjectAST i) -> MethodAST.toCode(thisClass, i, classResolver, parameters, variables)).collect(Collectors.toList());
+        List<PreparedAST> injections = ctx.injections.stream().map((jasy.lang.ast.InjectAST i) -> MethodAST.toCode(thisClass, i, classResolver, classLoader, parameters, variables)).collect(Collectors.toList());
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -1072,7 +1076,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         // May not be a valid expression!!!
         // Otherwise, is, functionally, a field get - possibly recursive
         
-        ExpressionAST firstNamePartAsExpression = namePartAsExpression(ctx.nameParts.get(0));
+        ExpressionAST firstNamePartAsExpression = namePartAsExpression(classLoader, ctx.nameParts.get(0));
         AST target;
         
         if(firstNamePartAsExpression != null) {
@@ -1083,7 +1087,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             String className = ((StringLiteralAST)ctx.nameParts.get(0).name).value;
             className = classResolver.resolveClassName(className);
             try {
-                target = new NameTypeAST(null, Class.forName(className));
+//                target = new NameTypeAST(null, Class.forName(className));
+//                target = new NameTypeAST(null, classLoader.loadClass(className));
+                target = new NameTypeAST(null, Class.forName(className, true, classLoader));
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(ExpressionPreparer.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1092,14 +1098,14 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private ExpressionAST namePartAsExpression(LookupAST namePart) {
+    private ExpressionAST namePartAsExpression(ClassLoader classLoader, LookupAST namePart) {
         String firstNamePart = ((StringLiteralAST)namePart.name).value;
         
         if(parameters.containsKey(firstNamePart)) {
             // Is parameter
         } else if(variables.containsKey(firstNamePart)) {
             // Is variable
-        } else if(thisClass.getFieldType(firstNamePart) != null) {
+        } else if(thisClass.getFieldType(classLoader, firstNamePart) != null) {
             // If field
         }
         

@@ -17,7 +17,7 @@ public class ThisTypeAST extends AbstractAST implements TypeAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
         classInfo = thisClass;
     }
 
@@ -43,8 +43,8 @@ public class ThisTypeAST extends AbstractAST implements TypeAST {
     }
 
     @Override
-    public TypeAST getFieldType(String fieldName) {
-        return classInfo.getFieldType(fieldName);
+    public TypeAST getFieldType(ClassLoader classLoader, String fieldName) {
+        return classInfo.getFieldType(classLoader, fieldName);
     }
 
     @Override

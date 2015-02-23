@@ -2,8 +2,11 @@ package jasy.testrig;
 
 import jasy.lang.ASMCompiler;
 import jasy.lang.ASMCompiler.Message;
+import jasy.lang.ClassBytesFromFile;
 import jasy.lang.CommonClassMap;
 import jasy.lang.CommonClassResolver;
+import jasy.lang.ModuleClassBytesTransformer;
+import jasy.lang.ProxyClassLoader;
 import jasy.lang.SingleClassLoader;
 import jasy.lang.ast.ClassNodeScope;
 import jasy.lang.ast.CodeAST;
@@ -84,7 +87,9 @@ public class Main {
                 CommonClassResolver classResolver = new CommonClassResolver(classMap);
                 ASMCompiler compiler = new ASMCompiler(classResolver);
                 
+                String moduleSource = transformationText.getText();
                 String applicationSourceCode = applicationText.getText();
+                ClassLoader classLoader = new ProxyClassLoader(new ClassBytesFromFile().andThen(new ModuleClassBytesTransformer(moduleSource, classResolver)));
                 try {
                     CodeAST applicationCode = compiler.compileStatements(new ByteArrayInputStream(applicationSourceCode.getBytes()));
                     
@@ -96,12 +101,12 @@ public class Main {
                     
                     ClassNode metaObjectClassNode = new ClassNode(Opcodes.ASM5);
                     
-                    applicationCode.resolve(new ClassNodeScope(metaObjectClassNode), null, classResolver, errorMessages);
+                    applicationCode.resolve(new ClassNodeScope(metaObjectClassNode), null, classResolver, classLoader, errorMessages);
                     
                     Hashtable<String, ParameterInfo> metaParameters = new Hashtable<>();
                     Hashtable<String, TypeAST> metaVariables = new Hashtable<>();
         
-                    PreparedAST pbody = MethodAST.toCode(new ClassNodeScope(metaObjectClassNode), applicationCode, classResolver, metaParameters, metaVariables);
+                    PreparedAST pbody = MethodAST.toCode(new ClassNodeScope(metaObjectClassNode), applicationCode, classResolver, classLoader, metaParameters, metaVariables);
 
                     metaObjectClassNode.version = MetaExpressionAST.getOpcodesVersion();
                     metaObjectClassNode.access = Opcodes.ACC_PUBLIC;
@@ -134,8 +139,8 @@ public class Main {
                     new ClassReader(cw.toByteArray()).accept(traceClassVisitor, 0);
                     CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), true, new PrintWriter(System.out));
 
-                    SingleClassLoader classLoader = new SingleClassLoader(metaObjectClassNode);
-                    Class<?> metaObjectClass = classLoader.loadClass();
+                    SingleClassLoader metaClassLoader = new SingleClassLoader(metaObjectClassNode);
+                    Class<?> metaObjectClass = metaClassLoader.loadClass();
                     java.lang.reflect.Method bodyAsMethodTmp;
                     try {
                         bodyAsMethodTmp = metaObjectClass.getDeclaredMethod(generatorMethod.name, new Class<?>[0]);

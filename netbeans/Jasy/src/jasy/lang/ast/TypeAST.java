@@ -33,7 +33,7 @@ public interface TypeAST extends AST {
         return getSimpleName(null);
     }
 
-    TypeAST getFieldType(String fieldName);
+    TypeAST getFieldType(ClassLoader classLoader, String fieldName);
 
     TypeAST getTypeArgument(String name);
 

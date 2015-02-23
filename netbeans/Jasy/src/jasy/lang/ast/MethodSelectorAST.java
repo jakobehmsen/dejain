@@ -23,9 +23,9 @@ public class MethodSelectorAST {
         this.parameters = parameters;
     }
 
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        returnType.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        parameters.forEach(pt -> pt.type.resolve(thisClass, expectedResultType, resolver, errorMessages));
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        returnType.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
+        parameters.forEach(pt -> pt.type.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages));
     }
 
     public void populate(IfAllTransformer<Transformation<MethodNode>> transformer) {

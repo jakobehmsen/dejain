@@ -15,9 +15,9 @@ public class ArrayAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        type.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        elements.forEach(e -> e.resolve(thisClass, expectedResultType, resolver, errorMessages));
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        type.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
+        elements.forEach(e -> e.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages));
     }
 
     @Override

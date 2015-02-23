@@ -20,10 +20,10 @@ public class FieldSetAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        target.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        declaringClass.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        value.resolve(thisClass, expectedResultType, resolver, errorMessages);
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        target.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
+        declaringClass.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
+        value.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
     }
 
     @Override

@@ -15,9 +15,9 @@ public class WhileAST extends AbstractAST implements CodeAST {
     }
     
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        condition.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        body.resolve(thisClass, expectedResultType, resolver, errorMessages);
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        condition.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
+        body.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
     }
 
     @Override

@@ -13,8 +13,8 @@ public class MetaCodeAST extends AbstractAST implements ExpressionAST /*Only pre
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        body.resolve(thisClass, expectedResultType, resolver, errorMessages);
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        body.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
     }
 
     @Override

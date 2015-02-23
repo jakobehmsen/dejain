@@ -16,7 +16,7 @@ public class ClassNodeScope implements Scope {
     }
 
     @Override
-    public TypeAST getFieldType(String fieldName) {
+    public TypeAST getFieldType(ClassLoader classLoader, String fieldName) {
         Optional<FieldNode> field = ((List<FieldNode>)c.fields).stream().filter(f -> f.name.equals(fieldName)).findFirst();
 //        FieldNode f2 = field.get();
         
@@ -35,7 +35,9 @@ public class ClassNodeScope implements Scope {
                     case "float": c = float.class; break;
                     case "double": c = double.class; break;
                     case "char": c = char.class; break;
-                    default: c = Class.forName(t.getClassName());
+//                    default: c = Class.forName(t.getClassName());
+//                    default: c = classLoader.loadClass(t.getClassName());
+                    default: c = Class.forName(t.getClassName(), true, classLoader);
                 }
                 
 //                Class<?> c = Class.forName(t.getClassName());

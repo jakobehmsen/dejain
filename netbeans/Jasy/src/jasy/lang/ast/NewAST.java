@@ -23,9 +23,9 @@ public class NewAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        c.resolve(thisClass, expectedResultType, resolver, errorMessages);
-        arguments.forEach(a -> a.resolve(thisClass, expectedResultType, resolver, errorMessages));
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        c.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
+        arguments.forEach(a -> a.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages));
     }
 
     @Override

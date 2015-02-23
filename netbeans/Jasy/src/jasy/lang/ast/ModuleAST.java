@@ -18,22 +18,22 @@ public class ModuleAST extends AbstractAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
-        classes.forEach(c -> c.resolve(thisClass, expectedResultType, resolver, errorMessages));
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
+        classes.forEach(c -> c.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages));
     }
 
-    public Function<Transformation<ClassNode>, Runnable> toClassTransformer(ClassResolver classResolver) {
+    public Function<Transformation<ClassNode>, Runnable> toClassTransformer(ClassResolver classResolver, ClassLoader classLoader) {
         FirstByIndexTransformer<Transformation<ClassNode>, String> transformer = new FirstByIndexTransformer<>(c -> c.getTarget().name);
         
-        populate(classResolver, transformer);
+        populate(classResolver, classLoader, transformer);
         
         return transformer;
     }
     
-    public void populate(ClassResolver classResolver, FirstByIndexTransformer<Transformation<ClassNode>, String> classesTransformer) {
+    public void populate(ClassResolver classResolver, ClassLoader classLoader, FirstByIndexTransformer<Transformation<ClassNode>, String> classesTransformer) {
         classes.forEach(c -> {
             IfAllTransformer<Transformation<ClassNode>> classTransformer = new IfAllTransformer<>();
-            c.populate(classResolver, classTransformer);
+            c.populate(classResolver, classLoader, classTransformer);
             classesTransformer.addTransformer(classTransformer);
         });
     }

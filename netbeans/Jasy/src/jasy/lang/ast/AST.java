@@ -9,7 +9,7 @@ import org.objectweb.asm.Opcodes;
 public interface AST {
     Region getRegion();
     void setRegion(Region region);
-    void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<Message> errorMessages);
+    void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<Message> errorMessages);
     
     public static class Util {
         public static int getAccessModifier(int accessModifier, boolean isStatic) {

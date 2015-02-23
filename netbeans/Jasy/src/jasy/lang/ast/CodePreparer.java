@@ -15,22 +15,24 @@ import org.objectweb.asm.tree.InsnList;
 public class CodePreparer implements CodeVisitor<PreparedAST> {
     private Scope thisClass;
     private ClassResolver classResolver;
+    private ClassLoader classLoader;
     private Hashtable<String, ParameterInfo> parameters;
     private Hashtable<String, TypeAST> variables;
 
-    public CodePreparer(Scope thisClass, ClassResolver classResolver, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
+    public CodePreparer(Scope thisClass, ClassResolver classResolver, ClassLoader classLoader, Hashtable<String, ParameterInfo> parameters, Hashtable<String, TypeAST> variables) {
         this.thisClass = thisClass;
         this.classResolver = classResolver;
+        this.classLoader = classLoader;
         this.parameters = parameters;
         this.variables = variables;
     }
     
     private PreparedExpressionAST toExpression(ExpressionAST expression) {
-        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables);
+        return MethodAST.toExpression(thisClass, expression, classResolver, classLoader, parameters, variables);
     }
     
     private PreparedExpressionAST toExpression(ExpressionAST expression, boolean asExpression) {
-        return MethodAST.toExpression(thisClass, expression, classResolver, parameters, variables, asExpression);
+        return MethodAST.toExpression(thisClass, expression, classResolver, classLoader, parameters, variables, asExpression);
     }
 
     @Override

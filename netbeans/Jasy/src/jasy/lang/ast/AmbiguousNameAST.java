@@ -18,11 +18,11 @@ public class AmbiguousNameAST extends AbstractAST implements ExpressionAST {
     }
     
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
         // Resolves to either a Class reference, which means it is not an expression
         // or to a get field expression.
         
-        nameParts.forEach(p -> p.resolve(thisClass, expectedResultType, resolver, errorMessages));
+        nameParts.forEach(p -> p.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages));
     }
 
     @Override

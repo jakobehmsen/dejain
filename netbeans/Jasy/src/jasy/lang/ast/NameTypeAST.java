@@ -94,12 +94,14 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         }
     }
     
-    private static Class<?> getClassFromName(String name) throws ClassNotFoundException {
+    private static Class<?> getClassFromName(ClassLoader classLoader, String name) throws ClassNotFoundException {
         switch(name) {
             case "int":
                 return int.class;
             default:
-                return Class.forName(name);
+//                return Class.forName(name);
+//                return classLoader.loadClass(name);
+                return Class.forName(name, true, classLoader);
         }
     }
 
@@ -116,7 +118,7 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
         try {
 //            name = resolver.resolveClassName(name);
 //            c = resolver.resolveType(name);
@@ -125,7 +127,9 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
                 
             if(isArray) {
                 // name represent element name
-                c = Class.forName(descriptor);
+//                c = Class.forName(descriptor);
+//                c = classLoader.loadClass(descriptor);
+                c = Class.forName(descriptor, true, classLoader);
             } else {
                 switch(name) {
                     case "boolean": c = boolean.class; break;
@@ -136,7 +140,9 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
                     case "float": c = float.class; break;
                     case "double": c = double.class; break;
                     case "void": c = void.class; break;
-                    default: c = Class.forName(name);
+//                    default: c = Class.forName(name);
+//                    default: c = classLoader.loadClass(name);
+                    default: c = Class.forName(name, true, classLoader);
                 }
                 
 //                c = Class.forName(name);
@@ -204,7 +210,7 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     }
 
     @Override
-    public TypeAST getFieldType(String fieldName) {
+    public TypeAST getFieldType(ClassLoader classLoader, String fieldName) {
         try {
             Field field = c.getField(fieldName);
             String fieldTypeDescriptor;

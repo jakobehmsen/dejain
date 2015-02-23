@@ -27,10 +27,10 @@ public class FieldGetAST extends AbstractAST implements ExpressionAST {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
         // At this point, a lookup may implicate either a field get or a "match-captured-variable".
         
-        target.resolve(thisClass, expectedResultType, resolver, errorMessages);
+        target.resolve(thisClass, expectedResultType, resolver, classLoader, errorMessages);
 //        fieldType = target.resultType().getFieldType(fieldName);
     }
 

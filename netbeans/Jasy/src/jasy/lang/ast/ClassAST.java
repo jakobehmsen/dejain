@@ -31,11 +31,11 @@ public class ClassAST extends AbstractAST implements Scope {
     }
 
     @Override
-    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, List<ASMCompiler.Message> errorMessages) {    
-        annotations.forEach(a -> a.resolve(this, expectedResultType, resolver, errorMessages));
+    public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {    
+        annotations.forEach(a -> a.resolve(this, expectedResultType, resolver, classLoader, errorMessages));
         if(type != null)
-            type.resolve(this, expectedResultType, resolver, errorMessages);
-        members.forEach(m -> m.resolve(this, expectedResultType, resolver, errorMessages));
+            type.resolve(this, expectedResultType, resolver, classLoader, errorMessages);
+        members.forEach(m -> m.resolve(this, expectedResultType, resolver, classLoader, errorMessages));
     }
 
     public void populate(CommonClassTransformer transformer) {
@@ -47,7 +47,7 @@ public class ClassAST extends AbstractAST implements Scope {
         members.forEach(x -> x.populate(transformer));
     }
 
-    public void populate(ClassResolver classResolver, IfAllTransformer<Transformation<ClassNode>> transformer) {
+    public void populate(ClassResolver classResolver, ClassLoader classLoader, IfAllTransformer<Transformation<ClassNode>> transformer) {
         IfAllTransformer<Transformation<FieldNode>> fieldTransformer = new IfAllTransformer<>();
         IfAllTransformer<Transformation<MethodNode>> methodTransformer = new IfAllTransformer<>();
         
@@ -69,12 +69,12 @@ public class ClassAST extends AbstractAST implements Scope {
             members.forEach(x -> x.accept(new MemberVisitor() {
                 @Override
                 public void visitMethod(MethodAST ctx) {
-                    ctx.populate(classResolver, memberTransformer, methodTransformer);
+                    ctx.populate(classResolver, classLoader, memberTransformer, methodTransformer);
                 }
 
                 @Override
                 public void visitField(FieldAST ctx) {
-                    ctx.populate(classResolver, memberTransformer, fieldTransformer);
+                    ctx.populate(classResolver, classLoader, memberTransformer, fieldTransformer);
                 }
             }));
 
@@ -82,7 +82,8 @@ public class ClassAST extends AbstractAST implements Scope {
         });
     }
 
-    public TypeAST getFieldType(String fieldName) {
+    @Override
+    public TypeAST getFieldType(ClassLoader classLoader, String fieldName) {
         Optional<TypeAST> field = members.stream()
             .filter(m -> m instanceof FieldAST)
             .filter(f -> ((FieldAST)f).selector.name.equals(fieldName))

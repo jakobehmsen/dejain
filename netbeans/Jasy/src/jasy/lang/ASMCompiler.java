@@ -961,12 +961,12 @@ public class ASMCompiler {
         return classTransformers;
     }
     
-    private String getMethodDescriptor(JasyParser.TypeQualifierContext returnType, JasyParser.ParametersContext paramsCtx) throws ClassNotFoundException {
-        String returnDescriptor = Type.getDescriptor(classResolver.resolveType(returnType.getText()));
+    private String getMethodDescriptor(JasyParser.TypeQualifierContext returnType, JasyParser.ParametersContext paramsCtx, ClassLoader classLoader) throws ClassNotFoundException {
+        String returnDescriptor = Type.getDescriptor(classResolver.resolveType(classLoader, returnType.getText()));
         String parametersDescriptor = paramsCtx.parameter().stream().map(pCtx -> {
             String parameterDescriptor;
             try {
-                parameterDescriptor = Type.getDescriptor(classResolver.resolveType(pCtx.typeQualifier().getText()));
+                parameterDescriptor = Type.getDescriptor(classResolver.resolveType(classLoader, pCtx.typeQualifier().getText()));
             return parameterDescriptor + ";";
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(ASMCompiler.class.getName()).log(Level.SEVERE, null, ex);
@@ -1114,50 +1114,50 @@ public class ASMCompiler {
     }
     
     private void validateMethod(ParserRuleContext ctx, String methodName, Class<?> returnTypeClass, ArrayList<Message> errorMessages) {
-        ctx.accept(new JasyBaseVisitor<Object>() {
-            HashMap<String, VariableInfo> locals = new HashMap<>();
-
-            @Override
-            public Object visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
-                String name = ctx.id.getText();
-                if(locals.containsKey(name))
-                    errorMessages.add(new Message(ctx, "Variable " + name + " is already declared in method " + methodName + "."));
-                else {
-                    try {
-                        Class<?> fieldType = classResolver.resolveType(ctx.typeQualifier().getText());
-                        
-                        if(ctx.expression() != null) {
-                            Class<?> expressionType = validateExpression(ctx.expression(), errorMessages);
-                            errorMessages.add(new Message(ctx, "Variable " + name + " is already declared in method " + methodName + "."));
-                            if(!fieldType.isAssignableFrom(expressionType)) {
-                                errorMessages.add(new Message(ctx, "" + expressionType + " is not assignable to " + fieldType));
-                            } else {
-                                locals.put(name, new VariableInfo(fieldType, true));
-                            }
-                        } else {
-                            locals.put(name, new VariableInfo(fieldType, false));
-                        }
-                    } catch (ClassNotFoundException ex) {
-                        errorMessages.add(new Message(ctx, "Could not resolve type " + ctx.typeQualifier().getText() + "."));
-                    }
-                }
-                
-                return super.visitVariableDeclaration(ctx); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public Object visitProceedStatement(JasyParser.ProceedStatementContext ctx) {
-                return returnTypeClass;
-            }
-            
-            @Override
-            public Object visitReturnStatement(JasyParser.ReturnStatementContext ctx) {
-                Class<?> expressionType = validateExpression(ctx.expression(), errorMessages);
-                if(!returnTypeClass.isAssignableFrom(expressionType))
-                    errorMessages.add(new Message(ctx, "" + expressionType + " is not assignable to " + returnTypeClass));
-                return null;
-            }
-        });
+//        ctx.accept(new JasyBaseVisitor<Object>() {
+//            HashMap<String, VariableInfo> locals = new HashMap<>();
+//
+//            @Override
+//            public Object visitVariableDeclaration(JasyParser.VariableDeclarationContext ctx) {
+//                String name = ctx.id.getText();
+//                if(locals.containsKey(name))
+//                    errorMessages.add(new Message(ctx, "Variable " + name + " is already declared in method " + methodName + "."));
+//                else {
+//                    try {
+//                        Class<?> fieldType = classResolver.resolveType(ctx.typeQualifier().getText());
+//                        
+//                        if(ctx.expression() != null) {
+//                            Class<?> expressionType = validateExpression(ctx.expression(), errorMessages);
+//                            errorMessages.add(new Message(ctx, "Variable " + name + " is already declared in method " + methodName + "."));
+//                            if(!fieldType.isAssignableFrom(expressionType)) {
+//                                errorMessages.add(new Message(ctx, "" + expressionType + " is not assignable to " + fieldType));
+//                            } else {
+//                                locals.put(name, new VariableInfo(fieldType, true));
+//                            }
+//                        } else {
+//                            locals.put(name, new VariableInfo(fieldType, false));
+//                        }
+//                    } catch (ClassNotFoundException ex) {
+//                        errorMessages.add(new Message(ctx, "Could not resolve type " + ctx.typeQualifier().getText() + "."));
+//                    }
+//                }
+//                
+//                return super.visitVariableDeclaration(ctx); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public Object visitProceedStatement(JasyParser.ProceedStatementContext ctx) {
+//                return returnTypeClass;
+//            }
+//            
+//            @Override
+//            public Object visitReturnStatement(JasyParser.ReturnStatementContext ctx) {
+//                Class<?> expressionType = validateExpression(ctx.expression(), errorMessages);
+//                if(!returnTypeClass.isAssignableFrom(expressionType))
+//                    errorMessages.add(new Message(ctx, "" + expressionType + " is not assignable to " + returnTypeClass));
+//                return null;
+//            }
+//        });
     }
     
     private static Class<?> validateExpression(ParserRuleContext ctx, ArrayList<Message> errorMessages) {

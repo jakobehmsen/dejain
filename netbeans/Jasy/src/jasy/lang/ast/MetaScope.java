@@ -15,7 +15,7 @@ public class MetaScope implements Scope {
     }
 
     @Override
-    public TypeAST getFieldType(String fieldName) {
+    public TypeAST getFieldType(ClassLoader classLoader, String fieldName) {
         return variables.get(fieldName);
     }
 

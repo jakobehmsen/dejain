@@ -5,6 +5,12 @@
  */
 package jasy;
 
+import jasy.lang.ProxyClassLoader;
+import jasy.lang.ClassBytesTransformer;
+import jasy.lang.ClassBytesSourcePredicate;
+import jasy.lang.ClassBytesSource;
+import jasy.lang.ClassBytesFromFile;
+import jasy.lang.ModuleClassBytesTransformer;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -1386,38 +1393,40 @@ public class SourceToClassTest {
         });
     }
     
-    private static Function<byte[], byte[]> transformClass(ClassResolver resolver, String source) {
-        ASMCompiler compiler = new ASMCompiler(resolver);
-        return bytes -> {
-            try {
-                ModuleAST module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
-                ArrayList<Message> errorMessages = new ArrayList<>();
-                module.resolve(null, null, resolver, errorMessages);
-                
-                if(errorMessages.size() > 0) {
-                    String msg = errorMessages.stream().map(m -> m.toString()).collect(Collectors.joining("\n"));
-                    throw new RuntimeException(msg);
-                } else {
-                    Function<Transformation<ClassNode>, Runnable> classTransformer = module.toClassTransformer(resolver);
-                    ExhaustiveClassTransformer eTransformer = new ExhaustiveClassTransformer(classTransformer);
-                    byte[] newBytes = eTransformer.transform(bytes);
-                    
-                    InputStream classStream = new ByteArrayInputStream(newBytes);
-                    ClassReader classReader = new ClassReader(classStream);
-//                    classReader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
-                    CheckClassAdapter.verify(classReader, false, new PrintWriter(System.out));
-//                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-//                    classReader.accept(classWriter, 0);
-//                    Textifier asmifier = new Textifier();
-//                    classWriter.
-                    
-                    return newBytes;
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            return bytes;
-        };
+    private static ClassBytesTransformer transformClass(ClassResolver resolver, String source) {
+        return new ModuleClassBytesTransformer(source, resolver);
+        
+//        ASMCompiler compiler = new ASMCompiler(resolver);
+//        return (classLoader, bytes) -> {
+//            try {
+//                ModuleAST module = compiler.compile(new ByteArrayInputStream(source.getBytes("UTF-8")));
+//                ArrayList<Message> errorMessages = new ArrayList<>();
+//                module.resolve(null, null, resolver, classLoader, errorMessages);
+//                
+//                if(errorMessages.size() > 0) {
+//                    String msg = errorMessages.stream().map(m -> m.toString()).collect(Collectors.joining("\n"));
+//                    throw new RuntimeException(msg);
+//                } else {
+//                    Function<Transformation<ClassNode>, Runnable> classTransformer = module.toClassTransformer(resolver, classLoader);
+//                    ExhaustiveClassTransformer eTransformer = new ExhaustiveClassTransformer(classTransformer);
+//                    byte[] newBytes = eTransformer.transform(bytes);
+//                    
+//                    InputStream classStream = new ByteArrayInputStream(newBytes);
+//                    ClassReader classReader = new ClassReader(classStream);
+////                    classReader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
+//                    CheckClassAdapter.verify(classReader, false, new PrintWriter(System.out));
+////                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+////                    classReader.accept(classWriter, 0);
+////                    Textifier asmifier = new Textifier();
+////                    classWriter.
+//                    
+//                    return newBytes;
+//                }
+//            } catch (IOException ex) {
+//                Logger.getLogger(SourceToClassTest.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//            return bytes;
+//        };
     }
     
     private static void testSourceToClasses(String[] classNames, String source, Predicate<Class<?>[]> assertion) throws IOException {
@@ -1441,13 +1450,13 @@ public class SourceToClassTest {
         resolver.importPackage("org.objectweb.asm.tree");
         resolver.importPackage("jasy");
         
-        ClassLoader cl = new ProxyClassLoader(ifIn(classNames), classBytesFromName().andThen(transformClass(resolver, source)));
+        ClassLoader cl = new ProxyClassLoader(ifIn(classNames).ifTrue(classBytesFromName()).andThen(transformClass(resolver, source)));
         
         Class<?>[] classes = Arrays.asList(classNames).stream()
             .map(className -> {
                 try {
-                    return cl.loadClass(className);
-//                    return Class.forName(source, true, cl);
+//                    return cl.loadClass(className);
+                    return Class.forName(source, true, cl);
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(SourceToAstTest.class.getName()).log(Level.SEVERE, null, ex);
                     return null;
@@ -1586,8 +1595,8 @@ public class SourceToClassTest {
         return m -> Modifier.isStatic(m);
     }
     
-    private static Predicate<String> ifIn(String[] names) {
-        return name -> Arrays.asList(names).contains(name);
+    private static ClassBytesSourcePredicate ifIn(String[] names) {
+        return (cl, name) -> Arrays.asList(names).contains(name);
     }
     
     private static ThreadLocal<Hashtable<String, byte[]>> classBytesCacheMap = new ThreadLocal<Hashtable<String, byte[]>>() {
@@ -1597,28 +1606,30 @@ public class SourceToClassTest {
         }   
     };
     
-    private static Function<String, byte[]> classBytesFromName() {
-        return name -> {
-            try {
-                byte[] cacheBytesCache = classBytesCacheMap.get().get(name);
-                
-                if(cacheBytesCache == null) {
-                    String s = new java.io.File("build/test/classes/" + name.replace(".", "/") + ".class").getCanonicalFile().toString();
-                    InputStream classStream = new FileInputStream("build/test/classes/" + name.replace(".", "/") + ".class"); //classUrl.openStream();
-                    ClassReader classReader = new ClassReader(classStream);
-                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                    classReader.accept(classWriter, 0);
-                    cacheBytesCache = classWriter.toByteArray();
-                    
-                    classBytesCacheMap.get().put(name, cacheBytesCache);
-                }
-                
-                return cacheBytesCache;
-            } catch (IOException ex) {
-                Logger.getLogger(SourceToAstTest.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            }
-        };
+    private static ClassBytesSource classBytesFromName() {
+        return new ClassBytesFromFile();
+        
+//        return (classLoader, name) -> {
+//            try {
+//                byte[] cacheBytesCache = classBytesCacheMap.get().get(name);
+//                
+//                if(cacheBytesCache == null) {
+//                    String s = new java.io.File("build/test/classes/" + name.replace(".", "/") + ".class").getCanonicalFile().toString();
+//                    InputStream classStream = new FileInputStream("build/test/classes/" + name.replace(".", "/") + ".class"); //classUrl.openStream();
+//                    ClassReader classReader = new ClassReader(classStream);
+//                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+//                    classReader.accept(classWriter, 0);
+//                    cacheBytesCache = classWriter.toByteArray();
+//                    
+//                    classBytesCacheMap.get().put(name, cacheBytesCache);
+//                }
+//                
+//                return cacheBytesCache;
+//            } catch (IOException ex) {
+//                Logger.getLogger(SourceToAstTest.class.getName()).log(Level.SEVERE, null, ex);
+//                return null;
+//            }
+//        };
     }
 
     private static Predicate<Method> mname(Predicate<String> predicate) {
