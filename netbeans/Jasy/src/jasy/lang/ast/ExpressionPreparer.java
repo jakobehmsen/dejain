@@ -552,9 +552,14 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     @Override
     public PreparedExpressionAST visitFieldGet(FieldGetAST ctx) {
 //        PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
-        Object target = ctx.target instanceof ExpressionAST ? ((ExpressionAST)ctx.target).accept(this) : ctx.target;
-        String fieldName = ((StringLiteralAST)ctx.fieldName).value;
-        TypeAST fieldType = target instanceof PreparedExpressionAST ? ((PreparedExpressionAST)target).resultType().getFieldType(classLoader, fieldName) : null /*from declared class instead*/ ;
+//        Object target = ctx.target instanceof ExpressionAST ? ((ExpressionAST)ctx.target).accept(this) : ctx.target;
+        Object target = getPreparedTarget(ctx.target);
+        boolean isStatic = target instanceof TypeAST;
+//        String fieldName = ((StringLiteralAST)ctx.fieldName).value;
+        String fieldName = ((StringLiteralAST)((LookupAST)ctx.fieldName).name).value;
+        TypeAST fieldType = target instanceof PreparedExpressionAST 
+            ? ((PreparedExpressionAST)target).resultType().getFieldType(classLoader, fieldName) 
+            : ((TypeAST)target).getFieldType(classLoader, fieldName) /*from declared class instead*/ ;
         return new PreparedExpressionAST() {
             @Override
             public TypeAST resultType() {
@@ -564,11 +569,96 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
                 if (asExpression) {
-                    ((PreparedExpressionAST)target).generate(c, generator, originalIl);
-                    generator.methodNode.getField(Type.getType(((PreparedExpressionAST)target).resultType().getDescriptor(c.getTarget().name)), fieldName, Type.getType(fieldType.getDescriptor(c.getTarget().name)));
+                    if(isStatic) {
+                        generator.methodNode.getStatic(
+                            Type.getType(((TypeAST)target).getDescriptor(c.getTarget().name)), 
+                            fieldName, 
+                            Type.getType(fieldType.getDescriptor(c.getTarget().name))
+                        );
+                    } else {
+                        ((PreparedExpressionAST)target).generate(c, generator, originalIl);
+                        generator.methodNode.getField(
+                            Type.getType(((PreparedExpressionAST)target).resultType().getDescriptor(c.getTarget().name)), 
+                            fieldName, 
+                            Type.getType(fieldType.getDescriptor(c.getTarget().name))
+                        );
+                    }
                 }
             }
         };
+    }
+    
+    private Object getPreparedTarget(AST target) {
+        if(target instanceof ExpressionAST) {
+            if(target instanceof AmbiguousNameAST) {
+                return getPreparedAmbigousName((AmbiguousNameAST)target);
+            }
+            
+            return ((ExpressionAST)target).accept(this);
+        }
+        
+        // Assumed to be a TypeAST
+        return target;
+    }
+    
+    private Object getPreparedAmbigousName(AmbiguousNameAST ctx) {
+        ExpressionAST firstNamePartAsExpression = namePartAsExpression(classLoader, (LookupAST)ctx.nameParts.get(0));
+        AST target = null;
+            
+        int nameIndex = 0;
+        
+        if(firstNamePartAsExpression != null) {
+            target = firstNamePartAsExpression;
+            nameIndex++;
+        } else {
+            target = null;
+            String className = "";
+            
+            // Attempt to identify a class with the shortest possible name
+            while(nameIndex < ctx.nameParts.size()) {
+                // Attempt to resolve start as class reference
+                LookupAST namePart = (LookupAST)ctx.nameParts.get(nameIndex);
+                if(nameIndex > 0)
+                    className += ".";
+                className += ((StringLiteralAST)namePart.name).value;
+                className = classResolver.resolveClassName(className);
+                
+                try {
+                    target = new NameTypeAST(null, Class.forName(className, true, classLoader));
+                } catch (ClassNotFoundException ex) {
+                    
+                }
+                
+                nameIndex++;
+                
+                if(target != null)
+                    break;
+            }
+        }
+            
+        if(nameIndex < ctx.nameParts.size()) {
+            // The rest are assumed to field gets
+
+            for(int i = nameIndex; i < ctx.nameParts.size(); i++) {
+
+            }
+        }
+        
+        return target;
+    }
+    
+    private ExpressionAST namePartAsExpression(ClassLoader classLoader, LookupAST namePart) {
+        String firstNamePart = ((StringLiteralAST)namePart.name).value;
+        
+        if(parameters.containsKey(firstNamePart)) {
+            // Is parameter
+        } else if(variables.containsKey(firstNamePart)) {
+            // Is variable
+        } else if(thisClass.getFieldType(classLoader, firstNamePart) != null) {
+            // If field
+        }
+        
+        return null;
     }
 
     @Override
@@ -578,7 +668,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitLookup(LookupAST ctx) {
-        String name = ((StringLiteralAST)ctx.name).value;
+//        String name = ((StringLiteralAST)ctx.name).value;
+        String name = ((StringLiteralAST)((LookupAST)ctx.name).name).value;
                     
         if (parameters.containsKey(name)) {
             TypeAST resultType = parameters.get(name).type;
@@ -1073,42 +1164,28 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
     @Override
     public PreparedExpressionAST visitAmbiguousName(AmbiguousNameAST ctx) {
-        // May not be a valid expression!!!
-        // Otherwise, is, functionally, a field get - possibly recursive
-        
-        ExpressionAST firstNamePartAsExpression = namePartAsExpression(classLoader, ctx.nameParts.get(0));
-        AST target;
-        
-        if(firstNamePartAsExpression != null) {
-            target = firstNamePartAsExpression;
-        } else {
-            // Attempt to resolve start as class reference
-            
-            String className = ((StringLiteralAST)ctx.nameParts.get(0).name).value;
-            className = classResolver.resolveClassName(className);
-            try {
-//                target = new NameTypeAST(null, Class.forName(className));
-//                target = new NameTypeAST(null, classLoader.loadClass(className));
-                target = new NameTypeAST(null, Class.forName(className, true, classLoader));
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ExpressionPreparer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+//        // May not be a valid expression!!!
+//        // Otherwise, is, functionally, a field get - possibly recursive
+//        
+//        ExpressionAST firstNamePartAsExpression = namePartAsExpression(classLoader, ctx.nameParts.get(0));
+//        AST target;
+//        
+//        if(firstNamePartAsExpression != null) {
+//            target = firstNamePartAsExpression;
+//        } else {
+//            // Attempt to resolve start as class reference
+//            
+//            String className = ((StringLiteralAST)ctx.nameParts.get(0).name).value;
+//            className = classResolver.resolveClassName(className);
+//            try {
+////                target = new NameTypeAST(null, Class.forName(className));
+////                target = new NameTypeAST(null, classLoader.loadClass(className));
+//                target = new NameTypeAST(null, Class.forName(className, true, classLoader));
+//            } catch (ClassNotFoundException ex) {
+//                Logger.getLogger(ExpressionPreparer.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
         
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    private ExpressionAST namePartAsExpression(ClassLoader classLoader, LookupAST namePart) {
-        String firstNamePart = ((StringLiteralAST)namePart.name).value;
-        
-        if(parameters.containsKey(firstNamePart)) {
-            // Is parameter
-        } else if(variables.containsKey(firstNamePart)) {
-            // Is variable
-        } else if(thisClass.getFieldType(classLoader, firstNamePart) != null) {
-            // If field
-        }
-        
-        return null;
     }
 }

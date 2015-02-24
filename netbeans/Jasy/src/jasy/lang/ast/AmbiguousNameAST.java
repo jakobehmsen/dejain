@@ -8,11 +8,11 @@ public class AmbiguousNameAST extends AbstractAST implements ExpressionAST {
     // Instances cannot garantee to be a valid expressions.
     // - rather, they are potential expressions
     
-    public List<LookupAST> nameParts;
+    public List<ExpressionAST> nameParts;
     
 //    public ExpressionAST expression; // Possibly null after resolve
 
-    public AmbiguousNameAST(ASMCompiler.Region region, List<LookupAST> nameParts) {
+    public AmbiguousNameAST(ASMCompiler.Region region, List<ExpressionAST> nameParts) {
         super(region);
         this.nameParts = nameParts;
     }

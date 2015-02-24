@@ -1165,19 +1165,36 @@ public class SourceToClassTest {
         Class<?> c = TestClassStaticField.class;
         Field field = c.getDeclaredField("myField");
         
-        String expectedResult = (String)field.get(null);
+        String expectedResultField = (String)field.get(null);
         
         String templaceSrc =
             "class {\n" +
+            "    +private String " + field.getName() + " = \"" + expectedResultField + "\";\n" +
+//            "    +private " + TestClass1.class.getName() + " tc1 = new " + TestClass1.class.getName() + "();\n" +
             "    +public Object getValue() {\n" +
-            "        return <<ambigousClassName>>." + field.getName() + ";\n" +
+            "        return <<ambiguousClassName>>;\n" +
             "    }\n" +
             "}\n";
-        
-        expand(templaceSrc, 
-            map(entry("ambigousClassName", c.getSimpleName())),
-            map(entry("ambigousClassName", c.getName()))
+                
+        expand(templaceSrc,
+            new Configuration(
+                map(entry("ambiguousClassName", c.getSimpleName() + "." + field.getName())), 
+                map(entry("expectedResult", expectedResultField))
+            ),
+            new Configuration(
+                map(entry("ambiguousClassName", c.getName() + "." + field.getName())), 
+                map(entry("expectedResult", expectedResultField))
+            ),
+            new Configuration(
+                map(entry("ambiguousClassName", field.getName())), 
+                map(entry("expectedResult", expectedResultField))
+            )/*,
+            new Configuration(
+                map(entry("ambiguousClassName", "tc1.field")), 
+                map(entry("expectedResult", new TestClass1().field))
+            )*/
         ).forEach(combination -> {
+            Object expectedResult = combination.customMap.get("expectedResult");
             try {
                 testSourceToClasses(
                     new String[]{"jasy.TestClass1"},
@@ -1456,7 +1473,7 @@ public class SourceToClassTest {
             .map(className -> {
                 try {
 //                    return cl.loadClass(className);
-                    return Class.forName(source, true, cl);
+                    return Class.forName(className, true, cl);
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(SourceToAstTest.class.getName()).log(Level.SEVERE, null, ex);
                     return null;

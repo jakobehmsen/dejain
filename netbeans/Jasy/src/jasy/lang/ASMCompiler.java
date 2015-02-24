@@ -743,32 +743,39 @@ public class ASMCompiler {
                         new Position(partCtxs.get(0).getStart()),
                         new Position(partCtxs.get(partCtxs.size() - 1).getStop())
                     );
-                    List<LookupAST> parts = partCtxs.stream()
-                        .map(p -> (LookupAST)getExpression(p, mp) /*p assumed to be lookup ctx*/)
+                    List<ExpressionAST> parts = partCtxs.stream()
+                        .map(p -> (ExpressionAST)getExpression(p, mp) /*p assumed to be lookup ctx*/)
                         .collect(Collectors.toList());
                     AmbiguousNameAST target = new AmbiguousNameAST(targetRegion, parts);
 
-                    return lastPartCtx.accept(new JasyBaseVisitor<ExpressionAST>() {
-                        @Override
-                        public ExpressionAST visitLookup(LookupContext ctx) {
-                            ExpressionAST fieldName = getExpression((ParserRuleContext)ctx.getChild(0), mp);
-                            // Field access
-                            return new FieldGetAST(new Region(ctx), target, fieldName);
-                        }
-
-                        @Override
-                        public ExpressionAST visitInvocation(InvocationContext ctx) {
-                            String methodName = ctx.identifier().getText();
-                            List<ExpressionAST> arguments = ctx.arguments().expression().stream()
-                                .map(a -> getExpression(ctx, mp))
-                                .collect(Collectors.toList());
-                            
-                            return new InvocationAST(new Region(ctx), target, methodName, arguments);
-                        }
-                    });
+                    return getAmbiguousNameUsage(lastPartCtx, target);
                 }
                 
-                return getExpression(lastPartCtx, mp);
+                // Unify ambiguous names and lookups?
+                
+                ExpressionAST name = getExpression(lastPartCtx, mp);
+                return new LookupAST(new Region(ctx), name);
+            }
+
+            private ExpressionAST getAmbiguousNameUsage(ParserRuleContext lastPartCtx, AmbiguousNameAST target) {
+                return lastPartCtx.accept(new JasyBaseVisitor<ExpressionAST>() {
+                    @Override
+                    public ExpressionAST visitLookup(LookupContext ctx) {
+                        ExpressionAST fieldName = getExpression(ctx, mp);
+                        // Field access
+                        return new FieldGetAST(new Region(ctx), target, fieldName);
+                    }
+                    
+                    @Override
+                    public ExpressionAST visitInvocation(InvocationContext ctx) {
+                        String methodName = ctx.identifier().getText();
+                        List<ExpressionAST> arguments = ctx.arguments().expression().stream()
+                                .map(a -> getExpression(ctx, mp))
+                                .collect(Collectors.toList());
+                        
+                        return new InvocationAST(new Region(ctx), target, methodName, arguments);
+                    }
+                });
             }
             
             private List<ParserRuleContext> getAmbigousNameParts(JasyParser.AmbigousNameContext ctx) {
