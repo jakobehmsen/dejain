@@ -17,6 +17,9 @@ public class LookupAST extends AbstractAST implements ExpressionAST {
     public LookupAST(ASMCompiler.Region region, ExpressionAST name) {
         super(region);
         this.name = name;
+        
+        if(name instanceof LookupAST)
+            new String();
     }
     
     @Override

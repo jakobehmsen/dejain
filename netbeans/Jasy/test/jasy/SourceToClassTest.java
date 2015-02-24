@@ -1170,7 +1170,8 @@ public class SourceToClassTest {
         String templaceSrc =
             "class {\n" +
             "    +private String " + field.getName() + " = \"" + expectedResultField + "\";\n" +
-//            "    +private " + TestClass1.class.getName() + " tc1 = new " + TestClass1.class.getName() + "();\n" +
+            "    +private " + TestClass2.class.getName() + " tc = new " + TestClass2.class.getName() + "();\n" +
+            "    +private " + TestComplexClass.class.getName() + " tcc = new " + TestComplexClass.class.getName() + "();\n" +
             "    +public Object getValue() {\n" +
             "        return <<ambiguousClassName>>;\n" +
             "    }\n" +
@@ -1188,11 +1189,15 @@ public class SourceToClassTest {
             new Configuration(
                 map(entry("ambiguousClassName", field.getName())), 
                 map(entry("expectedResult", expectedResultField))
-            )/*,
+            ),
             new Configuration(
-                map(entry("ambiguousClassName", "tc1.field")), 
-                map(entry("expectedResult", new TestClass1().field))
-            )*/
+                map(entry("ambiguousClassName", "tc.field2")), 
+                map(entry("expectedResult", new TestClass2().field2))
+            ),
+            new Configuration(
+                map(entry("ambiguousClassName", "tcc.testClass2.field2")), 
+                map(entry("expectedResult", new TestComplexClass().testClass2.field2))
+            )
         ).forEach(combination -> {
             Object expectedResult = combination.customMap.get("expectedResult");
             try {

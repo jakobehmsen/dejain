@@ -753,8 +753,7 @@ public class ASMCompiler {
                 
                 // Unify ambiguous names and lookups?
                 
-                ExpressionAST name = getExpression(lastPartCtx, mp);
-                return new LookupAST(new Region(ctx), name);
+                return getExpression(lastPartCtx, mp);
             }
 
             private ExpressionAST getAmbiguousNameUsage(ParserRuleContext lastPartCtx, AmbiguousNameAST target) {

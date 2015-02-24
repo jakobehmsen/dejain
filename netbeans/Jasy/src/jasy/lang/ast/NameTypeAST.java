@@ -19,6 +19,7 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
     public String name;
     public String descriptor;
     private Class<?> c;
+    private Class<?> processedC;
     private TypeAST[] typeParameters;
     private Hashtable<String, TypeAST> typeVariableNameToTypeMap = new Hashtable<>();
 
@@ -116,6 +117,38 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         this.typeParameters = typeParameters;
         processTypeParameters();
     }
+    
+    private Class<?> resolve(ClassLoader classLoader) throws ClassNotFoundException {
+        Class<?> c;
+            
+        if(isArray) {
+            // name represent element name
+//                c = Class.forName(descriptor);
+//                c = classLoader.loadClass(descriptor);
+//                c = Class.forName(descriptor, true, classLoader);
+            c = Class.forName(descriptor, true, ClassLoader.getSystemClassLoader());
+        } else {
+            switch(name) {
+                case "boolean": c = boolean.class; break;
+                case "byte": c = byte.class; break;
+                case "short": c = short.class; break;
+                case "int": c = int.class; break;
+                case "long": c = long.class; break;
+                case "float": c = float.class; break;
+                case "double": c = double.class; break;
+                case "void": c = void.class; break;
+//                    default: c = Class.forName(name);
+//                    default: c = classLoader.loadClass(name);
+//                    default: c = Class.forName(name, true, classLoader);
+//                    default: c = Class.forName(name, true, classLoader);
+                default: c = Class.forName(name, true, ClassLoader.getSystemClassLoader());
+            }
+
+//                c = Class.forName(name);
+        }
+        
+        return c;
+    }
 
     @Override
     public void resolve(Scope thisClass, TypeAST expectedResultType, ClassResolver resolver, ClassLoader classLoader, List<ASMCompiler.Message> errorMessages) {
@@ -124,33 +157,39 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
 //            c = resolver.resolveType(name);
             
             name = resolver.resolveClassName(name);
-                
-            if(isArray) {
-                // name represent element name
-//                c = Class.forName(descriptor);
-//                c = classLoader.loadClass(descriptor);
-                c = Class.forName(descriptor, true, classLoader);
-            } else {
-                switch(name) {
-                    case "boolean": c = boolean.class; break;
-                    case "byte": c = byte.class; break;
-                    case "short": c = short.class; break;
-                    case "int": c = int.class; break;
-                    case "long": c = long.class; break;
-                    case "float": c = float.class; break;
-                    case "double": c = double.class; break;
-                    case "void": c = void.class; break;
-//                    default: c = Class.forName(name);
-//                    default: c = classLoader.loadClass(name);
-                    default: c = Class.forName(name, true, classLoader);
-                }
-                
-//                c = Class.forName(name);
-            }
+            c = resolve(ClassLoader.getSystemClassLoader());
+            
+//            Class<?> c;
+//            
+//            if(isArray) {
+//                // name represent element name
+////                c = Class.forName(descriptor);
+////                c = classLoader.loadClass(descriptor);
+////                c = Class.forName(descriptor, true, classLoader);
+//                c = Class.forName(descriptor, true, ClassLoader.getSystemClassLoader());
+//            } else {
+//                switch(name) {
+//                    case "boolean": c = boolean.class; break;
+//                    case "byte": c = byte.class; break;
+//                    case "short": c = short.class; break;
+//                    case "int": c = int.class; break;
+//                    case "long": c = long.class; break;
+//                    case "float": c = float.class; break;
+//                    case "double": c = double.class; break;
+//                    case "void": c = void.class; break;
+////                    default: c = Class.forName(name);
+////                    default: c = classLoader.loadClass(name);
+////                    default: c = Class.forName(name, true, classLoader);
+////                    default: c = Class.forName(name, true, classLoader);
+//                    default: c = Class.forName(name, true, ClassLoader.getSystemClassLoader());
+//                }
+//                
+////                c = Class.forName(name);
+//            }
             
             processTypeParameters();
             
-            name = c.getName().replace(".", "/");
+//            name = c.getName().replace(".", "/");
 //            descriptor = getDescriptorFromName(name);
         } catch (ClassNotFoundException ex) {
             errorMessages.add(new ASMCompiler.Message(getRegion(), "Could not resolve type " + name + "."));
@@ -170,8 +209,23 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
         }
     }
 
-    public Class<?> getType() {
-        return c;
+    public Class<?> getType(ClassLoader classLoader) {
+        if(processedC == null) {
+            try {
+                processedC = resolve(classLoader);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    processedC = resolve(classLoader);
+                } catch (ClassNotFoundException ex1) {
+                    Logger.getLogger(NameTypeAST.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+            }
+        }
+        
+        return processedC;
+        
+//        return c;
     }
 
     @Override

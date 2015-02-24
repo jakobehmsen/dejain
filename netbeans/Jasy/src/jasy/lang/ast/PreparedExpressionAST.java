@@ -6,9 +6,9 @@ import org.objectweb.asm.tree.InsnList;
 public interface PreparedExpressionAST extends PreparedAST {
     TypeAST resultType();
 
-    default boolean canBeArgumentFor(Class<?> parameterType) {
+    default boolean canBeArgumentFor(ClassLoader classLoader, Class<?> parameterType) {
         TypeAST resultType = resultType();
-        Class<?> argumentType = ((NameTypeAST)resultType).getType();
+        Class<?> argumentType = ((NameTypeAST)resultType).getType(classLoader);
         
         return parameterType.isAssignableFrom(argumentType);
     }

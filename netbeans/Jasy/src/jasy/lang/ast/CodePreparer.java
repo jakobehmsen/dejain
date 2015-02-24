@@ -244,13 +244,13 @@ public class CodePreparer implements CodeVisitor<PreparedAST> {
                 
                 int injectionListIndex = generator.getInjectionListIndex();
                 
-                if (((NameTypeAST) expression.resultType()).getType() != void.class) {
+                if (((NameTypeAST) expression.resultType()).getType(classLoader) != void.class) {
                     // dup list
                     generator.methodNode.loadLocal(injectionListIndex);
                 }
                 // generate expresion
                 expression.generate(c, generator, originalIl);
-                if (((NameTypeAST) expression.resultType()).getType() != void.class) {
+                if (((NameTypeAST) expression.resultType()).getType(classLoader) != void.class) {
                     // add to list
                     generator.methodNode.invokeInterface(Type.getType(List.class), new Method("add", Type.BOOLEAN_TYPE, new Type[]{Type.getType(Object.class)}));
                     // pop return from add

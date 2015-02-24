@@ -359,9 +359,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         Type tmpTargetType = null;
         List<java.lang.reflect.Method> ms;
         if (target instanceof PreparedExpressionAST) {
-            ms = getCompatibleMethodsWith(((NameTypeAST) ((PreparedExpressionAST)target).resultType()).getType(), false, methodName, arguments);
+            ms = getCompatibleMethodsWith(((NameTypeAST) ((PreparedExpressionAST)target).resultType()).getType(classLoader), false, methodName, arguments);
         } else {
-            ms = getCompatibleMethodsWith(((NameTypeAST) target).getType(), true, methodName, arguments);
+            ms = getCompatibleMethodsWith(((NameTypeAST) target).getType(classLoader), true, methodName, arguments);
         }
         java.lang.reflect.Method tmpMethod = ms.get(0);
         if (target instanceof PreparedExpressionAST) {
@@ -490,8 +490,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         // Assumed, body is an expression
         PreparedExpressionAST expressionRaw = toExpression(ctx.body, asExpression);
         TypeAST resultTypeRaw = expressionRaw.resultType();
-        if (!ExpressionAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType())) {
-            if(CodeAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType())) {
+        if (!ExpressionAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType(classLoader))) {
+            if(CodeAST.class.isAssignableFrom(((NameTypeAST) resultTypeRaw).getType(classLoader))) {
                 resultTypeRaw = new NameTypeAST(null, CodeAST.class);
             } else {
                 // Implicitly convert to literal
@@ -639,11 +639,16 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         if(nameIndex < ctx.nameParts.size()) {
             // The rest are assumed to field gets
 
-            for(int i = nameIndex; i < ctx.nameParts.size(); i++) {
-
+            for(; nameIndex < ctx.nameParts.size(); nameIndex++) {
+                LookupAST namePart = (LookupAST)ctx.nameParts.get(nameIndex);
+//                String name = ((StringLiteralAST)namePart.name).value;
+                target = new FieldGetAST(namePart.getRegion(), target, namePart);
             }
         }
         
+        if(target instanceof ExpressionAST)
+            return ((ExpressionAST)target).accept(this);
+            
         return target;
     }
     
@@ -652,10 +657,13 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         
         if(parameters.containsKey(firstNamePart)) {
             // Is parameter
+            return namePart;
         } else if(variables.containsKey(firstNamePart)) {
             // Is variable
+            return namePart;
         } else if(thisClass.getFieldType(classLoader, firstNamePart) != null) {
             // If field
+            return namePart;
         }
         
         return null;
@@ -669,7 +677,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     @Override
     public PreparedExpressionAST visitLookup(LookupAST ctx) {
 //        String name = ((StringLiteralAST)ctx.name).value;
-        String name = ((StringLiteralAST)((LookupAST)ctx.name).name).value;
+        String name = ((StringLiteralAST)ctx.name).value;
                     
         if (parameters.containsKey(name)) {
             TypeAST resultType = parameters.get(name).type;
@@ -719,7 +727,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 }
             };
         } else {
-            return new FieldGetAST(ctx.getRegion(), new ThisAST(ctx.getRegion()), ctx.name).accept(this);
+            return new FieldGetAST(ctx.getRegion(), new ThisAST(ctx.getRegion()), ctx).accept(this);
         }
     }
 
@@ -781,7 +789,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
             }
 
             @Override
-            public boolean canBeArgumentFor(Class<?> parameterType) {
+            public boolean canBeArgumentFor(ClassLoader classLoader, Class<?> parameterType) {
                 return !parameterType.isPrimitive();
             }
 
@@ -820,18 +828,18 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
 
             @Override
             public void generate(Transformation<ClassNode> c, MethodCodeGenerator generator, InsnList originalIl, Label ifFalseLabel) {
-                int length = (int) elements.stream().filter((jasy.lang.ast.PreparedExpressionAST e) -> ((NameTypeAST) e.resultType()).getType() != void.class).count();
+                int length = (int) elements.stream().filter((jasy.lang.ast.PreparedExpressionAST e) -> ((NameTypeAST) e.resultType()).getType(classLoader) != void.class).count();
                 generator.methodNode.push(length);
                 generator.methodNode.newArray(Type.getType(ctx.type.getDescriptor()));
                 int arrayIndex = 0;
                 for (PreparedExpressionAST e : elements) {
-                    if (((NameTypeAST) e.resultType()).getType() != void.class) {
+                    if (((NameTypeAST) e.resultType()).getType(classLoader) != void.class) {
                         generator.methodNode.dup();
                         generator.methodNode.push(arrayIndex);
                         arrayIndex++;
                     }
                     e.generate(c, generator, originalIl);
-                    if (((NameTypeAST) e.resultType()).getType() != void.class) {
+                    if (((NameTypeAST) e.resultType()).getType(classLoader) != void.class) {
                         generator.methodNode.arrayStore(Type.getType(ctx.type.getDescriptor()));
                     }
                 }
@@ -859,9 +867,9 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 generator.methodNode.newInstance(Type.getType(ctx.c.getDescriptor()));
                 generator.methodNode.dup();
                 arguments.forEach((a) -> a.generate(c, generator, originalIl));
-                List<Constructor<?>> cs = getCompatibleConstructorsWith(((NameTypeAST) ctx.c).getType(), arguments);
+                List<Constructor<?>> cs = getCompatibleConstructorsWith(((NameTypeAST) ctx.c).getType(classLoader), arguments);
                 if (cs.isEmpty()) {
-                    cs = getCompatibleConstructorsWith(((NameTypeAST) ctx.c).getType(), arguments);
+                    cs = getCompatibleConstructorsWith(((NameTypeAST) ctx.c).getType(classLoader), arguments);
                 }
                 Constructor<?> constructor = cs.get(0);
                 Type[] argumentTypes = Arrays.asList(constructor.getParameterTypes()).stream().map((java.lang.Class<?> pt) -> Type.getType(pt)).toArray((int size) -> new Type[size]);
@@ -894,7 +902,7 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     }
 
     private boolean parameterTypeIsCompatibleWith(Class<?> pt, PreparedExpressionAST a) {
-        return a.canBeArgumentFor(pt);
+        return a.canBeArgumentFor(classLoader, pt);
     }
 
     @Override
