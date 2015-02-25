@@ -1173,30 +1173,44 @@ public class SourceToClassTest {
             "    +private " + TestClass2.class.getName() + " tc = new " + TestClass2.class.getName() + "();\n" +
             "    +private " + TestComplexClass.class.getName() + " tcc = new " + TestComplexClass.class.getName() + "();\n" +
             "    +public Object getValue() {\n" +
-            "        return <<ambiguousClassName>>;\n" +
+            "        <<ambiguousClassName>>\n" +
             "    }\n" +
             "}\n";
                 
         expand(templaceSrc,
+            // As expression tests
             new Configuration(
-                map(entry("ambiguousClassName", c.getSimpleName() + "." + field.getName())), 
+                map(entry("ambiguousClassName", "return " + c.getSimpleName() + "." + field.getName() + ";")), 
                 map(entry("expectedResult", expectedResultField))
             ),
             new Configuration(
-                map(entry("ambiguousClassName", c.getName() + "." + field.getName())), 
+                map(entry("ambiguousClassName", "return " + c.getName() + "." + field.getName() + ";")), 
                 map(entry("expectedResult", expectedResultField))
             ),
             new Configuration(
-                map(entry("ambiguousClassName", field.getName())), 
+                map(entry("ambiguousClassName", "return " + field.getName() + ";")), 
                 map(entry("expectedResult", expectedResultField))
             ),
             new Configuration(
-                map(entry("ambiguousClassName", "tc.field2")), 
+                map(entry("ambiguousClassName", "return tc.field2;")), 
                 map(entry("expectedResult", new TestClass2().field2))
             ),
             new Configuration(
-                map(entry("ambiguousClassName", "tcc.testClass2.field2")), 
+                map(entry("ambiguousClassName", "return tcc.testClass2.field2;")), 
                 map(entry("expectedResult", new TestComplexClass().testClass2.field2))
+            ),
+            new Configuration(
+                map(entry("ambiguousClassName", "return new jasy.TestComplexClass().testClass2.get(\"Hi\");")), 
+                map(entry("expectedResult", new jasy.TestComplexClass().testClass2.get("Hi")))
+            ),
+            // As statement tests
+            new Configuration(
+                map(entry("ambiguousClassName", "new jasy.TestComplexClass().testClass2.toString(); return \"Hi\";")), 
+                map(entry("expectedResult", "Hi"))
+            ),
+            new Configuration(
+                map(entry("ambiguousClassName", "jasy.TestComplexClass.testClass2Static.toString(); return \"Hi\";")), 
+                map(entry("expectedResult", "Hi"))
             )
         ).forEach(combination -> {
             Object expectedResult = combination.customMap.get("expectedResult");
