@@ -405,7 +405,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 if (asExpression && castType != null) {
                     generator.methodNode.checkCast(Type.getType(castType.getDescriptor()));
                 }
-                if (!asExpression && method.getReturnType() != Void.class) {
+                Class<?> voidClass = void.class;
+                if (!asExpression && method.getReturnType() != voidClass) {
                     generator.methodNode.pop();
                 }
             }
@@ -595,7 +596,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                 return getPreparedAmbigousName((AmbiguousNameAST)target);
             }
             
-            return ((ExpressionAST)target).accept(this);
+//            return ((ExpressionAST)target).accept(this);
+            return getAsExpression((ExpressionAST)target);
         }
         
         // Assumed to be a TypeAST
@@ -648,7 +650,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
         }
         
         if(target instanceof ExpressionAST)
-            return ((ExpressionAST)target).accept(this);
+            return getAsExpression((ExpressionAST)target);
+//            return ((ExpressionAST)target).accept(this);
             
         return target;
     }
