@@ -348,7 +348,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
     @Override
     public PreparedExpressionAST visitInvocation(InvocationAST ctx) {
 //        PreparedExpressionAST target = ctx.target != null ? ctx.target.accept(this) : null;
-        Object target = ctx.target instanceof ExpressionAST ? ((ExpressionAST)ctx.target).accept(this) : ctx.target;
+//        Object target = ctx.target instanceof ExpressionAST ? ((ExpressionAST)ctx.target).accept(this) : ctx.target;
+        Object target = getPreparedTarget(ctx.target);
         List<PreparedExpressionAST> arguments = ctx.arguments.stream()
             .map(a -> toExpression(a))
             .collect(Collectors.toList());
