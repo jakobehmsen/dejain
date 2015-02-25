@@ -106,7 +106,8 @@ public class ASMCompiler {
         
         StatementsContext ctx = parser.statements();
         
-        return getStatement(ctx, new MetaProcessing(new Hashtable<>()));
+        List<CodeAST> statements = getStatements(ctx, new MetaProcessing(new Hashtable<>()));
+        return new BlockAST(null, statements);
     }
     
     public ModuleAST compile(InputStream sourceCode) throws IOException {
