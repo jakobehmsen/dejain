@@ -265,17 +265,17 @@ public class ASMCompiler {
         }
     }
 
-    private List<jasy.lang.ast.CodeAST> getStatements(JasyParser.StatementsContext ctx, MetaProcessing mp) {
+    private static List<jasy.lang.ast.CodeAST> getStatements(JasyParser.StatementsContext ctx, MetaProcessing mp) {
         return getStatements(ctx.statement(), mp);
     }
 
-    private <T extends ParserRuleContext> List<jasy.lang.ast.CodeAST> getStatements(List<T> ctxs, MetaProcessing mp) {
+    private static <T extends ParserRuleContext> List<jasy.lang.ast.CodeAST> getStatements(List<T> ctxs, MetaProcessing mp) {
         return ctxs.stream()
             .map(sCtx -> getStatement(sCtx, mp))
             .collect(Collectors.toList());
     }
     
-    private jasy.lang.ast.CodeAST getStatement(ParserRuleContext ctx, MetaProcessing mp) {
+    private static jasy.lang.ast.CodeAST getStatement(ParserRuleContext ctx, MetaProcessing mp) {
         jasy.lang.ast.CodeAST r = ctx.accept(new JasyBaseVisitor<jasy.lang.ast.CodeAST>() {
             @Override
             public CodeAST visitStatement(JasyParser.StatementContext ctx) {
@@ -382,266 +382,258 @@ public class ASMCompiler {
         
         return r;
     }
+    
+    private static class ContextToExpression extends JasyBaseVisitor<ExpressionAST> {
+        private MetaProcessing mp;
 
-    private ExpressionAST getExpression(ParserRuleContext ctx, MetaProcessing mp) {
-        return ctx.accept(new JasyBaseVisitor<ExpressionAST>() {
-            @Override
-            public ExpressionAST visitStringLiteral(JasyParser.StringLiteralContext ctx) {
-                String value = ctx.getText().substring(1, ctx.getText().length() - 1);
-                value = value
-                    .replace("\\\\", "\\")
-                    .replace("\\\"", "\"")
-                    .replace("\\n", "\n")
-                    .replace("\\r", "\r")
-                    .replace("\\t", "\t");
-                return new StringLiteralAST(new Region(ctx), value);
-            }
+        public ContextToExpression(MetaProcessing mp) {
+            this.mp = mp;
+        }
+        
+        @Override
+        public ExpressionAST visitStringLiteral(JasyParser.StringLiteralContext ctx) {
+            String value = ctx.getText().substring(1, ctx.getText().length() - 1);
+            value = value
+                .replace("\\\\", "\\")
+                .replace("\\\"", "\"")
+                .replace("\\n", "\n")
+                .replace("\\r", "\r")
+                .replace("\\t", "\t");
+            return new StringLiteralAST(new Region(ctx), value);
+        }
 
-            @Override
-            public ExpressionAST visitIntegerLiteral(JasyParser.IntegerLiteralContext ctx) {
-                int value = Integer.parseInt(ctx.getText());
-                return new IntLiteralAST(new Region(ctx), value);
-            }
+        @Override
+        public ExpressionAST visitIntegerLiteral(JasyParser.IntegerLiteralContext ctx) {
+            int value = Integer.parseInt(ctx.getText());
+            return new IntLiteralAST(new Region(ctx), value);
+        }
 
-            @Override
-            public ExpressionAST visitLongLiteral(JasyParser.LongLiteralContext ctx) {
-                String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
-                long value = Long.parseLong(valueStr);
-                return new LongLiteralAST(new Region(ctx), value);
-            }
+        @Override
+        public ExpressionAST visitLongLiteral(JasyParser.LongLiteralContext ctx) {
+            String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
+            long value = Long.parseLong(valueStr);
+            return new LongLiteralAST(new Region(ctx), value);
+        }
 
-            @Override
-            public ExpressionAST visitFloatLiteral(JasyParser.FloatLiteralContext ctx) {
-                String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
-                float value = Float.parseFloat(valueStr);
-                return new FloatLiteralAST(new Region(ctx), value);
-            }
+        @Override
+        public ExpressionAST visitFloatLiteral(JasyParser.FloatLiteralContext ctx) {
+            String valueStr = ctx.getText().substring(0, ctx.getText().length() - 1);
+            float value = Float.parseFloat(valueStr);
+            return new FloatLiteralAST(new Region(ctx), value);
+        }
 
-            @Override
-            public ExpressionAST visitDoubleLiteral(JasyParser.DoubleLiteralContext ctx) {
-                double value = Double.parseDouble(ctx.getText());
-                return new DoubleLiteralAST(new Region(ctx), value);
-            }
+        @Override
+        public ExpressionAST visitDoubleLiteral(JasyParser.DoubleLiteralContext ctx) {
+            double value = Double.parseDouble(ctx.getText());
+            return new DoubleLiteralAST(new Region(ctx), value);
+        }
 
-            @Override
-            public ExpressionAST visitLeafExpression(JasyParser.LeafExpressionContext ctx) {
-                ExpressionAST result = ctx.getChild(0).accept(this);
-                
-                for(int i = 0; i < ctx.leafExpressionChain().getChildCount(); i++) {
-                    if(ctx.leafExpressionChain().getChild(i) instanceof ParserRuleContext) {
-                        ParserRuleContext chainCtx = (ParserRuleContext)ctx.leafExpressionChain().getChild(i);
+        @Override
+        public ExpressionAST visitLeafExpression(JasyParser.LeafExpressionContext ctx) {
+            ExpressionAST result = ctx.getChild(0).accept(this);
 
-                        switch(chainCtx.getRuleIndex()) {
-                            case JasyParser.RULE_lookup:
-                                LookupContext lookupCtx = (LookupContext)chainCtx;
-                                ParserRuleContext actualLookupCtx = (ParserRuleContext)lookupCtx.getChild(0);
-                                
-                                switch(actualLookupCtx.getRuleIndex()) {
-                                    case JasyParser.RULE_unqualifiedLookup: {
-                                        UnqualifiedLookupContext unqualifiedCtx = (UnqualifiedLookupContext)actualLookupCtx;
-                                        String fieldName = unqualifiedCtx.identifier().getText();
-                                        result = new FieldGetAST(new Region(chainCtx), result, new StringLiteralAST(new Region(chainCtx), fieldName));
-                                        break;
-                                    } case JasyParser.RULE_qualifiedLookup: {
-                                        QualifiedLookupContext qualifiedCtx = (QualifiedLookupContext)actualLookupCtx;
-                                        ExpressionAST fieldName = getExpression(qualifiedCtx.expression(), mp);
-                                        result = new FieldGetAST(new Region(chainCtx), result, fieldName);
-                                        break;
-                                    }
-                                }
-                                
-                                break;
-                            case JasyParser.RULE_invocation:
-                                InvocationContext invocationCtx = (InvocationContext)chainCtx;
-                                String methodName = invocationCtx.identifier().getText();
-                                List<ExpressionAST> arguments = invocationCtx.arguments().expression().stream()
-                                    .map(eCtx -> getExpression(eCtx, mp)).collect(Collectors.toList());
-                                result = new InvocationAST(new Region(chainCtx), result, /*null, */methodName, arguments/*, null*/);
-                                break;
-                        }
+            for(int i = 0; i < ctx.leafExpressionChain().getChildCount(); i++) {
+                if(ctx.leafExpressionChain().getChild(i) instanceof ParserRuleContext) {
+                    ParserRuleContext chainCtx = (ParserRuleContext)ctx.leafExpressionChain().getChild(i);
+
+                    switch(chainCtx.getRuleIndex()) {
+                        case JasyParser.RULE_lookup:
+                            LookupContext lookupCtx = (LookupContext)chainCtx;
+                            ExpressionAST fieldName = getExpression(lookupCtx, mp);
+                            result = new FieldGetAST(new Region(chainCtx), result, fieldName);
+
+                            break;
+                        case JasyParser.RULE_invocation:
+                            InvocationContext invocationCtx = (InvocationContext)chainCtx;
+                            String methodName = invocationCtx.identifier().getText();
+                            List<ExpressionAST> arguments = invocationCtx.arguments().expression().stream()
+                                .map(eCtx -> getExpression(eCtx, mp)).collect(Collectors.toList());
+                            result = new InvocationAST(new Region(chainCtx), result, /*null, */methodName, arguments/*, null*/);
+                            break;
                     }
                 }
-                
-                return result;
-            }
-            
-            private <V extends ParserRuleContext, O extends ParserRuleContext> ExpressionAST parseBinaryExpressionRule(
-                    V first, List<V> rest, List<O> operators, Function<O, Integer> operatorFunc) {
-                ExpressionAST result = first.accept(this);
-                
-                for(int i = 1; i < rest.size(); i++) {
-                    ExpressionAST lhs = result;
-                    ExpressionAST rhs = rest.get(i).accept(this);
-
-                    int operator = operatorFunc.apply(operators.get(i - 1));
-
-                    result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
-                }
-                
-                return result;
             }
 
-            @Override
-            public ExpressionAST visitEqualityExpression(JasyParser.EqualityExpressionContext ctx) {
-                return parseBinaryExpressionRule(ctx.first, ctx.relationalExpression(), ctx.equalityOperator(), equalityOperator -> {
-                    switch(equalityOperator.operator.getType()) {
-                        case JasyLexer.EQUALS:
-                            return BinaryExpressionAST.OPERATOR_EQ;
-                        case JasyLexer.NOT_EQUALS:
-                            return BinaryExpressionAST.OPERATOR_NE;
-                        default:
-                            return -1;
-                    }
-                });
+            return result;
+        }
+
+        private <V extends ParserRuleContext, O extends ParserRuleContext> ExpressionAST parseBinaryExpressionRule(
+                V first, List<V> rest, List<O> operators, Function<O, Integer> operatorFunc) {
+            ExpressionAST result = first.accept(this);
+
+            for(int i = 1; i < rest.size(); i++) {
+                ExpressionAST lhs = result;
+                ExpressionAST rhs = rest.get(i).accept(this);
+
+                int operator = operatorFunc.apply(operators.get(i - 1));
+
+                result = new BinaryExpressionAST(new Region(lhs.getRegion().start, rhs.getRegion().end), operator, lhs, rhs);
             }
 
-            @Override
-            public ExpressionAST visitRelationalExpression(JasyParser.RelationalExpressionContext ctx) {
-                return parseBinaryExpressionRule(ctx.first, ctx.additiveExpression(), ctx.relationalOperator(), relationalOperator -> {
-                    switch(relationalOperator.operator.getType()) {
-                        case JasyLexer.LT:
-                            return BinaryExpressionAST.OPERATOR_LT;
-                        case JasyLexer.LTE:
-                            return BinaryExpressionAST.OPERATOR_LTE;
-                        case JasyLexer.GT:
-                            return BinaryExpressionAST.OPERATOR_GT;
-                        case JasyLexer.GTE:
-                            return BinaryExpressionAST.OPERATOR_GTE;
-                        default:
-                            return -1;
-                    }
-                });
-            }
+            return result;
+        }
 
-            @Override
-            public ExpressionAST visitEmbeddedExpression(JasyParser.EmbeddedExpressionContext ctx) {
-                return ctx.expression().accept(this);
-            }
-
-            @Override
-            public ExpressionAST visitAdditiveExpression(JasyParser.AdditiveExpressionContext ctx) {
-                return parseBinaryExpressionRule(ctx.first, ctx.multiplicativeExpression(), ctx.additiveOperator(), additiveOperator -> {
-                    switch(additiveOperator.operator.getType()) {
-                        case JasyLexer.PLUS:
-                            return BinaryExpressionAST.OPERATOR_ADD;
-                        case JasyLexer.MINUS:
-                            return BinaryExpressionAST.OPERATOR_SUB;
-                        default:
-                            return -1;
-                    }
-                });
-            }
-
-            @Override
-            public ExpressionAST visitMultiplicativeExpression(JasyParser.MultiplicativeExpressionContext ctx) {
-                return parseBinaryExpressionRule(ctx.first, ctx.unaryPrefixExpression(), ctx.multiplicativeOperator(), multiplicativeOperator -> {
-                    switch(multiplicativeOperator.operator.getType()) {
-                        case JasyLexer.MULT:
-                            return BinaryExpressionAST.OPERATOR_MULT;
-                        case JasyLexer.DIV:
-                            return BinaryExpressionAST.OPERATOR_DIV;
-                        case JasyLexer.REM:
-                            return BinaryExpressionAST.OPERATOR_REM;
-                        default:
-                            return -1;
-                    }
-                });
-            }
-
-            @Override
-            public ExpressionAST visitUnaryPrefixExpression(JasyParser.UnaryPrefixExpressionContext ctx) {
-                if(ctx.unaryPrefixOperator() != null) {
-                    int operatorType = ctx.unaryPrefixOperator().operator.getType();
-                    ExpressionAST operand = ctx.operand.accept(this);
-                    
-                    switch(operatorType) {
-                        case JasyLexer.INC: 
-                        case JasyLexer.DEC: {
-                            int operator;
-                            
-                            switch(operatorType) {
-                            case JasyLexer.INC: 
-                                operator = IncDecExpression.OPERATOR_INC;
-                                break;
-                            case JasyLexer.DEC: 
-                                operator = IncDecExpression.OPERATOR_DEC;
-                                break;
-                            default:
-                                operator = -1;
-                            }
-                            
-                            return new IncDecExpression(null, IncDecExpression.TIMING_PRE, operator, operand);
-                        } case JasyLexer.PLUS:
-                        case JasyLexer.MINUS:
-                        case JasyLexer.TILDE:
-                        case JasyLexer.EXCLA: {
-                            int operator;
-                            
-                            switch(operatorType) {
-                            case JasyLexer.PLUS: 
-                                operator = UnaryExpression.OPERATOR_SIGN_POS;
-                                break;
-                            case JasyLexer.MINUS: 
-                                operator = UnaryExpression.OPERATOR_SIGN_NEG;
-                                break;
-                            case JasyLexer.TILDE: 
-                                operator = UnaryExpression.OPERATOR_BIN_COMP;
-                                break;
-                            case JasyLexer.EXCLA: 
-                                operator = UnaryExpression.OPERATOR_LOG_COMP;
-                                break;
-                            default:
-                                operator = -1;
-                            }
-                            
-                            return new UnaryExpression(new Region(ctx), operator, operand);
-                        }
-                    }
-                }
-                
-                return ctx.getChild(0).accept(this);
-            }
-
-            @Override
-            public ExpressionAST visitUnaryPostfixExpression(JasyParser.UnaryPostfixExpressionContext ctx) {
-                ExpressionAST expression = ctx.leafExpression().accept(this);
-                
-                if(ctx.unaryPostfixOperator() != null) {
-                    ExpressionAST operand = expression;
-                    int operatorType = ctx.unaryPostfixOperator().operator.getType();
-                    int operator;
-                            
-                    switch(operatorType) {
-                    case JasyLexer.INC: 
-                        operator = IncDecExpression.OPERATOR_INC;
-                        break;
-                    case JasyLexer.DEC: 
-                        operator = IncDecExpression.OPERATOR_DEC;
-                        break;
+        @Override
+        public ExpressionAST visitEqualityExpression(JasyParser.EqualityExpressionContext ctx) {
+            return parseBinaryExpressionRule(ctx.first, ctx.relationalExpression(), ctx.equalityOperator(), equalityOperator -> {
+                switch(equalityOperator.operator.getType()) {
+                    case JasyLexer.EQUALS:
+                        return BinaryExpressionAST.OPERATOR_EQ;
+                    case JasyLexer.NOT_EQUALS:
+                        return BinaryExpressionAST.OPERATOR_NE;
                     default:
-                        operator = -1;
-                    }
+                        return -1;
+                }
+            });
+        }
 
-                    return new IncDecExpression(null, IncDecExpression.TIMING_POST, operator, operand);
+        @Override
+        public ExpressionAST visitRelationalExpression(JasyParser.RelationalExpressionContext ctx) {
+            return parseBinaryExpressionRule(ctx.first, ctx.additiveExpression(), ctx.relationalOperator(), relationalOperator -> {
+                switch(relationalOperator.operator.getType()) {
+                    case JasyLexer.LT:
+                        return BinaryExpressionAST.OPERATOR_LT;
+                    case JasyLexer.LTE:
+                        return BinaryExpressionAST.OPERATOR_LTE;
+                    case JasyLexer.GT:
+                        return BinaryExpressionAST.OPERATOR_GT;
+                    case JasyLexer.GTE:
+                        return BinaryExpressionAST.OPERATOR_GTE;
+                    default:
+                        return -1;
                 }
-                
-                return expression;
-            }
-            
-            @Override
-            public ExpressionAST visitMetaExpression(JasyParser.MetaExpressionContext ctx) {
-                ExpressionAST body = null;
-                
-                if(ctx.expression() != null) {
-                    // only support expressions for now
-                    ExpressionAST exprCtx = getExpression(ctx.expression(), mp);
-                    body = exprCtx;
-                } else {
-                    // Not possible; only expressions are supported here!!!
+            });
+        }
+
+        @Override
+        public ExpressionAST visitEmbeddedExpression(JasyParser.EmbeddedExpressionContext ctx) {
+            return ctx.expression().accept(this);
+        }
+
+        @Override
+        public ExpressionAST visitAdditiveExpression(JasyParser.AdditiveExpressionContext ctx) {
+            return parseBinaryExpressionRule(ctx.first, ctx.multiplicativeExpression(), ctx.additiveOperator(), additiveOperator -> {
+                switch(additiveOperator.operator.getType()) {
+                    case JasyLexer.PLUS:
+                        return BinaryExpressionAST.OPERATOR_ADD;
+                    case JasyLexer.MINUS:
+                        return BinaryExpressionAST.OPERATOR_SUB;
+                    default:
+                        return -1;
                 }
-                
-                return new MetaExpressionAST(new Region(ctx), body);
+            });
+        }
+
+        @Override
+        public ExpressionAST visitMultiplicativeExpression(JasyParser.MultiplicativeExpressionContext ctx) {
+            return parseBinaryExpressionRule(ctx.first, ctx.unaryPrefixExpression(), ctx.multiplicativeOperator(), multiplicativeOperator -> {
+                switch(multiplicativeOperator.operator.getType()) {
+                    case JasyLexer.MULT:
+                        return BinaryExpressionAST.OPERATOR_MULT;
+                    case JasyLexer.DIV:
+                        return BinaryExpressionAST.OPERATOR_DIV;
+                    case JasyLexer.REM:
+                        return BinaryExpressionAST.OPERATOR_REM;
+                    default:
+                        return -1;
+                }
+            });
+        }
+
+        @Override
+        public ExpressionAST visitUnaryPrefixExpression(JasyParser.UnaryPrefixExpressionContext ctx) {
+            if(ctx.unaryPrefixOperator() != null) {
+                int operatorType = ctx.unaryPrefixOperator().operator.getType();
+                ExpressionAST operand = ctx.operand.accept(this);
+
+                switch(operatorType) {
+                    case JasyLexer.INC: 
+                    case JasyLexer.DEC: {
+                        int operator;
+
+                        switch(operatorType) {
+                        case JasyLexer.INC: 
+                            operator = IncDecExpression.OPERATOR_INC;
+                            break;
+                        case JasyLexer.DEC: 
+                            operator = IncDecExpression.OPERATOR_DEC;
+                            break;
+                        default:
+                            operator = -1;
+                        }
+
+                        return new IncDecExpression(null, IncDecExpression.TIMING_PRE, operator, operand);
+                    } case JasyLexer.PLUS:
+                    case JasyLexer.MINUS:
+                    case JasyLexer.TILDE:
+                    case JasyLexer.EXCLA: {
+                        int operator;
+
+                        switch(operatorType) {
+                        case JasyLexer.PLUS: 
+                            operator = UnaryExpression.OPERATOR_SIGN_POS;
+                            break;
+                        case JasyLexer.MINUS: 
+                            operator = UnaryExpression.OPERATOR_SIGN_NEG;
+                            break;
+                        case JasyLexer.TILDE: 
+                            operator = UnaryExpression.OPERATOR_BIN_COMP;
+                            break;
+                        case JasyLexer.EXCLA: 
+                            operator = UnaryExpression.OPERATOR_LOG_COMP;
+                            break;
+                        default:
+                            operator = -1;
+                        }
+
+                        return new UnaryExpression(new Region(ctx), operator, operand);
+                    }
+                }
             }
+
+            return ctx.getChild(0).accept(this);
+        }
+
+        @Override
+        public ExpressionAST visitUnaryPostfixExpression(JasyParser.UnaryPostfixExpressionContext ctx) {
+            ExpressionAST expression = ctx.leafExpression().accept(this);
+
+            if(ctx.unaryPostfixOperator() != null) {
+                ExpressionAST operand = expression;
+                int operatorType = ctx.unaryPostfixOperator().operator.getType();
+                int operator;
+
+                switch(operatorType) {
+                case JasyLexer.INC: 
+                    operator = IncDecExpression.OPERATOR_INC;
+                    break;
+                case JasyLexer.DEC: 
+                    operator = IncDecExpression.OPERATOR_DEC;
+                    break;
+                default:
+                    operator = -1;
+                }
+
+                return new IncDecExpression(null, IncDecExpression.TIMING_POST, operator, operand);
+            }
+
+            return expression;
+        }
+
+        @Override
+        public ExpressionAST visitMetaExpression(JasyParser.MetaExpressionContext ctx) {
+            ExpressionAST body = null;
+
+            if(ctx.expression() != null) {
+                // only support expressions for now
+                ExpressionAST exprCtx = getExpression(ctx.expression(), mp);
+                body = exprCtx;
+            } else {
+                // Not possible; only expressions are supported here!!!
+            }
+
+            return new MetaExpressionAST(new Region(ctx), body);
+        }
 
 //            @Override
 //            public ExpressionAST visitLookup(JasyParser.LookupContext ctx) {
@@ -649,151 +641,155 @@ public class ASMCompiler {
 //                return new LookupAST(new Region(ctx), name);
 //            }
 
-            @Override
-            public ExpressionAST visitUnqualifiedLookup(JasyParser.UnqualifiedLookupContext ctx) {
-                String name = ctx.getText();
-                return new LookupAST(new Region(ctx), new StringLiteralAST(new Region(ctx), name));
-            }
+        @Override
+        public ExpressionAST visitUnqualifiedLookup(JasyParser.UnqualifiedLookupContext ctx) {
+            String name = ctx.getText();
+            return new LookupAST(new Region(ctx), new StringLiteralAST(new Region(ctx), name));
+        }
 
-            @Override
-            public ExpressionAST visitQualifiedLookup(JasyParser.QualifiedLookupContext ctx) {
-                ExpressionAST name = getExpression(ctx.expression(), mp);
-                return new LookupAST(new Region(ctx), name);
-            }
+        @Override
+        public ExpressionAST visitQualifiedLookup(JasyParser.QualifiedLookupContext ctx) {
+            ExpressionAST name = getExpression(ctx.expression(), mp);
+            return new LookupAST(new Region(ctx), name);
+        }
 
-            @Override
-            public ExpressionAST visitVariableAssignment(JasyParser.VariableAssignmentContext ctx) {
-                if(ctx.assignmentOperator() != null) {
-                    String name = ctx.identifier().getText();
-                    ExpressionAST value = getExpression(ctx.value, mp);
-                    
-                    int binaryExpresionOperator = -1;
-                    switch(ctx.assignmentOperator().operator.getType()) {
-                        case JasyLexer.ASSIGN_ADD:
-                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_ADD;
-                            break;
-                        case JasyLexer.ASSIGN_SUB:
-                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_SUB;
-                            break;
-                        case JasyLexer.ASSIGN_MULT:
-                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_MULT;
-                            break;
-                        case JasyLexer.ASSIGN_DIV:
-                            binaryExpresionOperator = BinaryExpressionAST.OPERATOR_DIV;
-                            break;
-                    }
-                    
-                    if(binaryExpresionOperator != -1) {
-                        ExpressionAST lhs = new LookupAST(new Region(ctx.value), new StringLiteralAST(new Region(ctx.value), name));
-                        value = new BinaryExpressionAST(new Region(ctx.value), binaryExpresionOperator, lhs, value);
-                    }
+        @Override
+        public ExpressionAST visitVariableAssignment(JasyParser.VariableAssignmentContext ctx) {
+            if(ctx.assignmentOperator() != null) {
+                String name = ctx.identifier().getText();
+                ExpressionAST value = getExpression(ctx.value, mp);
 
-                    return new VariableAssignmentAST(new Region(ctx), name, value);
-                } else
-                    return ctx.equalityExpression().accept(this);
-            }
+                int binaryExpresionOperator = -1;
+                switch(ctx.assignmentOperator().operator.getType()) {
+                    case JasyLexer.ASSIGN_ADD:
+                        binaryExpresionOperator = BinaryExpressionAST.OPERATOR_ADD;
+                        break;
+                    case JasyLexer.ASSIGN_SUB:
+                        binaryExpresionOperator = BinaryExpressionAST.OPERATOR_SUB;
+                        break;
+                    case JasyLexer.ASSIGN_MULT:
+                        binaryExpresionOperator = BinaryExpressionAST.OPERATOR_MULT;
+                        break;
+                    case JasyLexer.ASSIGN_DIV:
+                        binaryExpresionOperator = BinaryExpressionAST.OPERATOR_DIV;
+                        break;
+                }
 
-            @Override
-            public ExpressionAST visitQuotedExpression(JasyParser.QuotedExpressionContext ctx) {
-                CodeAST code = null;
-                
-                if(ctx.delimitedStatement() != null)
-                    code = getStatement(ctx.delimitedStatement(), mp);
-                else if(ctx.nonDelimitedStatement() != null)
-                    code = getStatement(ctx.nonDelimitedStatement(), mp);
-                else if(ctx.block() != null) {
-                    List<CodeAST> statements = getStatements(ctx.block().statements(), mp);
-                    code = new BlockAST(new Region(ctx.block()), statements);
-                } else if(ctx.expression() != null)
-                    code = getExpression(ctx.expression(), mp);
-                
-                return new QuoteAST(new Region(ctx), code);
-            }
+                if(binaryExpresionOperator != -1) {
+                    ExpressionAST lhs = new LookupAST(new Region(ctx.value), new StringLiteralAST(new Region(ctx.value), name));
+                    value = new BinaryExpressionAST(new Region(ctx.value), binaryExpresionOperator, lhs, value);
+                }
 
-            @Override
-            public ExpressionAST visitBooleanLiteral(JasyParser.BooleanLiteralContext ctx) {
-                String valueStr = ctx.getText();
-                boolean value = Boolean.parseBoolean(valueStr);
-                
-                return new BooleanLiteralAST(new Region(ctx), value);
-            }
+                return new VariableAssignmentAST(new Region(ctx), name, value);
+            } else
+                return ctx.equalityExpression().accept(this);
+        }
 
-            @Override
-            public ExpressionAST visitNewExpression(JasyParser.NewExpressionContext ctx) {
-                String className = ctx.className.getText();
-                TypeAST c = new NameTypeAST(new Region(ctx.className), className);
-                List<ExpressionAST> arguments = ctx.expression().stream()
-                    .map(eCtx -> getExpression(eCtx, mp))
+        @Override
+        public ExpressionAST visitQuotedExpression(JasyParser.QuotedExpressionContext ctx) {
+            CodeAST code = null;
+
+            if(ctx.delimitedStatement() != null)
+                code = getStatement(ctx.delimitedStatement(), mp);
+            else if(ctx.nonDelimitedStatement() != null)
+                code = getStatement(ctx.nonDelimitedStatement(), mp);
+            else if(ctx.block() != null) {
+                List<CodeAST> statements = getStatements(ctx.block().statements(), mp);
+                code = new BlockAST(new Region(ctx.block()), statements);
+            } else if(ctx.expression() != null)
+                code = getExpression(ctx.expression(), mp);
+
+            return new QuoteAST(new Region(ctx), code);
+        }
+
+        @Override
+        public ExpressionAST visitBooleanLiteral(JasyParser.BooleanLiteralContext ctx) {
+            String valueStr = ctx.getText();
+            boolean value = Boolean.parseBoolean(valueStr);
+
+            return new BooleanLiteralAST(new Region(ctx), value);
+        }
+
+        @Override
+        public ExpressionAST visitNewExpression(JasyParser.NewExpressionContext ctx) {
+            String className = ctx.className.getText();
+            TypeAST c = new NameTypeAST(new Region(ctx.className), className);
+            List<ExpressionAST> arguments = ctx.expression().stream()
+                .map(eCtx -> getExpression(eCtx, mp))
+                .collect(Collectors.toList());
+
+            return new NewAST(new Region(ctx), c, arguments);
+        }
+
+        @Override
+        public ExpressionAST visitAmbigousName(JasyParser.AmbigousNameContext ctx) {
+            List<ParserRuleContext> partCtxs = getAmbigousNameParts(ctx);
+            // Last part is assumed to be either a field access or an invocation.
+            ParserRuleContext lastPartCtx = partCtxs.get(partCtxs.size() - 1);
+            // Remove last part; now, the actual parts of the ambiguous name remains.
+            // - These parts are assumed to be only lookups.
+            partCtxs.remove(partCtxs.size() - 1);
+
+            if(partCtxs.size() > 0) {
+                Region targetRegion = new Region(
+                    new Position(partCtxs.get(0).getStart()),
+                    new Position(partCtxs.get(partCtxs.size() - 1).getStop())
+                );
+                List<ExpressionAST> parts = partCtxs.stream()
+                    .map(p -> (ExpressionAST)getExpression(p, mp) /*p assumed to be lookup ctx*/)
                     .collect(Collectors.toList());
-                
-                return new NewAST(new Region(ctx), c, arguments);
+                AmbiguousNameAST target = new AmbiguousNameAST(targetRegion, parts);
+
+                return getAmbiguousNameUsage(lastPartCtx, target);
             }
 
-            @Override
-            public ExpressionAST visitAmbigousName(JasyParser.AmbigousNameContext ctx) {
-                List<ParserRuleContext> partCtxs = getAmbigousNameParts(ctx);
-                // Last part is assumed to be either a field access or an invocation.
-                ParserRuleContext lastPartCtx = partCtxs.get(partCtxs.size() - 1);
-                // Remove last part; now, the actual parts of the ambiguous name remains.
-                // - These parts are assumed to be only lookups.
-                partCtxs.remove(partCtxs.size() - 1);
-                
-                if(partCtxs.size() > 0) {
-                    Region targetRegion = new Region(
-                        new Position(partCtxs.get(0).getStart()),
-                        new Position(partCtxs.get(partCtxs.size() - 1).getStop())
-                    );
-                    List<ExpressionAST> parts = partCtxs.stream()
-                        .map(p -> (ExpressionAST)getExpression(p, mp) /*p assumed to be lookup ctx*/)
+            // Unify ambiguous names and lookups?
+
+            return getExpression(lastPartCtx, mp);
+        }
+
+        private ExpressionAST getAmbiguousNameUsage(ParserRuleContext lastPartCtx, AmbiguousNameAST target) {
+            return lastPartCtx.accept(new JasyBaseVisitor<ExpressionAST>() {
+                @Override
+                public ExpressionAST visitLookup(LookupContext ctx) {
+                    ExpressionAST fieldName = getExpression(ctx, mp);
+                    // Field access
+                    return new FieldGetAST(new Region(ctx), target, fieldName);
+                }
+
+                @Override
+                public ExpressionAST visitInvocation(InvocationContext ctx) {
+                    String methodName = ctx.identifier().getText();
+                    List<ExpressionAST> arguments = ctx.arguments().expression().stream()
+                        .map(a -> 
+                            getExpression(a, mp))
                         .collect(Collectors.toList());
-                    AmbiguousNameAST target = new AmbiguousNameAST(targetRegion, parts);
 
-                    return getAmbiguousNameUsage(lastPartCtx, target);
+                    return new InvocationAST(new Region(ctx), target, methodName, arguments);
                 }
-                
-                // Unify ambiguous names and lookups?
-                
-                return getExpression(lastPartCtx, mp);
+            });
+        }
+
+        private List<ParserRuleContext> getAmbigousNameParts(JasyParser.AmbigousNameContext ctx) {
+            ArrayList<ParserRuleContext> parts = new ArrayList<>();
+
+            JasyParser.AmbigousNameContext currentPartCtx = ctx;
+
+            while(currentPartCtx != null) {
+                ParserRuleContext part = currentPartCtx.invocation() != null 
+                    ? currentPartCtx.invocation() : currentPartCtx.lookup();
+
+                parts.add(part);
+
+                currentPartCtx = currentPartCtx.next;
             }
 
-            private ExpressionAST getAmbiguousNameUsage(ParserRuleContext lastPartCtx, AmbiguousNameAST target) {
-                return lastPartCtx.accept(new JasyBaseVisitor<ExpressionAST>() {
-                    @Override
-                    public ExpressionAST visitLookup(LookupContext ctx) {
-                        ExpressionAST fieldName = getExpression(ctx, mp);
-                        // Field access
-                        return new FieldGetAST(new Region(ctx), target, fieldName);
-                    }
-                    
-                    @Override
-                    public ExpressionAST visitInvocation(InvocationContext ctx) {
-                        String methodName = ctx.identifier().getText();
-                        List<ExpressionAST> arguments = ctx.arguments().expression().stream()
-                                .map(a -> getExpression(ctx, mp))
-                                .collect(Collectors.toList());
-                        
-                        return new InvocationAST(new Region(ctx), target, methodName, arguments);
-                    }
-                });
-            }
-            
-            private List<ParserRuleContext> getAmbigousNameParts(JasyParser.AmbigousNameContext ctx) {
-                ArrayList<ParserRuleContext> parts = new ArrayList<>();
-                
-                JasyParser.AmbigousNameContext currentPartCtx = ctx;
-                
-                while(currentPartCtx != null) {
-                    ParserRuleContext part = currentPartCtx.invocation() != null 
-                        ? currentPartCtx.invocation() : currentPartCtx.lookup();
-                    
-                    parts.add(part);
-                    
-                    currentPartCtx = currentPartCtx.next;
-                }
-                
-                return parts;
-            }
-        });
+            return parts;
+        }
+    }
+
+    private static ExpressionAST getExpression(ParserRuleContext ctx, MetaProcessing mp) {
+        return ctx.accept(new ContextToExpression(mp));
     }
     
     public ClassTransformer compile(InputStream sourceCode, ArrayList<Message> errorMessages) throws IOException {
