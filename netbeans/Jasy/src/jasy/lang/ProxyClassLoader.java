@@ -3,6 +3,12 @@ package jasy.lang;
 public class ProxyClassLoader extends ClassLoader {
     private ClassBytesSource bytesFunction;
     
+    public ProxyClassLoader(ClassLoader parent, ClassBytesSource bytesFunction) {
+        super(parent);
+        this.bytesFunction = bytesFunction;
+        bytesFunction.initialize(this);
+    }
+    
     public ProxyClassLoader(ClassBytesSource bytesFunction) {
         this.bytesFunction = bytesFunction;
         bytesFunction.initialize(this);
@@ -22,7 +28,6 @@ public class ProxyClassLoader extends ClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] bytes = bytesFunction.getBytes(this, name);
         
-        Class<?> superType = super.getClass();
         if(bytes != null) {
             return defineClass(name, bytes, 0, bytes.length);
         } else {
