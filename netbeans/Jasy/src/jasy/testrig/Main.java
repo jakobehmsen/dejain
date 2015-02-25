@@ -3,6 +3,7 @@ package jasy.testrig;
 import jasy.lang.ASMCompiler;
 import jasy.lang.ASMCompiler.Message;
 import jasy.lang.ClassBytesFromFile;
+import jasy.lang.ClassBytesSource;
 import jasy.lang.CommonClassMap;
 import jasy.lang.CommonClassResolver;
 import jasy.lang.ModuleClassBytesTransformer;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,7 +91,11 @@ public class Main {
                 
                 String moduleSource = transformationText.getText();
                 String applicationSourceCode = applicationText.getText();
-                ClassLoader classLoader = new ProxyClassLoader(new ClassBytesFromFile().andThen(new ModuleClassBytesTransformer(moduleSource, classResolver)));
+                
+                ClassLoader classLoader = new ProxyClassLoader(
+                    new ClassBytesFromFile(Arrays.asList())
+                    .andThen(new ModuleClassBytesTransformer(moduleSource, classResolver))
+                );
                 try {
                     CodeAST applicationCode = compiler.compileStatements(new ByteArrayInputStream(applicationSourceCode.getBytes()));
                     

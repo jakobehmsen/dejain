@@ -1629,29 +1629,7 @@ public class SourceToClassTest {
     };
     
     private static ClassBytesSource classBytesFromName() {
-        return new ClassBytesFromFile();
-        
-//        return (classLoader, name) -> {
-//            try {
-//                byte[] cacheBytesCache = classBytesCacheMap.get().get(name);
-//                
-//                if(cacheBytesCache == null) {
-//                    String s = new java.io.File("build/test/classes/" + name.replace(".", "/") + ".class").getCanonicalFile().toString();
-//                    InputStream classStream = new FileInputStream("build/test/classes/" + name.replace(".", "/") + ".class"); //classUrl.openStream();
-//                    ClassReader classReader = new ClassReader(classStream);
-//                    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-//                    classReader.accept(classWriter, 0);
-//                    cacheBytesCache = classWriter.toByteArray();
-//                    
-//                    classBytesCacheMap.get().put(name, cacheBytesCache);
-//                }
-//                
-//                return cacheBytesCache;
-//            } catch (IOException ex) {
-//                Logger.getLogger(SourceToAstTest.class.getName()).log(Level.SEVERE, null, ex);
-//                return null;
-//            }
-//        };
+        return new ClassBytesFromFile(Arrays.asList("build/test/classes"));
     }
 
     private static Predicate<Method> mname(Predicate<String> predicate) {
