@@ -98,6 +98,7 @@ public class Main {
 //        JarClassBytesSource classBytesSource = new JarClassBytesSource(javaRTJar);
         
         Future<JarClassBytesSource> classBytesSourceResource = getResource(() -> new JarClassBytesSource(javaRTJar));
+        Future<CommonClassMap> classMapResource = getResource(() -> CommonClassMap.createDefault());
 //        ClassLoader alwaysErrClassLoader = new ClassLoader() {
 //            @Override
 //            public Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -109,20 +110,23 @@ public class Main {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    CommonClassMap classMap = new CommonClassMap();
-                    CommonClassResolver classResolver = new CommonClassResolver(classMap);
-                    ASMCompiler compiler = new ASMCompiler(classResolver);
-                    
-                    String moduleSource = transformationText.getText();
-                    String applicationSourceCode = applicationText.getText();
-                    
-//                String javaRTJar = System.getProperty("java.home") + "/lib/rt.jar";
-                    ClassBytesSource classBytesSource = classBytesSourceResource.get();
-                    ClassLoader classLoader = new ProxyClassLoader(
-                        classBytesSource
-                        .andThen(new ModuleClassBytesTransformer(moduleSource, classResolver))
-                    );
                     try {
+                        CommonClassMap classMap = classMapResource.get();
+                        CommonClassResolver classResolver = new CommonClassResolver(classMap);
+                        
+                        classResolver.importPackage("java.lang");
+                        
+                        ASMCompiler compiler = new ASMCompiler(classResolver);
+
+                        String moduleSource = transformationText.getText();
+                        String applicationSourceCode = applicationText.getText();
+
+                        ClassBytesSource classBytesSource = classBytesSourceResource.get();
+                        ClassLoader classLoader = new ProxyClassLoader(
+                            classBytesSource
+                            .andThen(new ModuleClassBytesTransformer(moduleSource, classResolver))
+                        );
+                    
                         CodeAST applicationCode = compiler.compileStatements(new ByteArrayInputStream(applicationSourceCode.getBytes()));
                         
                         ArrayList<Message> errorMessages = new ArrayList<>();
@@ -166,9 +170,9 @@ public class Main {
                         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
                         metaObjectClassNode.accept(cw);
                         
-//                        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
-//                        new ClassReader(cw.toByteArray()).accept(traceClassVisitor, 0);
-//                        CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), true, new PrintWriter(System.out));
+                        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, new Textifier(), new PrintWriter(System.out));
+                        new ClassReader(cw.toByteArray()).accept(traceClassVisitor, 0);
+                        CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), true, new PrintWriter(System.out));
                         
                         SingleClassLoader metaClassLoader = new SingleClassLoader(metaObjectClassNode);
                         Class<?> metaObjectClass = metaClassLoader.loadClass();
@@ -182,7 +186,7 @@ public class Main {
                             } catch (IllegalArgumentException ex) {
                                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (InvocationTargetException ex) {
-                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex.getTargetException());
                             }
                         } catch (NoSuchMethodException ex) {
                             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
