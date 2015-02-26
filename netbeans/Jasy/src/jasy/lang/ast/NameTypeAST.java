@@ -126,7 +126,7 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
 //                c = Class.forName(descriptor);
 //                c = classLoader.loadClass(descriptor);
 //                c = Class.forName(descriptor, true, classLoader);
-            c = Class.forName(descriptor, true, ClassLoader.getSystemClassLoader());
+            c = Class.forName(descriptor, true, classLoader);
         } else {
             switch(name) {
                 case "boolean": c = boolean.class; break;
@@ -141,7 +141,7 @@ public class NameTypeAST extends AbstractAST implements TypeAST {
 //                    default: c = classLoader.loadClass(name);
 //                    default: c = Class.forName(name, true, classLoader);
 //                    default: c = Class.forName(name, true, classLoader);
-                default: c = Class.forName(name, true, ClassLoader.getSystemClassLoader());
+                default: c = Class.forName(name, true, classLoader);
             }
 
 //                c = Class.forName(name);
