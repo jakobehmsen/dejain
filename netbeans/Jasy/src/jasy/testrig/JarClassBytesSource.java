@@ -1,21 +1,38 @@
 package jasy.testrig;
 
 import jasy.lang.ClassBytesSource;
-import jasy.lang.CommonClassMap;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JarClassBytesSource implements ClassBytesSource {
     private String jarPath;
     private Hashtable<String, byte[]> nameToBytes;
+    
+    public static byte[] getBytes(InputStream is) throws IOException {
+        int len;
+        int size = 1024;
+        byte[] buf;
+
+        if (is instanceof ByteArrayInputStream) {
+            size = is.available();
+            buf = new byte[size];
+            is.read(buf, 0, size);
+        } else {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            buf = new byte[size];
+            while ((len = is.read(buf, 0, size)) != -1) {
+                bos.write(buf, 0, len);
+            }
+            buf = bos.toByteArray();
+        }
+        return buf;
+    }
 
     public JarClassBytesSource(String jarPath) {
         try {
@@ -23,24 +40,23 @@ public class JarClassBytesSource implements ClassBytesSource {
             
             nameToBytes = new Hashtable<>();
             JarFile jarFile = new JarFile(jarPath);
-            try (final JarInputStream jarInputStream = new JarInputStream(new BufferedInputStream(new FileInputStream(jarPath)))) {
-                JarEntry entry;
-                while ((entry = jarInputStream.getNextJarEntry()) != null) {
-                    String className = entry.getName();
-                    if (className.endsWith(".class") && !className.startsWith("java/")) {
+            
+            jarFile.stream().forEach(entry -> {
+                String className = entry.getName();
+                if (className.endsWith(".class") && !className.startsWith("java/")) {
+                    try {
                         InputStream entryInputStream = jarFile.getInputStream(entry);
                         
                         className = className.substring(0, className.length() - 6).replace("/", ".");
-                        
-                        byte[] classBytes = new byte[entryInputStream.available()];
-                        entryInputStream.read(classBytes);
+
+                        byte[] classBytes = getBytes(entryInputStream);
                         
                         nameToBytes.put(className, classBytes);
+                    } catch (IOException ex) {
+                        Logger.getLogger(JarClassBytesSource.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(CommonClassMap.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            });
         } catch (IOException ex) {
             Logger.getLogger(JarClassBytesSource.class.getName()).log(Level.SEVERE, null, ex);
         }
