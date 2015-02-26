@@ -630,6 +630,8 @@ public class ExpressionPreparer implements CodeVisitor<PreparedExpressionAST> {
                     target = new NameTypeAST(null, Class.forName(className, true, classLoader));
                 } catch (ClassNotFoundException ex) {
                     
+                } catch (SecurityException ex) {
+                    ex.printStackTrace();
                 }
                 
                 nameIndex++;
