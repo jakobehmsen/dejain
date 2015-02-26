@@ -19,4 +19,20 @@ public interface ClassBytesSource {
             }
         };
     }
+    default ClassBytesSource or(ClassBytesSource fallback) {
+        ClassBytesSource self = this;
+        
+        return new ClassBytesSource() {
+            @Override
+            public void initialize(ClassLoader classLoader) {
+                fallback.initialize(classLoader);
+            }
+
+            @Override
+            public byte[] getBytes(ClassLoader classLoader, String className) {
+                byte[] bytes = self.getBytes(classLoader, className);
+                return bytes != null ? bytes : fallback.getBytes(classLoader, className);
+            }
+        };
+    }
 }
